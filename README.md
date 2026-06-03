@@ -1,4 +1,4 @@
-# musaab_adam
+# BidsRush
 
 Musaab Adam Mobile Application - UI Verse.
 
