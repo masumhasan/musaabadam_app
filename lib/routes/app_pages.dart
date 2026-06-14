@@ -16,6 +16,7 @@ import 'package:musaab_adam/modules/livestream/screens/tip_info_screen.dart';
 import 'package:musaab_adam/modules/main_nav/bindings/main_nav_binding.dart';
 import 'package:musaab_adam/modules/profile/screens/change_credentials_screen.dart';
 import 'package:musaab_adam/modules/profile/screens/preferences_screen.dart';
+import 'package:musaab_adam/modules/profile/bindings/legal_content_binding.dart';
 import 'package:musaab_adam/modules/profile/screens/privacy_policy_screen.dart';
 import 'package:musaab_adam/modules/profile/screens/sales_tax_exemption.dart';
 import 'package:musaab_adam/modules/profile/screens/user_reports_screen.dart';
@@ -161,7 +162,7 @@ class AppPages {
     GetPage(name: AppRoutes.addressesScreen, page: () => AddressesScreen()),
 
     //===================SUPPORT====================
-    GetPage(name: AppRoutes.privacyPolicy, page: () => PrivacyPolicyScreen()),
+    GetPage(name: AppRoutes.privacyPolicy, page: () => const PrivacyPolicyScreen(), binding: LegalContentBinding()),
     GetPage(name: AppRoutes.orderSupportScreen, page: () => OrderSupportScreen()),
     GetPage(name: AppRoutes.contactUsScreen, page: () => ContactUsScreen()),
     GetPage(name: AppRoutes.accountIssuesScreen, page: () => AccountIssuesScreen()),

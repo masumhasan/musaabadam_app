@@ -52,6 +52,10 @@ class ApiConstants {
   // Seller application
   static const String sellerApplication = '/users/seller-application';
 
+  // Legal content (public)
+  static const String legalPrivacyPolicy = '/settings/privacy-policy';
+  static const String legalTerms = '/settings/terms';
+
   // Streams
   static const String streams = '/streams';
   static String stream(String streamId) => '/streams/$streamId';
