@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:musaab_adam/core/widgets/custom_choice_chip.dart';
 import 'package:musaab_adam/core/components/category_item.dart';
-import '../../../core/utils/app_constants.dart';
+import 'package:musaab_adam/core/widgets/custom_choice_chip.dart';
+import 'package:musaab_adam/modules/main_nav/controllers/categories_controller.dart';
 
-class CategoriesScreen extends StatelessWidget {
-  CategoriesScreen({super.key});
-
-  final RxInt selectedIndex = 0.obs;
+class CategoriesScreen extends GetView<CategoriesController> {
+  const CategoriesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +18,9 @@ class CategoriesScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: Column(
           children: [
+            // Sort chips
             Row(
-              children: ["Recommended", "Popular", "A-Z"]
+              children: ['Recommended', 'Popular', 'A-Z']
                   .asMap()
                   .entries
                   .map(
@@ -30,8 +29,8 @@ class CategoriesScreen extends StatelessWidget {
                         padding: EdgeInsets.all(8.w),
                         child: CustomChoiceChip(
                           label: e.value,
-                          selected: selectedIndex.value == e.key,
-                          onSelected: (_) => selectedIndex.value = e.key,
+                          selected: controller.selectedSortIndex.value == e.key,
+                          onSelected: (_) => controller.setSortIndex(e.key),
                           borderRadius: 50,
                         ),
                       ),
@@ -39,17 +38,37 @@ class CategoriesScreen extends StatelessWidget {
                   )
                   .toList(),
             ),
+
+            // Category grid
             Expanded(
-              child: GridView.builder(
-                itemCount: 12,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  mainAxisExtent: 120,
-                  mainAxisSpacing: 8
-                ),
-                itemBuilder: (context, i) =>
-                    CategoryItem(image: Dummy.product1, itemName: "Watch"),
-              ),
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (controller.categories.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No categories yet.',
+                      style: TextStyle(color: theme.colorScheme.outline),
+                    ),
+                  );
+                }
+                return GridView.builder(
+                  itemCount: controller.categories.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisExtent: 120,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemBuilder: (context, i) {
+                    final cat = controller.categories[i];
+                    return CategoryItem(
+                      image: cat.iconUrl ?? '',
+                      itemName: cat.name,
+                    );
+                  },
+                );
+              }),
             ),
           ],
         ),
@@ -58,11 +77,11 @@ class CategoriesScreen extends StatelessWidget {
   }
 
   Widget _searchBar(ThemeData theme) => SearchBar(
-    elevation: WidgetStatePropertyAll(0),
-    hintText: "Search...",
-    backgroundColor: WidgetStateProperty.all(
-      theme.colorScheme.surfaceContainer,
-    ),
-    trailing: [Icon(Icons.search, color: theme.colorScheme.primary)],
-  );
+        elevation: const WidgetStatePropertyAll(0),
+        hintText: 'Search...',
+        backgroundColor: WidgetStateProperty.all(
+          theme.colorScheme.surfaceContainer,
+        ),
+        trailing: [Icon(Icons.search, color: theme.colorScheme.primary)],
+      );
 }

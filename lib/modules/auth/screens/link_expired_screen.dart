@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
+import '../controllers/auth_controller.dart';
 
 class LinkExpiredScreen extends StatelessWidget {
-  const LinkExpiredScreen({super.key});
+  LinkExpiredScreen({super.key});
+
+  final AuthController _authController = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
@@ -35,15 +37,16 @@ class LinkExpiredScreen extends StatelessWidget {
                 fontSize: 16.sp,
               ),
               SizedBoxWidget(height: 20),
-              Padding(
+              Obx(() => Padding(
                 padding: EdgeInsets.symmetric(horizontal: 30.w),
                 child: CustomButton(
                   label: AppStrings.resendVerificationLink,
                   buttonWidth: double.infinity,
                   buttonHeight: 40.h,
-                  onPressed: () => Get.toNamed(AppRoutes.accountVerifiedScreen),
+                  isLoading: _authController.isLoading.value,
+                  onPressed: () => _authController.resendVerification(),
                 ),
-              ),
+              )),
             ],
           ),
         ),

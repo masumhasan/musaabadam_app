@@ -3,25 +3,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/components/category_item.dart';
 import 'package:musaab_adam/core/utils/app_colors.dart';
-import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/modules/seller_verification/controllers/seller_verification_controller.dart';
 
-class SellerCategoryScreen extends StatelessWidget {
-  SellerCategoryScreen({super.key});
-
-  // Example Category Data
-  final List<Map<String, String>> categories =[
-    {"name": "Watches", "image": Dummy.product1},
-    {"name": "Watches", "image": Dummy.product1},
-    {"name": "Watches", "image": Dummy.product1},
-    {"name": "Watches", "image": Dummy.product1},
-    {"name": "Watches", "image": Dummy.product1},
-    {"name": "Watches", "image": Dummy.product1},
-  ];
+class SellerCategoryScreen extends GetView<SellerVerificationController> {
+  const SellerCategoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +34,7 @@ class SellerCategoryScreen extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 10.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children:[
+          children: [
             SizedBoxWidget(height: 20.h),
 
             // Title & Subtitle
@@ -67,24 +57,44 @@ class SellerCategoryScreen extends StatelessWidget {
 
             // Grid of CategoryItems
             Expanded(
-              child: GridView.builder(
-                itemCount: 20, // Replace with categories.length
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 2.w,
-                  mainAxisExtent: 100.h,
-                  mainAxisSpacing: 6.h,
-                ),
-                itemBuilder: (context, index) {
-                  return CategoryItem(
-                    image: Dummy.product1, // categories[index]['image']!
-                    itemName: "Watches", // categories[index]['name']!
-                    onSelectionChanged: (isSelected) {
-                      debugPrint("Category selected: $isSelected");
-                    },
+              child: Obx(() {
+                if (controller.categoriesLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (controller.categories.isEmpty) {
+                  return Center(
+                    child: CustomText(
+                      text: 'No categories available.',
+                      fontSize: 14,
+                      fontColor: colorScheme.outline,
+                    ),
                   );
-                },
-              ),
+                }
+                return GridView.builder(
+                  itemCount: controller.categories.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 2.w,
+                    mainAxisExtent: 100.h,
+                    mainAxisSpacing: 6.h,
+                  ),
+                  itemBuilder: (context, index) {
+                    final cat = controller.categories[index];
+                    return Obx(() {
+                      final isSelected = controller.selectedCategoryIds.contains(cat.id);
+                      return CategoryItem(
+                        image: cat.iconUrl ?? '',
+                        itemName: cat.name,
+                        onSelectionChanged: (selected) {
+                          controller.toggleCategory(cat.id, selected);
+                        },
+                        // Force the widget to reflect controller state
+                        key: ValueKey('${cat.id}_$isSelected'),
+                      );
+                    });
+                  },
+                );
+              }),
             ),
 
             // Bottom Next Button
@@ -95,7 +105,8 @@ class SellerCategoryScreen extends StatelessWidget {
                 buttonWidth: double.infinity,
                 textColor: Colors.white,
                 backgroundColor: AppColors.orange,
-                onPressed: () {
+                onPressed: () async {
+                  await controller.loadSubcategories();
                   Get.toNamed(AppRoutes.sellerSubCategoryScreen);
                 },
               ),

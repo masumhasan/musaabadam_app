@@ -1,4 +1,4 @@
-import 'package:get/get_navigation/src/routes/get_route.dart';
+import 'package:get/get.dart';
 import 'package:musaab_adam/modules/activity/screens/friends_screen.dart';
 import 'package:musaab_adam/modules/activity/screens/purchase_help_screen.dart';
 import 'package:musaab_adam/modules/activity/screens/reaction_store_screen.dart';
@@ -34,6 +34,12 @@ import 'package:musaab_adam/modules/seller/screens/seller_tool_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/shipping_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/shows_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/tips_screen.dart';
+import 'package:musaab_adam/modules/profile/bindings/update_profile_binding.dart';
+import 'package:musaab_adam/modules/seller/bindings/create_product_binding.dart';
+import 'package:musaab_adam/modules/seller/bindings/schedule_show_binding.dart';
+import 'package:musaab_adam/modules/seller/bindings/seller_inventory_binding.dart';
+import 'package:musaab_adam/modules/seller/bindings/shows_binding.dart';
+import 'package:musaab_adam/modules/seller_verification/bindings/seller_verification_binding.dart';
 import 'package:musaab_adam/modules/seller_verification/screens/ready_to_earn_screen.dart';
 import 'package:musaab_adam/modules/seller_verification/screens/seller_address_screen.dart';
 import 'package:musaab_adam/modules/seller_verification/screens/seller_average_earning.dart';
@@ -75,6 +81,8 @@ import '../modules/livestream/screens/livestream_screen.dart';
 import '../modules/main_nav/screens/main_nav_screen.dart';
 import '../modules/home/screens/notification_settings_screen.dart';
 import '../modules/profile/screens/order_support_screen.dart';
+import '../modules/profile/bindings/other_user_profile_binding.dart';
+import '../modules/profile/screens/other_user_profile_screen.dart';
 import '../modules/profile/screens/profile_screen.dart';
 import '../modules/livestream/screens/send_tip_screen.dart';
 
@@ -135,7 +143,12 @@ class AppPages {
 
     //===================PROFILE====================
     GetPage(name: AppRoutes.profileScreen, page: () => ProfileScreen()),
-    GetPage(name: AppRoutes.updateProfileScreen, page: () => UpdateProfileScreen()),
+    GetPage(
+      name: AppRoutes.otherUserProfileScreen,
+      page: () => OtherUserProfileScreen(userId: Get.arguments as String),
+      binding: OtherUserProfileBinding(),
+    ),
+    GetPage(name: AppRoutes.updateProfileScreen, page: () => const UpdateProfileScreen(), binding: UpdateProfileBinding()),
     GetPage(name: AppRoutes.accountHealthScreen, page: () => AccountHealthScreen()),
     GetPage(name: AppRoutes.preferencesScreen, page: () => PreferencesScreen()),
     GetPage(name: AppRoutes.accountInformationUpdateScreen, page: () => AccountInformationUpdateScreen()),
@@ -155,14 +168,14 @@ class AppPages {
     GetPage(name: AppRoutes.generalIssuesScreen, page: () => GeneralIssuesScreen()),
 
     //===================SELLER ====================
-    GetPage(name: AppRoutes.createQualityListingScreen, page: () => CreateQualityListingScreen()),
-    GetPage(name: AppRoutes.scheduleLiveShowScreen, page: () => ScheduleLiveShowScreen()),
+    GetPage(name: AppRoutes.createQualityListingScreen, page: () => CreateQualityListingScreen(), binding: CreateProductBinding()),
+    GetPage(name: AppRoutes.scheduleLiveShowScreen, page: () => ScheduleLiveShowScreen(), binding: ScheduleShowBinding()),
     GetPage(name: AppRoutes.fulfillmentScreen, page: () => FulfillmentScreen()),
     GetPage(name: AppRoutes.sellerPayoutScreen, page: () => SellerPayoutScreen()),
     GetPage(name: AppRoutes.sellerOrderScreen, page: () => SellerOrderScreen()),
-    GetPage(name: AppRoutes.sellerInventoryScreen, page: () => SellerInventoryScreen()),
+    GetPage(name: AppRoutes.sellerInventoryScreen, page: () => SellerInventoryScreen(), binding: SellerInventoryBinding()),
     GetPage(name: AppRoutes.sellerToolsScreen, page: () => SellerToolScreen()),
-    GetPage(name: AppRoutes.showsScreen, page: () => ShowsScreen()),
+    GetPage(name: AppRoutes.showsScreen, page: () => ShowsScreen(), binding: ShowsBinding()),
     GetPage(name: AppRoutes.offersScreen, page: () => OffersScreen()),
     GetPage(name: AppRoutes.tipsScreen, page: () => TipsScreen()),
     GetPage(name: AppRoutes.inviteSellerScreen, page: () => InviteSellerScreen()),
@@ -174,7 +187,8 @@ class AppPages {
     //===================SELLER VERIFICATION====================
     GetPage(name: AppRoutes.sellerFaqScreen, page: () => SellerFaqScreen()),
     GetPage(name: AppRoutes.readyToEarnScreen, page: () => ReadyToEarnScreen()),
-    GetPage(name: AppRoutes.sellerCategoryScreen, page: () => SellerCategoryScreen()),
+    // SellerVerificationBinding registered here — all subsequent screens share the same controller
+    GetPage(name: AppRoutes.sellerCategoryScreen, page: () => SellerCategoryScreen(), binding: SellerVerificationBinding()),
     GetPage(name: AppRoutes.sellerSubCategoryScreen, page: () => SellerSubcategoryScreen()),
     GetPage(name: AppRoutes.sellerTypeScreen, page: () => SellerTypeScreen()),
     GetPage(name: AppRoutes.sellerAddressScreen, page: () => SellerAddressScreen()),

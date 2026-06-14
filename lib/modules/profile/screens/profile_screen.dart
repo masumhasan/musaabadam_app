@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
+import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
 import 'package:musaab_adam/modules/profile/components/clips_tab.dart';
 import 'package:musaab_adam/modules/profile/components/review_tab.dart';
 import 'package:musaab_adam/modules/profile/components/shop_tab.dart';
@@ -17,6 +18,13 @@ class ProfileScreen extends StatelessWidget {
   ProfileScreen({super.key});
 
   final RxInt mainTabCurrentIndex = 0.obs;
+  final AuthController _authController = Get.find<AuthController>();
+
+  static String _formatCount(int count) {
+    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}m';
+    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k';
+    return count.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,94 +48,109 @@ class ProfileScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            spacing: 20.h,
-            children:[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: CachedImageWidget(
-                  imageUrl: Dummy.user1,
-                  height: 60.h,
-                  width: 60.w,
+          child: Obx(() {
+            final user = _authController.currentUser.value;
+            return Column(
+              spacing: 20.h,
+              children:[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(50),
+                  child: CachedImageWidget(
+                    imageUrl: user?.avatarUrl ?? Dummy.user1,
+                    height: 60.h,
+                    width: 60.w,
+                  ),
                 ),
-              ),
-              CustomText(
-                text: "Henry Jackob",
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                fontColor: colorScheme.onSurface,
-              ),
+                CustomText(
+                  text: user?.displayNameOrUsername ?? '',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  fontColor: colorScheme.onSurface,
+                ),
 
-              // Stats Container
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 20.h),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(8),
+                // Stats Container
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 20.h),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children:[
+                      _buildStatColumn(
+                        (user?.buyerRating ?? 0).toStringAsFixed(1),
+                        "Ratings",
+                        colorScheme,
+                        icon: Icons.star,
+                      ),
+                      _buildVerticalDivider(colorScheme),
+                      _buildStatColumn(
+                        _formatCount(user?.followersCount ?? 0),
+                        "Follower",
+                        colorScheme,
+                      ),
+                      _buildVerticalDivider(colorScheme),
+                      _buildStatColumn(
+                        _formatCount(user?.followingCount ?? 0),
+                        "Following",
+                        colorScheme,
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
+                // Action Buttons
+                Row(
+                  spacing: 20.w,
                   children:[
-                    _buildStatColumn("4.9", "Ratings", colorScheme, icon: Icons.star),
-                    _buildVerticalDivider(colorScheme),
-                    _buildStatColumn("1.5k", "Follower", colorScheme),
-                    _buildVerticalDivider(colorScheme),
-                    _buildStatColumn("7.5k", "Following", colorScheme),
+                    Expanded(
+                      child: CustomButton(
+                        label: AppStrings.message,
+                        textColor: Colors.white,
+                        backgroundColor: Colors.orange,
+                        buttonHeight: 40,
+                        fontSize: 14,
+                        onPressed: () => Get.toNamed(AppRoutes.messageScreen),
+                      ),
+                    ),
+                    Expanded(
+                      child: CustomButton(
+                        label: AppStrings.editProfile,
+                        textColor: Colors.white,
+                        backgroundColor: colorScheme.primary,
+                        buttonHeight: 40,
+                        fontSize: 14,
+                        onPressed: () => Get.toNamed(AppRoutes.updateProfileScreen),
+                      ),
+                    ),
                   ],
                 ),
-              ),
 
-              // Action Buttons
-              Row(
-                spacing: 20.w,
-                children:[
-                  Expanded(
-                    child: CustomButton(
-                      label: AppStrings.message,
-                      textColor: Colors.white,
-                      backgroundColor: Colors.orange,
-                      buttonHeight: 40,
-                      fontSize: 14,
-                      onPressed: () => Get.toNamed(AppRoutes.messageScreen),
-                    ),
-                  ),
-                  Expanded(
-                    child: CustomButton(
-                      label: AppStrings.editProfile,
-                      textColor: Colors.white,
-                      backgroundColor: colorScheme.primary,
-                      buttonHeight: 40,
-                      fontSize: 14,
-                      onPressed: () => Get.toNamed(AppRoutes.updateProfileScreen),
-                    ),
-                  ),
-                ],
-              ),
+                // Tabs Row
+                Row(
+                  spacing: 15.w,
+                  children:[
+                    _buildTab(AppStrings.shop.tr, 0, colorScheme),
+                    _buildTab(AppStrings.shows.tr, 1, colorScheme),
+                    _buildTab(AppStrings.reviews.tr, 2, colorScheme),
+                    _buildTab(AppStrings.clips.tr, 3, colorScheme),
+                  ],
+                ),
 
-              // Tabs Row
-              Row(
-                spacing: 15.w,
-                children:[
-                  _buildTab(AppStrings.shop.tr, 0, colorScheme),
-                  _buildTab(AppStrings.shows.tr, 1, colorScheme),
-                  _buildTab(AppStrings.reviews.tr, 2, colorScheme),
-                  _buildTab(AppStrings.clips.tr, 3, colorScheme),
-                ],
-              ),
-
-              // Tab Content
-              Obx(() => IndexedStack(
-                index: mainTabCurrentIndex.value,
-                children: [ShopTab(), ShowsTab(), ReviewTab(), ClipsTab()],
-              )),
-            ],
-          ),
+                // Tab Content
+                Obx(() => IndexedStack(
+                  index: mainTabCurrentIndex.value,
+                  children: [ShopTab(), ShowsTab(), ReviewTab(), ClipsTab()],
+                )),
+              ],
+            );
+          }),
         ),
       ),
     );
   }
 
-  // Helper for Stats Columns
   Widget _buildStatColumn(String value, String label, ColorScheme colorScheme, {IconData? icon}) {
     return Column(
       children: [
@@ -147,7 +170,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Helper for Divider
   Widget _buildVerticalDivider(ColorScheme colorScheme) {
     return SizedBox(
       height: 60,
@@ -158,7 +180,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Helper for Tabs
   Widget _buildTab(String title, int index, ColorScheme colorScheme) {
     return Obx(() {
       final isSelected = mainTabCurrentIndex.value == index;

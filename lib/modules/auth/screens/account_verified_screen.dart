@@ -6,11 +6,12 @@ import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
+import '../controllers/auth_controller.dart';
 
 class AccountVerifiedScreen extends StatelessWidget {
-  final String userEmail = "dummymail@mail.com";
+  AccountVerifiedScreen({super.key});
 
-  const AccountVerifiedScreen({super.key});
+  final AuthController _authController = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
@@ -22,28 +23,27 @@ class AccountVerifiedScreen extends StatelessWidget {
       body: SafeArea(
         child: Align(
           alignment: Alignment.center,
-          child: Column(
+          child: Obx(() => Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBoxWidget(height: 60),
-              // Main Heading
               CustomText(
                 text: AppStrings.accountVerified,
                 fontWeight: FontWeight.w700,
-                // Replaced black50Percent with semantic onSurface + opacity
                 fontColor: colorScheme.onSurface.withValues(alpha: 0.6),
                 fontSize: 20.sp,
               ),
               SizedBoxWidget(height: 20),
-              // Description Text
               CustomText(
                 text: AppStrings.congratulationsYourEmailAccount,
                 fontColor: colorScheme.onSurface.withValues(alpha: 0.5),
                 fontSize: 16.sp,
               ),
               CustomText(
-                text: userEmail,
-                fontColor: colorScheme.primary, // Using primary for emphasis
+                text: _authController.pendingEmail.value.isNotEmpty
+                    ? _authController.pendingEmail.value
+                    : _authController.currentUser.value?.email ?? '',
+                fontColor: colorScheme.primary,
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -59,13 +59,11 @@ class AccountVerifiedScreen extends StatelessWidget {
                   label: AppStrings.continueToYourAccount,
                   buttonWidth: double.infinity,
                   buttonHeight: 40.h,
-                  onPressed: () {
-                    Get.toNamed(AppRoutes.profileSetupScreen);
-                  },
+                  onPressed: () => Get.toNamed(AppRoutes.profileSetupScreen),
                 ),
               ),
             ],
-          ),
+          )),
         ),
       ),
     );

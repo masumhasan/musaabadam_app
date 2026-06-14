@@ -7,11 +7,10 @@ import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/modules/seller_verification/controllers/seller_verification_controller.dart';
 
-class SellerTypeScreen extends StatelessWidget {
-  SellerTypeScreen({super.key});
-
-  final RxInt selectedIndex = (-1).obs;
+class SellerTypeScreen extends GetView<SellerVerificationController> {
+  const SellerTypeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -95,10 +94,10 @@ class SellerTypeScreen extends StatelessWidget {
 
   Widget _buildSelectionTile(BuildContext context, String title, int index) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isSelected = selectedIndex.value == index;
+    final isSelected = controller.sellerTypeIndex.value == index;
 
     return GestureDetector(
-      onTap: () => selectedIndex.value = index,
+      onTap: () => controller.sellerTypeIndex.value = index,
       child: Row(
         children:[
           Expanded(

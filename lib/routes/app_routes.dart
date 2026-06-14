@@ -19,6 +19,7 @@ class AppRoutes {
   //===================PROFILE====================
   static final profileSetupScreen = "/profile-setup-screen";
   static final profileScreen = "/profile-screen";
+  static final otherUserProfileScreen = "/other-user-profile-screen";
   static final updateProfileScreen = "/update-profile-screen";
   static final accountHealthScreen = "/account-health-screen";
   static final preferencesScreen = "/preferences-screen";

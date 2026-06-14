@@ -5,15 +5,17 @@ import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/photo_edit_widget.dart';
-import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_text_field.dart';
 import '../../../core/components/category_item.dart';
 import '../../../core/utils/app_constants.dart';
+import '../controllers/auth_controller.dart';
 
 class ProfileSetupScreen extends StatelessWidget {
   final TextEditingController bioController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
+
+  final AuthController _authController = Get.find<AuthController>();
 
   ProfileSetupScreen({super.key});
 
@@ -50,7 +52,16 @@ class ProfileSetupScreen extends StatelessWidget {
               child: Row(children: List.generate(7, (i) => CategoryItem(image: Dummy.product1, itemName: "Watch"))),
             ),
             SizedBoxWidget(height: 20),
-            CustomButton(label: AppStrings.continuee, buttonHeight: 40.h, buttonRadius: 8, onPressed: () => Get.toNamed(AppRoutes.mainScreen)),
+            Obx(() => CustomButton(
+              label: AppStrings.continuee,
+              buttonHeight: 40.h,
+              buttonRadius: 8,
+              isLoading: _authController.isLoading.value,
+              onPressed: () => _authController.saveProfile(
+                displayName: nameController.text,
+                bio: bioController.text,
+              ),
+            )),
             SizedBoxWidget(height: 20),
           ],
         ),

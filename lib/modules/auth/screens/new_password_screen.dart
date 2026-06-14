@@ -9,11 +9,14 @@ import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_text_field.dart';
 import '../../../core/assets_gen/assets.gen.dart';
+import '../controllers/auth_controller.dart';
 
 class NewPasswordScreen extends StatelessWidget {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  final AuthController _authController = Get.find<AuthController>();
 
   NewPasswordScreen({super.key});
 
@@ -41,7 +44,22 @@ class NewPasswordScreen extends StatelessWidget {
                   SizedBoxWidget(height: 20),
                   CustomTextField(label: AppStrings.confirmPassword, hintText: AppStrings.confirmPassword, controller: confirmPasswordController, isPassword: true),
                   SizedBoxWidget(height: 20),
-                  CustomButton(label: AppStrings.resetPassword, fontWeight: FontWeight.w700, buttonHeight: 40.h, onPressed: showResetSuccessAlert),
+                  Obx(() => CustomButton(
+                    label: AppStrings.resetPassword,
+                    fontWeight: FontWeight.w700,
+                    buttonHeight: 40.h,
+                    isLoading: _authController.isLoading.value,
+                    onPressed: () async {
+                      if (formKey.currentState!.validate()) {
+                        if (passwordController.text != confirmPasswordController.text) {
+                          Get.snackbar('Error', 'Passwords do not match', snackPosition: SnackPosition.BOTTOM);
+                          return;
+                        }
+                        final success = await _authController.resetPassword(passwordController.text);
+                        if (success) showResetSuccessAlert();
+                      }
+                    },
+                  )),
                   TextButton(
                     onPressed: Get.back,
                     child: Row(

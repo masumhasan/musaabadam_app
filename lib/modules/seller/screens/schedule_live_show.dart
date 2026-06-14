@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:musaab_adam/core/utils/app_colors.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
+import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/custom_text_field.dart';
 import 'package:musaab_adam/core/widgets/custom_choice_chip.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/modules/seller/controllers/schedule_show_controller.dart';
 
-class ScheduleLiveShowScreen extends StatelessWidget {
-  ScheduleLiveShowScreen({super.key});
-
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController modController = TextEditingController();
-  final RxString selectedRepeat = AppStrings.doesNotRepeat.obs;
-  final RxInt selectedCategoryIndex = 0.obs;
-  final RxBool explicitContent = false.obs;
-  final RxString discoverability = 'Public'.obs;
+class ScheduleLiveShowScreen extends GetView<ScheduleShowController> {
+  const ScheduleLiveShowScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -38,38 +34,75 @@ class ScheduleLiveShowScreen extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children:[
+          children: [
             CustomTextField(
-                label: AppStrings.nameYourShow,
-                hintText: AppStrings.nameYourShow,
-                controller: nameController
+              label: AppStrings.nameYourShow,
+              hintText: AppStrings.nameYourShow,
+              controller: controller.titleController,
             ),
             SizedBoxWidget(height: 15.h),
 
-            // Date & Time Row
+            // Date & Time Row — tapping opens system date/time pickers
             Row(
-              children:[
-                Expanded(child: CustomTextField(label: AppStrings.date, hintText: "22 October, 2025", controller: TextEditingController(),)),
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => controller.pickDate(context),
+                    child: AbsorbPointer(
+                      child: CustomTextField(
+                        label: AppStrings.date,
+                        hintText: '22 October, 2025',
+                        controller: controller.dateController,
+                      ),
+                    ),
+                  ),
+                ),
                 SizedBox(width: 15.w),
-                Expanded(child: CustomTextField(label: AppStrings.time, hintText: "10:18 PM", controller: TextEditingController(), )),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => controller.pickTime(context),
+                    child: AbsorbPointer(
+                      child: CustomTextField(
+                        label: AppStrings.time,
+                        hintText: '10:18 PM',
+                        controller: controller.timeController,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
             SizedBoxWidget(height: 15.h),
 
-            CustomTextField(label: AppStrings.addModerators, hintText: "Excellent", controller: modController),
+            // Moderators field (UI only — not submitted to API currently)
+            CustomTextField(
+              label: AppStrings.addModerators,
+              hintText: 'Excellent',
+              controller: TextEditingController(),
+            ),
             SizedBoxWidget(height: 15.h),
 
             // Repeats Dropdown
             CustomText(text: AppStrings.repeats, fontWeight: FontWeight.w600),
             SizedBoxWidget(height: 8.h),
-            DropdownButtonFormField<String>(
-              value: selectedRepeat.value,
-              items: [AppStrings.doesNotRepeat].map((String value) {
-                return DropdownMenuItem<String>(value: value, child: Text(value));
-              }).toList(),
-              onChanged: (val) => selectedRepeat.value = val!,
-              decoration: _inputDecoration(colorScheme),
-            ),
+            Obx(() => Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              decoration: BoxDecoration(
+                border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
+                borderRadius: BorderRadius.circular(12.r),
+                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: controller.selectedRepeat.value,
+                  items: [AppStrings.doesNotRepeat].map((String v) {
+                    return DropdownMenuItem<String>(value: v, child: Text(v));
+                  }).toList(),
+                  onChanged: (val) => controller.selectedRepeat.value = val!,
+                ),
+              ),
+            )),
             SizedBoxWidget(height: 20.h),
 
             // Media Section
@@ -81,65 +114,79 @@ class ScheduleLiveShowScreen extends StatelessWidget {
 
             SizedBoxWidget(height: 20.h),
 
-            // Category Section
+            // Category Section — loaded from API
             CustomText(text: AppStrings.primaryCategory, fontWeight: FontWeight.w700),
             CustomText(text: AppStrings.recentlyUsed, fontSize: 12, fontColor: colorScheme.outline),
             SizedBoxWidget(height: 10.h),
-            Row(
-              spacing: 10.w,
-              children:[
-                _buildCategoryChip(AppStrings.streetwear, 0),
-                _buildCategoryChip(AppStrings.everythingElse, 1),
-                _buildCategoryChip(AppStrings.makeup, 2),
-              ],
-            ),
-            const SizedBox(height: 12,),
-            _buildDropdown(AppStrings.category, colorScheme),
+            Obx(() {
+              // Show first 3 categories as quick-pick chips
+              final cats = controller.categories.take(3).toList();
+              if (cats.isEmpty) return const SizedBox.shrink();
+              return Row(
+                spacing: 10.w,
+                children: cats.asMap().entries.map((e) {
+                  final cat = e.value;
+                  return Obx(() => CustomChoiceChip(
+                    label: cat.name,
+                    selected: controller.selectedCategory.value?.id == cat.id,
+                    colorChangeable: true,
+                    borderRadius: 100,
+                    onSelected: (_) => controller.selectedCategory.value = cat,
+                  ));
+                }).toList(),
+              );
+            }),
+            const SizedBox(height: 12),
+
+            // Category full dropdown
+            Obx(() => _buildCategoryDropdown(AppStrings.category, colorScheme)),
             _buildDropdown(AppStrings.primarySellingFormat, colorScheme, hint: AppStrings.format),
 
             // Primary Tags
             CustomText(text: AppStrings.primaryTags, fontWeight: FontWeight.w600),
             SizedBoxWidget(height: 10.h),
-            Wrap(
+            Obx(() => Wrap(
               spacing: 10.w,
-              children:["Tees", "Women's", "Makeup"].map((tag) => _buildTagChip(tag, colorScheme)).toList(),
-            ),
+              children: controller.tags
+                  .map((tag) => _buildTagChip(tag, colorScheme))
+                  .toList(),
+            )),
             SizedBoxWidget(height: 10.h),
             _buildDropdown(AppStrings.tags, colorScheme, hint: AppStrings.tags),
 
             _buildDropdown(AppStrings.primaryBrand, colorScheme, hint: AppStrings.brand),
 
             // Shipping Settings
-            _buildSettingsTile(AppStrings.shippingSettings, AppStrings.freePickup, "ON", colorScheme),
+            _buildSettingsTile(AppStrings.shippingSettings, AppStrings.freePickup, 'ON', colorScheme),
 
             // Content Settings
             CustomText(text: AppStrings.contentSettings, fontWeight: FontWeight.w600),
             Obx(() => SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: CustomText(text: AppStrings.explicitContent, textAlignment: TextAlign.start),
-              value: explicitContent.value,
-              onChanged: (val) => explicitContent.value = val,
+              value: controller.explicitContent.value,
+              onChanged: (val) => controller.explicitContent.value = val,
             )),
 
-            _buildDropdown(AppStrings.mutedWords, colorScheme, hint: "Fake, Replica"),
-            _buildDropdown(AppStrings.primaryLanguage, colorScheme, hint: "English"),
+            _buildDropdown(AppStrings.mutedWords, colorScheme, hint: 'Fake, Replica'),
+            _buildDropdown(AppStrings.primaryLanguage, colorScheme, hint: 'English'),
 
             SizedBoxWidget(height: 20.h),
             CustomText(text: AppStrings.showDiscoverability, fontWeight: FontWeight.w600),
-            Obx(() => RadioListTile(
-              contentPadding: EdgeInsets.zero,
-              title: CustomText(text: AppStrings.public, textAlignment: TextAlign.start),
-              value: AppStrings.public,
-              groupValue: discoverability.value,
-              onChanged: (val) => discoverability.value = val!,
+            Obx(() => _buildRadioTile(AppStrings.public, colorScheme)),
+            Obx(() => _buildRadioTile(AppStrings.private, colorScheme)),
+
+            SizedBoxWidget(height: 30.h),
+
+            // Submit button
+            Obx(() => CustomButton(
+              label: controller.isLoading.value ? 'Scheduling…' : 'Schedule Show',
+              buttonWidth: double.infinity,
+              backgroundColor: AppColors.orange,
+              textColor: Colors.white,
+              onPressed: controller.isLoading.value ? null : controller.scheduleShow,
             )),
-            Obx(() => RadioListTile(
-              contentPadding: EdgeInsets.zero,
-              title: CustomText(text: AppStrings.private, textAlignment: TextAlign.start),
-              value: AppStrings.private,
-              groupValue: discoverability.value,
-              onChanged: (val) => discoverability.value = val!,
-            )),
+            SizedBoxWidget(height: 20.h),
           ],
         ),
       ),
@@ -157,14 +204,14 @@ class ScheduleLiveShowScreen extends StatelessWidget {
   Widget _buildSettingsTile(String section, String title, String trailing, ColorScheme colorScheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children:[
+      children: [
         CustomText(text: section, fontWeight: FontWeight.w600),
         ListTile(
           contentPadding: EdgeInsets.zero,
           title: CustomText(text: title, textAlignment: TextAlign.start),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
-            children:[
+            children: [
               CustomText(text: trailing, fontColor: colorScheme.outline),
               Icon(Icons.chevron_right, color: colorScheme.onSurface),
             ],
@@ -174,10 +221,46 @@ class ScheduleLiveShowScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildCategoryDropdown(String title, ColorScheme colorScheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CustomText(text: title, fontWeight: FontWeight.w600),
+        SizedBoxWidget(height: 8.h),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          decoration: BoxDecoration(
+            border: Border.all(color: colorScheme.primary),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: controller.selectedCategory.value?.id,
+              hint: CustomText(text: 'Select category', fontColor: colorScheme.outline),
+              items: controller.categories.map((cat) {
+                return DropdownMenuItem<String>(
+                  value: cat.id,
+                  child: Text(cat.name),
+                );
+              }).toList(),
+              onChanged: (id) {
+                if (id == null) return;
+                final cat = controller.categories.firstWhereOrNull((c) => c.id == id);
+                controller.selectedCategory.value = cat;
+              },
+            ),
+          ),
+        ),
+        SizedBoxWidget(height: 15.h),
+      ],
+    );
+  }
+
   Widget _buildDropdown(String title, ColorScheme colorScheme, {String? hint}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children:[
+      children: [
         CustomText(text: title, fontWeight: FontWeight.w600),
         SizedBoxWidget(height: 8.h),
         Container(
@@ -190,7 +273,7 @@ class ScheduleLiveShowScreen extends StatelessWidget {
             child: DropdownButton<String>(
               isExpanded: true,
               hint: CustomText(text: hint ?? title, fontColor: colorScheme.outline),
-              items: [], // Add your logic here
+              items: const [],
               onChanged: (_) {},
             ),
           ),
@@ -210,7 +293,7 @@ class ScheduleLiveShowScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
-        children:[
+        children: [
           CustomText(text: AppStrings.optional, fontColor: colorScheme.primary, fontSize: 12),
           Icon(icon, size: 30.sp, color: colorScheme.primary),
           CustomText(text: label, fontColor: colorScheme.primary, fontWeight: FontWeight.w600),
@@ -219,22 +302,37 @@ class ScheduleLiveShowScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryChip(String label, int index) {
-    return Obx(() => CustomChoiceChip(
-      label: label,
-      selected: selectedCategoryIndex.value == index,
-      colorChangeable: true,
-      borderRadius: 100,
-      onSelected: (_) => selectedCategoryIndex.value = index,
-    ));
-  }
-
-  InputDecoration _inputDecoration(ColorScheme colorScheme) {
-    return InputDecoration(
-      filled: true,
-      fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outline)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.2))),
+  Widget _buildRadioTile(String value, ColorScheme colorScheme) {
+    final selected = controller.discoverability.value == value;
+    return GestureDetector(
+      onTap: () => controller.discoverability.value = value,
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: selected ? colorScheme.primary : colorScheme.outline,
+              width: 2,
+            ),
+          ),
+          child: selected
+              ? Center(
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                )
+              : null,
+        ),
+        title: CustomText(text: value, textAlignment: TextAlign.start),
+      ),
     );
   }
 }

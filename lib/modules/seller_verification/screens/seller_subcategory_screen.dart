@@ -7,18 +7,10 @@ import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/modules/seller_verification/controllers/seller_verification_controller.dart';
 
-class SellerSubcategoryScreen extends StatelessWidget {
-  SellerSubcategoryScreen({super.key});
-
-  final RxSet<String> selectedSubcategories = <String>{}.obs;
-
-  final List<String> subcategories =[
-    "Pokemon Cards", "Magic:The Gathering", "Yo-Gi-Oh! cards",
-    "One Piece cards", "VeeFriends", "Naruto Cards",
-    "Union Area", "Dragon Ball cards", "Other TCG",
-    "Riftbound", "WeiB Schwarz", "Lorcana"
-  ];
+class SellerSubcategoryScreen extends GetView<SellerVerificationController> {
+  const SellerSubcategoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +33,7 @@ class SellerSubcategoryScreen extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 20.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children:[
+          children: [
             SizedBoxWidget(height: 20.h),
 
             // Title & Subtitle
@@ -61,27 +53,35 @@ class SellerSubcategoryScreen extends StatelessWidget {
             ),
             SizedBoxWidget(height: 20.h),
 
-            CustomText(
-              text: AppStrings.tradingCardGames,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              fontColor: colorScheme.onSurface,
+            Expanded(
+              child: Obx(() {
+                if (controller.subcategoriesLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (controller.subcategories.isEmpty) {
+                  return Center(
+                    child: CustomText(
+                      text: 'No subcategories available for your selected categories.',
+                      fontSize: 14,
+                      fontColor: colorScheme.outline,
+                      textAlignment: TextAlign.center,
+                    ),
+                  );
+                }
+                return SingleChildScrollView(
+                  child: Wrap(
+                    spacing: 12.w,
+                    runSpacing: 12.h,
+                    children: controller.subcategories.map((cat) {
+                      return Obx(() {
+                        final isSelected = controller.selectedSubcategoryIds.contains(cat.id);
+                        return _buildSubcategoryChip(context, cat.name, cat.id, isSelected);
+                      });
+                    }).toList(),
+                  ),
+                );
+              }),
             ),
-            SizedBoxWidget(height: 16.h),
-
-            // Selectable Chips
-            Wrap(
-              spacing: 12.w,
-              runSpacing: 12.h,
-              children: subcategories.map((name) {
-                return Obx(() {
-                  final isSelected = selectedSubcategories.contains(name);
-                  return _buildSubcategoryChip(context, name, isSelected);
-                });
-              }).toList(),
-            ),
-
-            const Spacer(),
 
             // Next Button
             Padding(
@@ -102,11 +102,9 @@ class SellerSubcategoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSubcategoryChip(BuildContext context, String name, bool isSelected) {
+  Widget _buildSubcategoryChip(BuildContext context, String name, String id, bool isSelected) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Using secondaryContainer for the "active" selection and outline for inactive
-    // Or you can map this to your custom light orange color from AppColors
     final backgroundColor = isSelected
         ? colorScheme.primary
         : colorScheme.secondaryContainer.withValues(alpha: 0.8);
@@ -114,13 +112,7 @@ class SellerSubcategoryScreen extends StatelessWidget {
     final textColor = isSelected ? colorScheme.onPrimary : colorScheme.onSecondaryContainer;
 
     return GestureDetector(
-      onTap: () {
-        if (isSelected) {
-          selectedSubcategories.remove(name);
-        } else {
-          selectedSubcategories.add(name);
-        }
-      },
+      onTap: () => controller.toggleSubcategory(id),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(

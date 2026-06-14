@@ -5,16 +5,13 @@ import 'package:musaab_adam/core/utils/app_colors.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
-import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/modules/seller_verification/controllers/seller_verification_controller.dart';
 
-class SellerAverageEarning extends StatelessWidget {
+class SellerAverageEarning extends GetView<SellerVerificationController> {
   SellerAverageEarning({super.key});
 
-  final RxBool isExpanded = false.obs;
-  final RxString selectedRange = AppStrings.select.obs;
-
-  final List<String> incomeRanges =[
+  final List<String> incomeRanges = [
     AppStrings.range1,
     AppStrings.range2,
     AppStrings.range3,
@@ -67,7 +64,7 @@ class SellerAverageEarning extends StatelessWidget {
               children:[
                 // The Select Box
                 GestureDetector(
-                  onTap: () => isExpanded.value = !isExpanded.value,
+                  onTap: () => controller.isDropdownExpanded.value = !controller.isDropdownExpanded.value,
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
                     decoration: BoxDecoration(
@@ -77,20 +74,20 @@ class SellerAverageEarning extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children:[
-                        CustomText(text: selectedRange.value, fontColor: colorScheme.onSurface),
-                        Icon(isExpanded.value ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: colorScheme.onSurface),
+                        CustomText(text: controller.selectedRange.value, fontColor: colorScheme.onSurface),
+                        Icon(controller.isDropdownExpanded.value ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: colorScheme.onSurface),
                       ],
                     ),
                   ),
                 ),
 
                 // The Expanded List
-                if (isExpanded.value)
+                if (controller.isDropdownExpanded.value)
                   Container(
                     margin: EdgeInsets.only(top: 4.h),
                     padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
-                      color: AppColors.lightOrange, // Matches screenshot design
+                      color: AppColors.lightOrange,
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Column(
@@ -102,19 +99,19 @@ class SellerAverageEarning extends StatelessWidget {
 
             const Spacer(),
 
-            // Next Button
+            // Submit Application Button
             Padding(
               padding: EdgeInsets.only(bottom: 30.h),
-              child: CustomButton(
+              child: Obx(() => CustomButton(
                 label: AppStrings.next,
                 textColor: Colors.white,
                 buttonWidth: double.infinity,
                 backgroundColor: AppColors.orange,
-                onPressed: () {
-                  //TODO: UPDATE ROLE TO SELLER
-                  Get.offAllNamed(AppRoutes.mainScreen);
+                isLoading: controller.isLoading.value,
+                onPressed: controller.isLoading.value ? null : () {
+                  controller.submitApplication();
                 },
-              ),
+              )),
             ),
           ],
         ),
@@ -125,8 +122,8 @@ class SellerAverageEarning extends StatelessWidget {
   Widget _buildOption(String range) {
     return GestureDetector(
       onTap: () {
-        selectedRange.value = range;
-        isExpanded.value = false;
+        controller.selectedRange.value = range;
+        controller.isDropdownExpanded.value = false;
       },
       child: Container(
         width: double.infinity,

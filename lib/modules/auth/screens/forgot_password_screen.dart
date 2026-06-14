@@ -3,19 +3,20 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
+import 'package:musaab_adam/core/utils/app_validator.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
-import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_text_field.dart';
 import '../../../core/assets_gen/assets.gen.dart';
-import '../../../core/utils/app_validator.dart';
+import '../controllers/auth_controller.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   ForgotPasswordScreen({super.key});
 
   final TextEditingController emailController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final AuthController _authController = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +35,6 @@ class ForgotPasswordScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   SizedBoxWidget(height: 25),
-                  //===================GRAPHICS=========================//
                   SvgPicture.asset(
                     Assets.icons.grForgotPass,
                     width: 240.w,
@@ -54,7 +54,6 @@ class ForgotPasswordScreen extends StatelessWidget {
                     fontSize: 15.sp,
                   ),
                   SizedBoxWidget(height: 20),
-                  //===================EMAIL=========================//
                   CustomTextField(
                     label: AppStrings.email,
                     hintText: AppStrings.enterEmail,
@@ -67,18 +66,17 @@ class ForgotPasswordScreen extends StatelessWidget {
                     },
                   ),
                   SizedBoxWidget(height: 30),
-                  //===================CONTINUE BUTTON=========================//
-                  CustomButton(
+                  Obx(() => CustomButton(
                     label: AppStrings.continuee,
                     fontWeight: FontWeight.w700,
                     buttonHeight: 40.h,
+                    isLoading: _authController.isLoading.value,
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
-                        Get.toNamed(AppRoutes.checkEmailScreen);
+                        _authController.forgotPassword(emailController.text.trim());
                       }
                     },
-                  ),
-                  //===================BACK TO THE PLATFORM=========================//
+                  )),
                   Align(
                     alignment: Alignment.center,
                     child: TextButton(

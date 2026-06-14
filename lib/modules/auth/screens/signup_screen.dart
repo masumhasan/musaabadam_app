@@ -10,12 +10,15 @@ import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_text_field.dart';
 import '../../../core/assets_gen/assets.gen.dart';
+import '../controllers/auth_controller.dart';
 
 class SignUpScreen extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  final AuthController _authController = Get.find<AuthController>();
 
   SignUpScreen({super.key});
 
@@ -38,7 +41,20 @@ class SignUpScreen extends StatelessWidget {
                   CustomTextField(label: AppStrings.password, hintText: AppStrings.enterPassword, controller: passwordController, isPassword: true, validator: (v) => !isPasswordValid(password: v ?? "") ? "Invalid password" : null),
                   CustomTextField(label: AppStrings.confirmPassword, hintText: AppStrings.enterPassword, controller: confirmPasswordController, isPassword: true, validator: (v) => passwordController.text != v ? "Passwords do not match" : null),
                   SizedBoxWidget(height: 20.h),
-                  CustomButton(label: AppStrings.signUp, fontWeight: FontWeight.w700, buttonHeight: 40.h, onPressed: () => Get.offAndToNamed(AppRoutes.verifyEmailScreen)),
+                  Obx(() => CustomButton(
+                    label: AppStrings.signUp,
+                    fontWeight: FontWeight.w700,
+                    buttonHeight: 40.h,
+                    isLoading: _authController.isLoading.value,
+                    onPressed: () {
+                      if (formKey.currentState!.validate()) {
+                        _authController.register(
+                          emailController.text.trim(),
+                          passwordController.text,
+                        );
+                      }
+                    },
+                  )),
                   SizedBoxWidget(height: 15.h),
                   RichText(
                     text: TextSpan(children: [

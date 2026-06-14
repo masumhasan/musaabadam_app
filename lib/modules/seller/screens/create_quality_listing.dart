@@ -6,20 +6,12 @@ import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/custom_text_field.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/modules/seller/controllers/create_product_controller.dart';
 
 import '../../../core/utils/app_colors.dart';
 
-class CreateQualityListingScreen extends StatelessWidget {
-  CreateQualityListingScreen({super.key});
-
-  final RxInt quantity = 1.obs;
-  final TextEditingController titleController = TextEditingController();
-  final TextEditingController descController = TextEditingController();
-  final RxInt selectedType = 0.obs; // 0: Buy It Now, 1: Auction, 2: Giveaway
-  final RxBool isFlashSale = false.obs;
-  final RxBool acceptOffers = false.obs;
-  final RxBool reserveForLive = false.obs;
-  final RxBool isHazardous = false.obs;
+class CreateQualityListingScreen extends GetView<CreateProductController> {
+  const CreateQualityListingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +37,7 @@ class CreateQualityListingScreen extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children:[
+          children: [
             // Media Section
             CustomText(text: AppStrings.media, fontWeight: FontWeight.w700),
             SizedBoxWidget(height: 10.h),
@@ -57,7 +49,7 @@ class CreateQualityListingScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Column(
-                children:[
+                children: [
                   CustomText(text: AppStrings.optional, fontColor: colorScheme.primary, fontSize: 12),
                   Icon(Icons.image_outlined, size: 30.sp, color: colorScheme.primary),
                   CustomText(text: AppStrings.addPhotos, fontColor: colorScheme.primary, fontWeight: FontWeight.w600),
@@ -71,43 +63,45 @@ class CreateQualityListingScreen extends StatelessWidget {
             CustomText(text: AppStrings.productDetails, fontWeight: FontWeight.w700),
             SizedBoxWidget(height: 10.h),
 
-            // Category Button (using CustomButton for consistency)
-            CustomButton(
-              label: AppStrings.category,
+            // Category + Condition button
+            Obx(() => CustomButton(
+              label: controller.selectedCategory.value != null
+                  ? '${controller.selectedCategory.value!.name} · ${controller.selectedCondition.value}'
+                  : AppStrings.category,
               backgroundColor: colorScheme.primary,
               icon: Icons.arrow_forward_ios,
               prefixIcon: Icons.grid_view_outlined,
               textColor: Colors.white,
               buttonHeight: 50.h,
               buttonRadius: 8.r,
-              onPressed: () {},
-            ),
+              onPressed: () => _showCategoryConditionSheet(context, colorScheme),
+            )),
             SizedBoxWidget(height: 15.h),
 
-            CustomTextField(hintText: AppStrings.title, controller: titleController, label: AppStrings.title,),
+            CustomTextField(hintText: AppStrings.title, controller: controller.titleController, label: AppStrings.title),
             SizedBoxWidget(height: 15.h),
             CustomTextField(
               hintText: AppStrings.description,
-              controller: descController,
+              controller: controller.descController,
               label: AppStrings.description,
             ),
             SizedBoxWidget(height: 20.h),
 
-            // Quality Available
+            // Quantity
             CustomText(text: AppStrings.qualityAvailable, fontWeight: FontWeight.w700),
             SizedBoxWidget(height: 10.h),
             Row(
-              children:[
-                _buildQuantityBtn(Icons.remove, () => quantity.value = (quantity.value > 1) ? quantity.value - 1 : 1),
+              children: [
+                _buildQuantityBtn(Icons.remove, () => controller.quantity.value = (controller.quantity.value > 1) ? controller.quantity.value - 1 : 1),
                 SizedBox(width: 15.w),
-                Obx(() => CustomText(text: '${quantity.value}', fontSize: 18, fontWeight: FontWeight.bold)),
+                Obx(() => CustomText(text: '${controller.quantity.value}', fontSize: 18, fontWeight: FontWeight.bold)),
                 SizedBox(width: 15.w),
-                _buildQuantityBtn(Icons.add, () => quantity.value++),
+                _buildQuantityBtn(Icons.add, () => controller.quantity.value++),
               ],
             ),
             SizedBoxWidget(height: 20.h),
 
-            // Variants Button
+            // Variants (placeholder — navigates to future variants screen)
             CustomButton(
               label: AppStrings.variants,
               backgroundColor: colorScheme.primary,
@@ -117,9 +111,11 @@ class CreateQualityListingScreen extends StatelessWidget {
               buttonRadius: 8.r,
               onPressed: () {},
             ),
-            const SizedBox(height: 10,),
+            const SizedBox(height: 10),
+
+            // Listing Type
             Obx(() => Row(
-              children:[
+              children: [
                 _buildTypeButton(AppStrings.buyItNow, 0, colorScheme),
                 SizedBoxWidget(width: 10.w),
                 _buildTypeButton(AppStrings.auction, 1, colorScheme),
@@ -129,12 +125,50 @@ class CreateQualityListingScreen extends StatelessWidget {
             )),
             SizedBoxWidget(height: 20.h),
 
-            CustomTextField(hintText: AppStrings.price, label: AppStrings.price, controller: TextEditingController(),),
+            // Price field — label and behaviour adapts to listing type
+            Obx(() {
+              if (controller.selectedListingType.value == 2) {
+                // Giveaway — no price
+                return const SizedBox.shrink();
+              }
+              if (controller.selectedListingType.value == 1) {
+                // Auction
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomTextField(
+                      hintText: 'Starting price',
+                      label: 'Starting Price',
+                      controller: controller.startingPriceController,
+                      keyboardType: TextInputType.number,
+                    ),
+                    SizedBoxWidget(height: 15.h),
+                    GestureDetector(
+                      onTap: () => controller.pickAuctionEndDateTime(context),
+                      child: AbsorbPointer(
+                        child: CustomTextField(
+                          hintText: 'Pick auction end date & time',
+                          label: 'Auction Ends At',
+                          controller: controller.auctionEndDateController,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+              // Buy It Now
+              return CustomTextField(
+                hintText: AppStrings.price,
+                label: AppStrings.price,
+                controller: controller.priceController,
+                keyboardType: TextInputType.number,
+              );
+            }),
             SizedBoxWidget(height: 20.h),
 
             // Switches
-            _buildSwitchTile(AppStrings.flashSale, isFlashSale, colorScheme),
-            _buildSwitchTile(AppStrings.acceptOffers, acceptOffers, colorScheme),
+            _buildSwitchTile(AppStrings.flashSale, controller.isFlashSale, colorScheme),
+            _buildSwitchTile(AppStrings.acceptOffers, controller.acceptOffers, colorScheme),
 
             SizedBoxWidget(height: 10.h),
             CustomButton(
@@ -149,7 +183,7 @@ class CreateQualityListingScreen extends StatelessWidget {
             ),
 
             SizedBoxWidget(height: 15.h),
-            _buildSwitchTile(AppStrings.reserveForLive, reserveForLive, colorScheme),
+            _buildSwitchTile(AppStrings.reserveForLive, controller.reserveForLive, colorScheme),
 
             SizedBoxWidget(height: 20.h),
             CustomButton(
@@ -157,7 +191,6 @@ class CreateQualityListingScreen extends StatelessWidget {
               textColor: Colors.white,
               backgroundColor: colorScheme.primary,
               icon: Icons.chevron_right,
-              prefixSvgIcon: null, // Add your SVG path here
               prefixIcon: Icons.local_shipping_outlined,
               buttonHeight: 50.h,
               buttonRadius: 8.r,
@@ -165,44 +198,141 @@ class CreateQualityListingScreen extends StatelessWidget {
             ),
 
             SizedBoxWidget(height: 15.h),
-            _buildSwitchTile(AppStrings.hazardousMaterials, isHazardous, colorScheme),
+            _buildSwitchTile(AppStrings.hazardousMaterials, controller.isHazardous, colorScheme),
 
             SizedBoxWidget(height: 20.h),
             CustomText(text: AppStrings.optionalFields, fontWeight: FontWeight.w700),
             SizedBoxWidget(height: 10.h),
-            CustomTextField(hintText: AppStrings.costPerItem, label: AppStrings.costPerItem, controller: TextEditingController()),
+            CustomTextField(hintText: AppStrings.costPerItem, label: AppStrings.costPerItem, controller: controller.costController),
             SizedBoxWidget(height: 15.h),
-            CustomTextField(hintText: AppStrings.sku, label: AppStrings.sku,controller: TextEditingController(),),
+            CustomTextField(hintText: AppStrings.sku, label: AppStrings.sku, controller: controller.skuController),
 
             SizedBoxWidget(height: 30.h),
-            Row(
-              children:[
+            Obx(() => Row(
+              children: [
                 Expanded(
                   child: CustomButton(
-                    label: AppStrings.saveDraft,
+                    label: controller.isLoading.value ? 'Saving…' : AppStrings.saveDraft,
+                    onPressed: controller.isLoading.value
+                        ? null
+                        : () => controller.submitProduct(publishNow: false),
                   ),
                 ),
                 SizedBoxWidget(width: 15.w),
                 Expanded(
                   child: CustomButton(
-                    label: AppStrings.publish,
+                    label: controller.isLoading.value ? 'Publishing…' : AppStrings.publish,
                     backgroundColor: AppColors.orange,
                     textColor: Colors.white,
+                    onPressed: controller.isLoading.value
+                        ? null
+                        : () => controller.submitProduct(publishNow: true),
                   ),
                 ),
               ],
-            ),
+            )),
+            SizedBoxWidget(height: 20.h),
           ],
         ),
       ),
     );
   }
 
+  void _showCategoryConditionSheet(BuildContext context, ColorScheme colorScheme) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: colorScheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (_, scrollCtrl) => Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(width: 40.w, height: 4.h, decoration: BoxDecoration(color: colorScheme.outline.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(2))),
+              ),
+              SizedBoxWidget(height: 16.h),
+              CustomText(text: 'Select Category', fontWeight: FontWeight.w700, fontSize: 18, fontColor: colorScheme.onSurface),
+              SizedBoxWidget(height: 12.h),
+              Obx(() {
+                if (controller.categoriesLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return Expanded(
+                  child: ListView.builder(
+                    controller: scrollCtrl,
+                    itemCount: controller.categories.length + 2, // +2 for condition section
+                    itemBuilder: (context, index) {
+                      if (index < controller.categories.length) {
+                        final cat = controller.categories[index];
+                        return Obx(() => ListTile(
+                          title: Text(cat.name, style: TextStyle(color: colorScheme.onSurface)),
+                          trailing: controller.selectedCategory.value?.id == cat.id
+                              ? Icon(Icons.check, color: colorScheme.primary)
+                              : null,
+                          onTap: () => controller.selectedCategory.value = cat,
+                        ));
+                      }
+                      if (index == controller.categories.length) {
+                        return Padding(
+                          padding: EdgeInsets.only(top: 16.h, bottom: 8.h),
+                          child: CustomText(text: 'Condition', fontWeight: FontWeight.w700, fontSize: 18, fontColor: colorScheme.onSurface),
+                        );
+                      }
+                      // Condition dropdown row
+                      return Obx(() => Container(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: controller.selectedCondition.value,
+                            items: List.generate(CreateProductController.conditions.length, (i) {
+                              return DropdownMenuItem(
+                                value: CreateProductController.conditions[i],
+                                child: Text(CreateProductController.conditionLabels[i]),
+                              );
+                            }),
+                            onChanged: (v) {
+                              if (v != null) controller.selectedCondition.value = v;
+                            },
+                          ),
+                        ),
+                      ));
+                    },
+                  ),
+                );
+              }),
+              SizedBoxWidget(height: 12.h),
+              CustomButton(
+                label: 'Done',
+                backgroundColor: AppColors.orange,
+                textColor: Colors.white,
+                buttonWidth: double.infinity,
+                onPressed: () => Get.back(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildTypeButton(String label, int index, ColorScheme colorScheme) {
-    final isSelected = selectedType.value == index;
+    final isSelected = controller.selectedListingType.value == index;
     return Expanded(
       child: GestureDetector(
-        onTap: () => selectedType.value = index,
+        onTap: () => controller.selectedListingType.value = index,
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 12.h),
           decoration: BoxDecoration(
@@ -224,11 +354,11 @@ class CreateQualityListingScreen extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 10.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children:[
+        children: [
           CustomText(text: title, fontWeight: FontWeight.w600),
           Obx(() => Switch(
             value: state.value,
-            activeColor: colorScheme.primary,
+            activeThumbColor: colorScheme.primary,
             onChanged: (val) => state.value = val,
           )),
         ],

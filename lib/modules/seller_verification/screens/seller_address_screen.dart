@@ -8,16 +8,10 @@ import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/custom_text_field.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/modules/seller_verification/controllers/seller_verification_controller.dart';
 
-class SellerAddressScreen extends StatelessWidget {
-  SellerAddressScreen({super.key});
-
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
-  final TextEditingController address2Controller = TextEditingController();
-  final TextEditingController cityController = TextEditingController();
-  final TextEditingController stateController = TextEditingController();
-  final TextEditingController zipController = TextEditingController();
+class SellerAddressScreen extends GetView<SellerVerificationController> {
+  const SellerAddressScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -76,21 +70,22 @@ class SellerAddressScreen extends StatelessWidget {
             SizedBoxWidget(height: 20.h),
 
             // Form Fields with Label and Hint
-            CustomTextField(label: AppStrings.fullName, hintText: AppStrings.fullName, controller: nameController),
+            CustomTextField(label: AppStrings.fullName, hintText: AppStrings.fullName, controller: controller.nameController),
             SizedBoxWidget(height: 15.h),
-            CustomTextField(label: AppStrings.address, hintText: AppStrings.address, controller: addressController),
+            CustomTextField(label: AppStrings.address, hintText: AppStrings.address, controller: controller.addressController),
             SizedBoxWidget(height: 15.h),
-            CustomTextField(label: AppStrings.address2, hintText: AppStrings.address2, controller: address2Controller),
+            CustomTextField(label: AppStrings.address2, hintText: AppStrings.address2, controller: controller.address2Controller),
             SizedBoxWidget(height: 15.h),
-            CustomTextField(label: AppStrings.city, hintText: AppStrings.city, controller: cityController),
+            CustomTextField(label: AppStrings.city, hintText: AppStrings.city, controller: controller.cityController),
             SizedBoxWidget(height: 15.h),
-            CustomTextField(label: AppStrings.stateProvince, hintText: AppStrings.stateProvince, controller: stateController),
+            CustomTextField(label: AppStrings.stateProvince, hintText: AppStrings.stateProvince, controller: controller.stateController),
             SizedBoxWidget(height: 15.h),
-            CustomTextField(label: AppStrings.postalCode, hintText: AppStrings.postalCode, controller: zipController),
+            CustomTextField(label: AppStrings.postalCode, hintText: AppStrings.postalCode, controller: controller.zipController),
             SizedBoxWidget(height: 15.h),
 
             // Country Dropdown
-            DropdownButtonFormField<String>(
+            Obx(() => DropdownButtonFormField<String>(
+              initialValue: controller.selectedCountry.value,
               decoration: InputDecoration(
                 labelText: AppStrings.country,
                 labelStyle: TextStyle(color: colorScheme.onSurface),
@@ -106,8 +101,10 @@ class SellerAddressScreen extends StatelessWidget {
               items: ["USA", "UK", "Canada"].map((String value) {
                 return DropdownMenuItem<String>(value: value, child: Text(value));
               }).toList(),
-              onChanged: (_) {},
-            ),
+              onChanged: (v) {
+                if (v != null) controller.selectedCountry.value = v;
+              },
+            )),
 
             SizedBoxWidget(height: 40.h),
 

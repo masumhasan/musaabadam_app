@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/services/role_service.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
+import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
 import 'package:musaab_adam/modules/profile/components/payment_shipping_dialog.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
@@ -18,6 +19,7 @@ class AccountScreen extends StatelessWidget {
   AccountScreen({super.key});
 
   final RoleService roleService = Get.find<RoleService>();
+  final AuthController _authCtrl = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
@@ -34,28 +36,39 @@ class AccountScreen extends StatelessWidget {
               children:[
                 SizedBoxWidget(height: 12),
                 //======================PHOTO SECTION======================//
-                Row(
-                  children:[
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(100),
-                      child: CachedImageWidget(imageUrl: Dummy.user1, height: 45.h, width: 45.w),
-                    ),
-                    SizedBoxWidget(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children:[
-                        CustomText(text: "Michel", fontWeight: FontWeight.w600, fontSize: 20),
-                        CustomButton(
-                          label: AppStrings.viewProfile,
-                          fontSize: 12,
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          buttonHeight: 30,
-                          onPressed: () => Get.toNamed(AppRoutes.profileScreen),
+                Obx(() {
+                  final user = _authCtrl.currentUser.value;
+                  return Row(
+                    children:[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: CachedImageWidget(
+                          imageUrl: user?.avatarUrl ?? '',
+                          height: 45.h,
+                          width: 45.w,
                         ),
-                      ],
-                    )
-                  ],
-                ),
+                      ),
+                      SizedBoxWidget(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children:[
+                          CustomText(
+                            text: user?.displayNameOrUsername ?? '',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 20,
+                          ),
+                          CustomButton(
+                            label: AppStrings.viewProfile,
+                            fontSize: 12,
+                            padding: EdgeInsets.symmetric(horizontal: 8),
+                            buttonHeight: 30,
+                            onPressed: () => Get.toNamed(AppRoutes.profileScreen),
+                          ),
+                        ],
+                      )
+                    ],
+                  );
+                }),
                 SizedBoxWidget(height: 10),
                 //======================SELLER TOOLS======================//
                 if( roleService.getUpdatedRole() == Role.seller )...[
@@ -135,9 +148,7 @@ class AccountScreen extends StatelessWidget {
                   buttonHeight: 40,
                   prefixIcon: Icons.output_rounded,
                   buttonWidth: double.infinity,
-                  onPressed: (){
-                    Get.offAllNamed(AppRoutes.signInScreen);
-                  },
+                  onPressed: _authCtrl.logout,
                 )
               ],
             ),
