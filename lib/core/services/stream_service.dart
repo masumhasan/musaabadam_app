@@ -26,8 +26,54 @@ class StreamService {
       'categoryId': ?categoryId,
       'thumbnailUrl': ?thumbnailUrl,
       'tags': ?tags,
-      'scheduledAt': ?scheduledAt?.toIso8601String(),
+      'scheduledAt': ?scheduledAt?.toUtc().toIso8601String(),
       'chatEnabled': chatEnabled,
+    });
+    return StreamModel.fromJson(response.data['data']['stream'] as Map<String, dynamic>);
+  }
+
+  // ─── Seller: Start an auction stream immediately ───────────────────────────
+
+  Future<JoinStreamResult> createAuctionStream({
+    required String productId,
+    required String title,
+    String? description,
+    String? categoryId,
+    String? thumbnailUrl,
+    List<String>? tags,
+    bool chatEnabled = true,
+  }) async {
+    final response = await _dio.post(ApiConstants.createAuctionStream, data: {
+      'productId': productId,
+      'title': title,
+      'description': ?description,
+      'categoryId': ?categoryId,
+      'thumbnailUrl': ?thumbnailUrl,
+      'tags': ?tags,
+      'chatEnabled': chatEnabled,
+    });
+    return JoinStreamResult.fromJson(response.data['data'] as Map<String, dynamic>);
+  }
+
+  // ─── Seller: Update a scheduled stream ────────────────────────────────────
+
+  Future<StreamModel> updateStream(String streamId, {
+    String? title,
+    String? description,
+    String? categoryId,
+    String? thumbnailUrl,
+    List<String>? tags,
+    DateTime? scheduledAt,
+    bool? chatEnabled,
+  }) async {
+    final response = await _dio.patch(ApiConstants.updateStream(streamId), data: {
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (categoryId != null) 'categoryId': categoryId,
+      if (thumbnailUrl != null) 'thumbnailUrl': thumbnailUrl,
+      if (tags != null) 'tags': tags,
+      if (scheduledAt != null) 'scheduledAt': scheduledAt.toUtc().toIso8601String(),
+      if (chatEnabled != null) 'chatEnabled': chatEnabled,
     });
     return StreamModel.fromJson(response.data['data']['stream'] as Map<String, dynamic>);
   }

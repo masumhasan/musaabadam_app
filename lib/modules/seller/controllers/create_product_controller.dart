@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:musaab_adam/core/services/api_upload_service.dart';
 import 'package:musaab_adam/core/services/category_service.dart';
 import 'package:musaab_adam/core/services/product_service.dart';
 import 'package:musaab_adam/data/models/category/category_model.dart';
@@ -43,6 +46,11 @@ class CreateProductController extends GetxController {
   // ─── Auction date ─────────────────────────────────────────────────────────
   final Rx<DateTime?> auctionEndDateTime = Rx<DateTime?>(null);
 
+  // ─── Images ───────────────────────────────────────────────────────────────
+  static const int maxImages = 8;
+  final RxList<File> pickedImages = <File>[].obs;
+  final RxBool isUploading = false.obs;
+
   // ─── Loading ──────────────────────────────────────────────────────────────
   final RxBool isLoading = false.obs;
 
@@ -72,6 +80,23 @@ class CreateProductController extends GetxController {
     } catch (_) {}
     finally {
       categoriesLoading.value = false;
+    }
+  }
+
+  Future<void> pickImages() async {
+    final remaining = maxImages - pickedImages.length;
+    if (remaining <= 0) return;
+
+    final picker = ImagePicker();
+    final picked = await picker.pickMultiImage(limit: remaining);
+    if (picked.isEmpty) return;
+
+    pickedImages.addAll(picked.map((xf) => File(xf.path)));
+  }
+
+  void removeImage(int index) {
+    if (index >= 0 && index < pickedImages.length) {
+      pickedImages.removeAt(index);
     }
   }
 
@@ -123,6 +148,21 @@ class CreateProductController extends GetxController {
 
     isLoading.value = true;
     try {
+      // Upload images to S3 first
+      final imageUrls = <String>[];
+      if (pickedImages.isNotEmpty) {
+        isUploading.value = true;
+        for (final file in pickedImages) {
+          final url = await ApiUploadService.instance.uploadFile(
+            file: file,
+            folder: 'product',
+            contentType: _mimeType(file.path),
+          );
+          imageUrls.add(url);
+        }
+        isUploading.value = false;
+      }
+
       await ProductService.instance.createProduct(
         title: titleController.text.trim(),
         description: descController.text.trim(),
@@ -145,6 +185,7 @@ class CreateProductController extends GetxController {
         costPerItem: costController.text.trim().isEmpty
             ? null
             : double.tryParse(costController.text.trim()),
+        images: imageUrls,
         publishNow: publishNow,
       );
 
@@ -156,6 +197,7 @@ class CreateProductController extends GetxController {
         duration: const Duration(seconds: 3),
       );
     } on DioException catch (e) {
+      isUploading.value = false;
       Get.snackbar('Error', ProductService.extractError(e), snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading.value = false;
@@ -181,5 +223,15 @@ class CreateProductController extends GetxController {
     auctionEndDateTime.value = DateTime(date.year, date.month, date.day, time.hour, time.minute);
     auctionEndDateController.text =
         '${date.day}/${date.month}/${date.year} ${time.format(context)}';
+  }
+
+  static String _mimeType(String path) {
+    final ext = path.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'png': return 'image/png';
+      case 'webp': return 'image/webp';
+      case 'gif': return 'image/gif';
+      default: return 'image/jpeg';
+    }
   }
 }

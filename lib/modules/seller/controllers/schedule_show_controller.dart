@@ -5,6 +5,7 @@ import 'package:musaab_adam/core/services/category_service.dart';
 import 'package:musaab_adam/core/services/stream_service.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/data/models/category/category_model.dart';
+import 'package:musaab_adam/data/models/stream/stream_model.dart';
 
 class ScheduleShowController extends GetxController {
   // ─── Form fields ─────────────────────────────────────────────────────────
@@ -32,9 +33,26 @@ class ScheduleShowController extends GetxController {
   // ─── Loading ─────────────────────────────────────────────────────────────
   final RxBool isLoading = false.obs;
 
+  // ─── Edit mode ───────────────────────────────────────────────────────────
+  String? _editStreamId;
+  bool get isEditMode => _editStreamId != null;
+
   @override
   void onInit() {
     super.onInit();
+    final arg = Get.arguments;
+    if (arg is StreamModel) {
+      _editStreamId = arg.id;
+      titleController.text = arg.title;
+      if (arg.scheduledAt != null) {
+        final local = arg.scheduledAt!.toLocal();
+        _pickedDate = DateTime(local.year, local.month, local.day);
+        _pickedTime = TimeOfDay(hour: local.hour, minute: local.minute);
+        dateController.text = '${local.day} ${_month(local.month)}, ${local.year}';
+        timeController.text = _formatTimeOfDay(_pickedTime!);
+        scheduledAt.value = local;
+      }
+    }
     loadCategories();
   }
 
@@ -75,9 +93,9 @@ class ScheduleShowController extends GetxController {
       context: context,
       initialTime: _pickedTime ?? TimeOfDay.now(),
     );
-    if (time == null || !context.mounted) return;
+    if (time == null) return;
     _pickedTime = time;
-    timeController.text = time.format(context);
+    timeController.text = _formatTimeOfDay(time);
     _updateScheduledAt();
   }
 
@@ -114,21 +132,37 @@ class ScheduleShowController extends GetxController {
 
     isLoading.value = true;
     try {
-      await StreamService.instance.createStream(
-        title: titleController.text.trim(),
-        categoryId: selectedCategory.value?.id,
-        scheduledAt: scheduledAt.value,
-        tags: tags.isEmpty ? null : tags.toList(),
-        chatEnabled: true,
-      );
-
-      Get.back();
-      Get.snackbar(
-        'Show Scheduled!',
-        'Your live show has been scheduled.',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
-      );
+      if (isEditMode) {
+        await StreamService.instance.updateStream(
+          _editStreamId!,
+          title: titleController.text.trim(),
+          categoryId: selectedCategory.value?.id,
+          scheduledAt: scheduledAt.value,
+          tags: tags.isEmpty ? null : tags.toList(),
+        );
+        Get.back();
+        Get.snackbar(
+          'Show Updated!',
+          'Your scheduled show has been updated.',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 3),
+        );
+      } else {
+        await StreamService.instance.createStream(
+          title: titleController.text.trim(),
+          categoryId: selectedCategory.value?.id,
+          scheduledAt: scheduledAt.value,
+          tags: tags.isEmpty ? null : tags.toList(),
+          chatEnabled: true,
+        );
+        Get.back();
+        Get.snackbar(
+          'Show Scheduled!',
+          'Your live show has been scheduled.',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 3),
+        );
+      }
     } on DioException catch (e) {
       Get.snackbar('Error', StreamService.extractError(e), snackPosition: SnackPosition.BOTTOM);
     } finally {
@@ -139,5 +173,12 @@ class ScheduleShowController extends GetxController {
   static String _month(int m) {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return months[m - 1];
+  }
+
+  static String _formatTimeOfDay(TimeOfDay time) {
+    final h = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final m = time.minute.toString().padLeft(2, '0');
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    return '$h:$m $period';
   }
 }

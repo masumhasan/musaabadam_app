@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -7,6 +6,8 @@ import 'package:musaab_adam/core/services/role_service.dart';
 import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
+import 'package:musaab_adam/data/models/stream/stream_model.dart';
+import 'package:musaab_adam/modules/home/controllers/home_screen_controller.dart';
 import 'package:musaab_adam/modules/main_nav/controllers/main_nav_controller.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/components/livestream_grid_item.dart';
@@ -22,10 +23,12 @@ class HomeScreen extends GetView<MainNavController> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final homeCtrl = Get.find<HomeScreenController>();
+
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: _appBar(theme, context),
-      body: CustomScrollView(
+      body: Obx(() => CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
             child: Column(
@@ -54,9 +57,8 @@ class HomeScreen extends GetView<MainNavController> {
                   ),
                 ),
                 _categoryItems(),
-                //================PROMO CARD IF BUYER================
-                if( roleService.getUpdatedRole() == Role.buyer )
-                _buildPromoCard(theme),
+                if (roleService.getUpdatedRole() == Role.buyer)
+                  _buildPromoCard(theme, homeCtrl),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 15.w),
                   child: CustomText(
@@ -68,10 +70,10 @@ class HomeScreen extends GetView<MainNavController> {
               ],
             ),
           ),
-          _liveStreamSliverGrid(),
+          _liveStreamSliverGrid(homeCtrl.liveStreams),
           SliverToBoxAdapter(child: SizedBox(height: 20.h)),
         ],
-      ),
+      )),
     );
   }
 
@@ -107,7 +109,7 @@ class HomeScreen extends GetView<MainNavController> {
     actions: actionButtons(context),
   );
 
-  Widget _buildPromoCard(ThemeData theme) => Container(
+  Widget _buildPromoCard(ThemeData theme, HomeScreenController homeCtrl) => Container(
     height: 180.h,
     margin: EdgeInsets.all(16.w),
     decoration: BoxDecoration(
@@ -140,7 +142,7 @@ class HomeScreen extends GetView<MainNavController> {
           Row(
             children: [
               Icon(Icons.live_tv, color: Colors.white),
-              CustomText(text: '70 Live Shows', fontColor: Colors.white),
+              CustomText(text: homeCtrl.liveShowCountText, fontColor: Colors.white),
             ],
           ),
         ],
@@ -153,24 +155,19 @@ class HomeScreen extends GetView<MainNavController> {
     child: Row(
       children: [
         SizedBoxWidget(width: 15.w),
-
-        // Added items
         CategoryItem(
           image: "",
           assetImage: Assets.images.forYou.keyName,
           itemName: AppStrings.forYou,
         ),
-
         CategoryItem(
           image: "",
           assetImage: Assets.images.followedHost.keyName,
           itemName: AppStrings.followedHosts,
         ),
-
-        // Existing generated items
         ...List.generate(
           8,
-              (i) => CategoryItem(
+          (i) => CategoryItem(
             image: Dummy.product1,
             itemName: "Watch",
           ),
@@ -179,35 +176,69 @@ class HomeScreen extends GetView<MainNavController> {
     ),
   );
 
-  Widget _liveStreamSliverGrid() => SliverPadding(
-    padding: EdgeInsets.symmetric(horizontal: 15.w),
-    sliver: SliverGrid(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10.w,
-        mainAxisSpacing: 10.h,
-        mainAxisExtent: 185.h,
-      ),
-      delegate: SliverChildBuilderDelegate(
-        (context, index) => LivestreamGridItem(
-          userName: "Suja Rae",
-          userAvatarUrl: Dummy.user2,
-          thumbnailUrl: Dummy.live1,
-          streamTitle: "Live Bag Haul",
-          onTap: () => Get.toNamed(AppRoutes.livestreamScreen),
-          viewerCount: '2.5 k',
-          category: "Women's category",
+  Widget _liveStreamSliverGrid(List<StreamModel> streams) {
+    if (streams.isEmpty) {
+      return SliverPadding(
+        padding: EdgeInsets.symmetric(horizontal: 15.w),
+        sliver: SliverGrid(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10.w,
+            mainAxisSpacing: 10.h,
+            mainAxisExtent: 185.h,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => LivestreamGridItem(
+              userName: "Suja Rae",
+              userAvatarUrl: Dummy.user2,
+              thumbnailUrl: Dummy.live1,
+              streamTitle: "Live Bag Haul",
+              onTap: () => Get.toNamed(AppRoutes.livestreamScreen),
+              viewerCount: '2.5 k',
+              category: "Women's category",
+            ),
+            childCount: 8,
+          ),
         ),
-        childCount: 8,
-      ),
-    ),
-  );
+      );
+    }
 
-  //ACTION BUTTONS
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: 15.w),
+      sliver: SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10.w,
+          mainAxisSpacing: 10.h,
+          mainAxisExtent: 185.h,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final stream = streams[index];
+            return LivestreamGridItem(
+              userName: stream.sellerName ?? '',
+              userAvatarUrl: stream.sellerAvatarUrl ?? Dummy.user2,
+              thumbnailUrl: stream.thumbnailUrl ?? Dummy.live1,
+              streamTitle: stream.title,
+              onTap: () => Get.toNamed(AppRoutes.livestreamScreen, arguments: stream.id),
+              viewerCount: _formatViewers(stream.totalViewers),
+              category: stream.categoryId ?? '',
+            );
+          },
+          childCount: streams.length,
+        ),
+      ),
+    );
+  }
+
+  String _formatViewers(int count) {
+    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)} k';
+    return count.toString();
+  }
+
   List<IconButton> actionButtons(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Helper to keep code clean and DRY
     IconButton buildActionIcon(String assetPath, VoidCallback onPressed) {
       return IconButton(
         onPressed: onPressed,
@@ -221,7 +252,7 @@ class HomeScreen extends GetView<MainNavController> {
       );
     }
 
-    return[
+    return [
       buildActionIcon(Assets.icons.message, () => Get.toNamed(AppRoutes.inboxScreen)),
       buildActionIcon(Assets.icons.notification, () => Get.toNamed(AppRoutes.notificationScreen)),
       buildActionIcon(Assets.icons.gift, () => Get.toNamed(AppRoutes.inviteScreen)),

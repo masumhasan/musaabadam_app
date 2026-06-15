@@ -1,11 +1,14 @@
 class StreamModel {
   final String id;
   final String sellerId;
+  final String? sellerName;
+  final String? sellerAvatarUrl;
   final String title;
   final String? description;
   final String? categoryId;
   final String? thumbnailUrl;
   final List<String> tags;
+  final List<String> pinnedProducts;
   final String status;
   final String callId;
   final String callType;
@@ -20,11 +23,14 @@ class StreamModel {
   const StreamModel({
     required this.id,
     required this.sellerId,
+    this.sellerName,
+    this.sellerAvatarUrl,
     required this.title,
     this.description,
     this.categoryId,
     this.thumbnailUrl,
     required this.tags,
+    required this.pinnedProducts,
     required this.status,
     required this.callId,
     required this.callType,
@@ -42,26 +48,28 @@ class StreamModel {
   bool get isEnded => status == 'ended';
 
   factory StreamModel.fromJson(Map<String, dynamic> json) {
+    final sellerRaw = json['sellerId'];
+    final sellerMap = sellerRaw is Map ? sellerRaw : null;
     return StreamModel(
       id: json['id'] as String? ?? json['_id'] as String,
-      sellerId: _extractId(json['sellerId']),
+      sellerId: _extractId(sellerRaw),
+      sellerName: sellerMap?['displayName'] as String? ?? sellerMap?['username'] as String?,
+      sellerAvatarUrl: sellerMap?['avatarUrl'] as String?,
       title: json['title'] as String,
       description: json['description'] as String?,
       categoryId: _extractIdOrNull(json['categoryId']),
       thumbnailUrl: json['thumbnailUrl'] as String?,
       tags: List<String>.from(json['tags'] ?? []),
+      pinnedProducts: (json['pinnedProducts'] as List? ?? [])
+          .map((e) => e is String ? e : (e as Map)['_id'] as String? ?? '')
+          .where((e) => e.isNotEmpty)
+          .toList(),
       status: json['status'] as String,
       callId: json['callId'] as String,
       callType: json['callType'] as String? ?? 'livestream',
-      scheduledAt: json['scheduledAt'] != null
-          ? DateTime.parse(json['scheduledAt'] as String)
-          : null,
-      startedAt: json['startedAt'] != null
-          ? DateTime.parse(json['startedAt'] as String)
-          : null,
-      endedAt: json['endedAt'] != null
-          ? DateTime.parse(json['endedAt'] as String)
-          : null,
+      scheduledAt: json['scheduledAt'] != null ? DateTime.parse(json['scheduledAt'] as String) : null,
+      startedAt: json['startedAt'] != null ? DateTime.parse(json['startedAt'] as String) : null,
+      endedAt: json['endedAt'] != null ? DateTime.parse(json['endedAt'] as String) : null,
       totalViewers: json['totalViewers'] as int? ?? 0,
       peakViewerCount: json['peakViewerCount'] as int? ?? 0,
       chatEnabled: json['chatEnabled'] as bool? ?? true,
@@ -77,6 +85,7 @@ class StreamModel {
         'categoryId': categoryId,
         'thumbnailUrl': thumbnailUrl,
         'tags': tags,
+        'pinnedProducts': pinnedProducts,
         'status': status,
         'callId': callId,
         'callType': callType,
@@ -91,7 +100,7 @@ class StreamModel {
 
   static String _extractId(dynamic v) {
     if (v is String) return v;
-    if (v is Map) return v['_id'] as String? ?? v['id'] as String;
+    if (v is Map) return v['_id'] as String? ?? v['id'] as String? ?? '';
     return '';
   }
 

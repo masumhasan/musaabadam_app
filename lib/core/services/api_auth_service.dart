@@ -78,6 +78,33 @@ class ApiAuthService {
     return UserModel.fromJson(response.data['data'] as Map<String, dynamic>);
   }
 
+  // ─── Change Email (authenticated) ─────────────────────────────────────────
+
+  Future<void> initiateEmailChange({required String newEmail}) async {
+    await _dio.post(ApiConstants.changeEmailInitiate, data: {'newEmail': newEmail});
+  }
+
+  Future<UserModel> verifyEmailChange({required String otp}) async {
+    final response = await _dio.post(ApiConstants.changeEmailVerify, data: {'otp': otp});
+    return UserModel.fromJson(response.data['data']['user'] as Map<String, dynamic>);
+  }
+
+  // ─── Change Password (authenticated) ──────────────────────────────────────
+
+  Future<void> initiatePasswordChange({required String currentPassword, required String newPassword}) async {
+    await _dio.post(ApiConstants.changePasswordInitiate, data: {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+    });
+  }
+
+  Future<void> verifyPasswordChange({required String otp, required String newPassword}) async {
+    await _dio.post(ApiConstants.changePasswordVerify, data: {
+      'otp': otp,
+      'newPassword': newPassword,
+    });
+  }
+
   Future<String> verifyResetOtp({required String email, required String otp}) async {
     final response = await _dio.post(ApiConstants.verifyResetOtp, data: {
       'email': email,

@@ -22,12 +22,12 @@ class ScheduleLiveShowScreen extends GetView<ScheduleShowController> {
       appBar: AppBar(
         forceMaterialTransparency: true,
         leading: BackButton(color: colorScheme.onSurface),
-        title: CustomText(
-          text: AppStrings.scheduleALiveShow,
+        title: Obx(() => CustomText(
+          text: controller.isEditMode ? 'Edit Show' : AppStrings.scheduleALiveShow,
           fontSize: 18,
           fontWeight: FontWeight.w700,
           fontColor: colorScheme.onSurface,
-        ),
+        )),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -180,7 +180,9 @@ class ScheduleLiveShowScreen extends GetView<ScheduleShowController> {
 
             // Submit button
             Obx(() => CustomButton(
-              label: controller.isLoading.value ? 'Scheduling…' : 'Schedule Show',
+              label: controller.isLoading.value
+                  ? (controller.isEditMode ? 'Updating…' : 'Scheduling…')
+                  : (controller.isEditMode ? 'Update Show' : 'Schedule Show'),
               buttonWidth: double.infinity,
               backgroundColor: AppColors.orange,
               textColor: Colors.white,

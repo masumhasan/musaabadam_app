@@ -92,6 +92,7 @@ class AppRoutes {
   static final shippingScreen = "/shipping-screen";
   static final permissionsScreen = "/permissions-screen";
   static final rehearsalScreen = "/rehearsal-screen";
+  static final startAuctionScreen = "/start-auction-screen";
   //===================SELLER VERIFICATION====================
   static final sellerFaqScreen = "/seller-faq-screen";
   static final readyToEarnScreen = "/ready-to-earn-screen";

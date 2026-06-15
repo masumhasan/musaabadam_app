@@ -14,6 +14,8 @@ import 'package:musaab_adam/modules/livestream/screens/story_screen.dart';
 import 'package:musaab_adam/modules/livestream/screens/tip_amount_screen.dart';
 import 'package:musaab_adam/modules/livestream/screens/tip_info_screen.dart';
 import 'package:musaab_adam/modules/main_nav/bindings/main_nav_binding.dart';
+import 'package:musaab_adam/modules/profile/bindings/change_credential_binding.dart';
+import 'package:musaab_adam/modules/profile/bindings/profile_binding.dart';
 import 'package:musaab_adam/modules/profile/screens/change_credentials_screen.dart';
 import 'package:musaab_adam/modules/profile/screens/preferences_screen.dart';
 import 'package:musaab_adam/modules/profile/bindings/legal_content_binding.dart';
@@ -26,7 +28,10 @@ import 'package:musaab_adam/modules/seller/screens/invite_seller_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/offers_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/permissions_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/promote_tools_screen.dart';
+import 'package:musaab_adam/modules/seller/bindings/rehearsal_binding.dart';
+import 'package:musaab_adam/modules/seller/bindings/start_auction_binding.dart';
 import 'package:musaab_adam/modules/seller/screens/rehearsal_screen.dart';
+import 'package:musaab_adam/modules/seller/screens/start_auction_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/schedule_live_show.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_inventory_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_order_screen.dart';
@@ -59,6 +64,8 @@ import '../modules/auth/screens/signup_screen.dart';
 import '../modules/profile/screens/account_health_screen.dart';
 import '../modules/profile/screens/my_rewards_screen.dart';
 import '../modules/profile/screens/update_profile_screen.dart';
+import '../modules/profile/bindings/addresses_binding.dart';
+import '../modules/profile/bindings/address_form_binding.dart';
 import '../modules/profile/screens/new_address_screen.dart';
 import '../modules/home/screens/add_payment_method_screen.dart';
 import '../modules/profile/screens/addresses_screen.dart';
@@ -78,6 +85,7 @@ import '../modules/home/screens/inbox_screen.dart';
 import '../modules/home/screens/invite_screen.dart';
 import '../modules/home/screens/message_request_screen.dart';
 import '../modules/home/screens/notification_screen.dart';
+import '../modules/livestream/bindings/livestream_binding.dart';
 import '../modules/livestream/screens/livestream_screen.dart';
 import '../modules/main_nav/screens/main_nav_screen.dart';
 import '../modules/home/screens/notification_settings_screen.dart';
@@ -128,7 +136,7 @@ class AppPages {
     //===================FEATURES====================
     GetPage(name: AppRoutes.searchScreen, page: () => SearchScreen()),
     GetPage(name: AppRoutes.inviteScreen, page: () => InviteScreen()),
-    GetPage(name: AppRoutes.livestreamScreen, page: () => LiveStreamScreen()),
+    GetPage(name: AppRoutes.livestreamScreen, page: () => LiveStreamScreen(), binding: LivestreamBinding()),
     GetPage(name: AppRoutes.boostScreen, page: () => BoostScreen()),
     GetPage(name: AppRoutes.boostInfoScreen, page: () => BoostInfoScreen()),
     GetPage(name: AppRoutes.clipEditScreen, page: () => EditClipScreen()),
@@ -143,7 +151,7 @@ class AppPages {
     GetPage(name: AppRoutes.myRewardsScreen, page: () => MyRewardsScreen()),
 
     //===================PROFILE====================
-    GetPage(name: AppRoutes.profileScreen, page: () => ProfileScreen()),
+    GetPage(name: AppRoutes.profileScreen, page: () => ProfileScreen(), binding: ProfileBinding()),
     GetPage(
       name: AppRoutes.otherUserProfileScreen,
       page: () => OtherUserProfileScreen(userId: Get.arguments as String),
@@ -155,11 +163,11 @@ class AppPages {
     GetPage(name: AppRoutes.accountInformationUpdateScreen, page: () => AccountInformationUpdateScreen()),
     GetPage(name: AppRoutes.salesTaxExemptionScreen, page: () => SalesTaxExemptionScreen()),
     GetPage(name: AppRoutes.userReports, page: () => UserReportsScreen()),
-    GetPage(name: AppRoutes.changeCredential, page: () => ChangeCredentialScreen()),
+    GetPage(name: AppRoutes.changeCredential, page: () => const ChangeCredentialScreen(), binding: ChangeCredentialBinding()),
 
     //===================ADDRESS====================
-    GetPage(name: AppRoutes.newAddressScreen, page: () => NewAddressScreen()),
-    GetPage(name: AppRoutes.addressesScreen, page: () => AddressesScreen()),
+    GetPage(name: AppRoutes.newAddressScreen, page: () => const NewAddressScreen(), binding: AddressFormBinding()),
+    GetPage(name: AppRoutes.addressesScreen, page: () => const AddressesScreen(), binding: AddressesBinding()),
 
     //===================SUPPORT====================
     GetPage(name: AppRoutes.privacyPolicy, page: () => const PrivacyPolicyScreen(), binding: LegalContentBinding()),
@@ -184,7 +192,8 @@ class AppPages {
     GetPage(name: AppRoutes.createShippingProfileScreen, page: () => CreateShippingProfileScreen()),
     GetPage(name: AppRoutes.shippingScreen, page: () => ShippingScreen()),
     GetPage(name: AppRoutes.permissionsScreen, page: () => PermissionsScreen()),
-    GetPage(name: AppRoutes.rehearsalScreen, page: () => RehearsalScreen()),
+    GetPage(name: AppRoutes.rehearsalScreen, page: () => const RehearsalScreen(), binding: RehearsalBinding()),
+    GetPage(name: AppRoutes.startAuctionScreen, page: () => const StartAuctionScreen(), binding: StartAuctionBinding()),
     //===================SELLER VERIFICATION====================
     GetPage(name: AppRoutes.sellerFaqScreen, page: () => SellerFaqScreen()),
     GetPage(name: AppRoutes.readyToEarnScreen, page: () => ReadyToEarnScreen()),

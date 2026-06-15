@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/services/product_service.dart';
 import 'package:musaab_adam/data/models/product/product_model.dart';
+import 'package:musaab_adam/routes/app_pages.dart';
 
 class SellerInventoryController extends GetxController {
   final TextEditingController searchController = TextEditingController();
@@ -71,5 +72,9 @@ class SellerInventoryController extends GetxController {
     } on DioException catch (e) {
       Get.snackbar('Error', ProductService.extractError(e), snackPosition: SnackPosition.BOTTOM);
     }
+  }
+
+  void pinProductForAuction(ProductModel product) {
+    Get.toNamed(AppRoutes.startAuctionScreen, arguments: product);
   }
 }

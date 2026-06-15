@@ -41,21 +41,81 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
             // Media Section
             CustomText(text: AppStrings.media, fontWeight: FontWeight.w700),
             SizedBoxWidget(height: 10.h),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 30.h),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Column(
-                children: [
-                  CustomText(text: AppStrings.optional, fontColor: colorScheme.primary, fontSize: 12),
-                  Icon(Icons.image_outlined, size: 30.sp, color: colorScheme.primary),
-                  CustomText(text: AppStrings.addPhotos, fontColor: colorScheme.primary, fontWeight: FontWeight.w600),
-                ],
-              ),
-            ),
+            Obx(() {
+              final images = controller.pickedImages;
+              if (images.isEmpty) {
+                return GestureDetector(
+                  onTap: controller.pickImages,
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(vertical: 30.h),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Column(
+                      children: [
+                        CustomText(text: AppStrings.optional, fontColor: colorScheme.primary, fontSize: 12),
+                        Icon(Icons.image_outlined, size: 30.sp, color: colorScheme.primary),
+                        CustomText(text: AppStrings.addPhotos, fontColor: colorScheme.primary, fontWeight: FontWeight.w600),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              return SizedBox(
+                height: 90.h,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    ...images.asMap().entries.map((entry) => Padding(
+                      padding: EdgeInsets.only(right: 8.w),
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10.r),
+                            child: Image.file(
+                              entry.value,
+                              width: 90.w,
+                              height: 90.h,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          Positioned(
+                            top: 2,
+                            right: 2,
+                            child: GestureDetector(
+                              onTap: () => controller.removeImage(entry.key),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius: BorderRadius.circular(20.r),
+                                ),
+                                child: Icon(Icons.close, color: Colors.white, size: 16.sp),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+                    if (images.length < CreateProductController.maxImages)
+                      GestureDetector(
+                        onTap: controller.pickImages,
+                        child: Container(
+                          width: 90.w,
+                          height: 90.h,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(10.r),
+                            border: Border.all(color: colorScheme.primary.withValues(alpha: 0.4)),
+                          ),
+                          child: Icon(Icons.add_photo_alternate_outlined, color: colorScheme.primary, size: 28.sp),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }),
             CustomText(text: AppStrings.photosLimit, fontSize: 12, fontColor: colorScheme.outline),
             SizedBoxWidget(height: 20.h),
 
@@ -208,29 +268,31 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
             CustomTextField(hintText: AppStrings.sku, label: AppStrings.sku, controller: controller.skuController),
 
             SizedBoxWidget(height: 30.h),
-            Obx(() => Row(
-              children: [
-                Expanded(
-                  child: CustomButton(
-                    label: controller.isLoading.value ? 'Saving…' : AppStrings.saveDraft,
-                    onPressed: controller.isLoading.value
-                        ? null
-                        : () => controller.submitProduct(publishNow: false),
+            Obx(() {
+              final busy = controller.isLoading.value;
+              final uploading = controller.isUploading.value;
+              final draftLabel = uploading ? 'Uploading…' : busy ? 'Saving…' : AppStrings.saveDraft;
+              final publishLabel = uploading ? 'Uploading…' : busy ? 'Publishing…' : AppStrings.publish;
+              return Row(
+                children: [
+                  Expanded(
+                    child: CustomButton(
+                      label: draftLabel,
+                      onPressed: busy ? null : () => controller.submitProduct(publishNow: false),
+                    ),
                   ),
-                ),
-                SizedBoxWidget(width: 15.w),
-                Expanded(
-                  child: CustomButton(
-                    label: controller.isLoading.value ? 'Publishing…' : AppStrings.publish,
-                    backgroundColor: AppColors.orange,
-                    textColor: Colors.white,
-                    onPressed: controller.isLoading.value
-                        ? null
-                        : () => controller.submitProduct(publishNow: true),
+                  SizedBoxWidget(width: 15.w),
+                  Expanded(
+                    child: CustomButton(
+                      label: publishLabel,
+                      backgroundColor: AppColors.orange,
+                      textColor: Colors.white,
+                      onPressed: busy ? null : () => controller.submitProduct(publishNow: true),
+                    ),
                   ),
-                ),
-              ],
-            )),
+                ],
+              );
+            }),
             SizedBoxWidget(height: 20.h),
           ],
         ),

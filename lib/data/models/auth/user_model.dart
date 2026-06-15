@@ -1,3 +1,5 @@
+import '../address/address_model.dart';
+
 class UserModel {
   final String id;
   final String email;
@@ -22,6 +24,7 @@ class UserModel {
   final bool isSuspended;
   final DateTime createdAt;
   final DateTime? lastLoginAt;
+  final List<AddressModel> addresses;
 
   const UserModel({
     required this.id,
@@ -47,6 +50,7 @@ class UserModel {
     required this.isSuspended,
     required this.createdAt,
     this.lastLoginAt,
+    this.addresses = const [],
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -76,6 +80,10 @@ class UserModel {
       lastLoginAt: json['lastLoginAt'] != null
           ? DateTime.parse(json['lastLoginAt'] as String)
           : null,
+      addresses: (json['addresses'] as List<dynamic>?)
+              ?.map((a) => AddressModel.fromJson(a as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
@@ -103,6 +111,7 @@ class UserModel {
         'isSuspended': isSuspended,
         'createdAt': createdAt.toIso8601String(),
         'lastLoginAt': lastLoginAt?.toIso8601String(),
+        'addresses': addresses.map((a) => a.toJson()).toList(),
       };
 
   bool get isSeller => role == 'seller';

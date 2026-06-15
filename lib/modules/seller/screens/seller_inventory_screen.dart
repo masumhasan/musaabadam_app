@@ -177,19 +177,26 @@ class _ProductTile extends StatelessWidget {
             ),
           ),
 
-          // Action button
+          // Action button(s)
           if (product.isDraft)
             IconButton(
               icon: Icon(Icons.publish_outlined, color: colorScheme.primary),
               onPressed: () => ctrl.publishProduct(product.id),
               tooltip: 'Publish',
             )
-          else if (product.isActive)
+          else if (product.isActive) ...[
+            if (product.isAuction)
+              IconButton(
+                icon: Icon(Icons.gavel, color: AppColors.orange),
+                onPressed: () => ctrl.pinProductForAuction(product),
+                tooltip: 'Start Auction',
+              ),
             IconButton(
-              icon: Icon(Icons.pause_circle_outline, color: AppColors.orange),
+              icon: Icon(Icons.pause_circle_outline, color: colorScheme.outline),
               onPressed: () => ctrl.deactivateProduct(product.id),
               tooltip: 'Deactivate',
             ),
+          ],
         ],
       ),
     );

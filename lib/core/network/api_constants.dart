@@ -11,6 +11,11 @@ class ApiConstants {
   static const bool _isProduction = bool.fromEnvironment('dart.vm.product');
   static const String baseUrl = _isProduction ? _prodBaseUrl : _devBaseUrl;
 
+  // Socket.io server (same host, no /api/v1 path prefix)
+  static const String _devSocketUrl = 'http://10.0.2.2:3000';
+  static const String _prodSocketUrl = 'https://api.bidsrush.com';
+  static const String socketUrl = _isProduction ? _prodSocketUrl : _devSocketUrl;
+
   static const Duration connectTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 30);
 
@@ -52,6 +57,12 @@ class ApiConstants {
   // Seller application
   static const String sellerApplication = '/users/seller-application';
 
+  // Change email / password (authenticated)
+  static const String changeEmailInitiate = '/auth/change-email/initiate';
+  static const String changeEmailVerify = '/auth/change-email/verify';
+  static const String changePasswordInitiate = '/auth/change-password/initiate';
+  static const String changePasswordVerify = '/auth/change-password/verify';
+
   // Legal content (public)
   static const String legalPrivacyPolicy = '/settings/privacy-policy';
   static const String legalTerms = '/settings/terms';
@@ -62,8 +73,32 @@ class ApiConstants {
   static String joinStream(String streamId) => '/streams/$streamId/join';
   static String startStream(String streamId) => '/streams/$streamId/start';
   static String endStream(String streamId) => '/streams/$streamId/end';
+  static String updateStream(String streamId) => '/streams/$streamId';
   static String cancelStream(String streamId) => '/streams/$streamId/cancel';
   static const String myStreams = '/streams/me/streams';
+
+  // Uploads
+  static const String presignedUploadUrl = '/uploads/presigned-url';
+
+  // Orders
+  static const String orders = '/orders';
+  static const String myOrders = '/orders/my';
+  static const String sellerOrders = '/orders/seller';
+  static String orderDetail(String orderId) => '/orders/$orderId';
+  static String cancelOrder(String orderId) => '/orders/$orderId/cancel';
+  static String updateOrderStatus(String orderId) => '/orders/$orderId/status';
+
+  // Analytics
+  static const String sellerAnalyticsOverview = '/analytics/seller/overview';
+  static const String sellerAnalyticsRevenue = '/analytics/seller/revenue';
+  static const String adminAnalyticsOverview = '/analytics/admin/overview';
+  static const String adminAnalyticsRevenue = '/analytics/admin/revenue';
+
+  // Bidding
+  static String placeBid(String productId) => '/products/$productId/bid';
+
+  // Auction streams
+  static const String createAuctionStream = '/streams/auction';
 
   // Storage keys
   static const String accessTokenKey = 'access_token';

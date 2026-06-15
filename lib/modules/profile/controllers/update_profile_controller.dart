@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/services/api_auth_service.dart';
+import 'package:musaab_adam/core/services/api_upload_service.dart';
 import 'package:musaab_adam/core/services/token_storage_service.dart';
 import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
 
@@ -44,6 +45,16 @@ class UpdateProfileController extends GetxController {
     if (isLoading.value) return;
     isLoading.value = true;
     try {
+      String? uploadedAvatarUrl;
+
+      if (avatarFile.value != null) {
+        uploadedAvatarUrl = await ApiUploadService.instance.uploadFile(
+          file: avatarFile.value!,
+          folder: 'profile',
+          contentType: _mimeType(avatarFile.value!.path),
+        );
+      }
+
       final user = await ApiAuthService.instance.updateProfile(
         displayName: displayNameController.text.trim().isNotEmpty
             ? displayNameController.text.trim()
@@ -54,6 +65,7 @@ class UpdateProfileController extends GetxController {
         location: locationController.text.trim().isNotEmpty
             ? locationController.text.trim()
             : null,
+        avatarUrl: uploadedAvatarUrl,
       );
       await TokenStorageService.instance.saveUser(user);
       Get.find<AuthController>().currentUser.value = user;
@@ -71,6 +83,16 @@ class UpdateProfileController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  static String _mimeType(String path) {
+    final ext = path.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'png': return 'image/png';
+      case 'webp': return 'image/webp';
+      case 'gif': return 'image/gif';
+      default: return 'image/jpeg';
     }
   }
 }

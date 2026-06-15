@@ -48,13 +48,13 @@ class ShowsScreen extends GetView<ShowsController> {
         child: Column(
           children: [
             // Tabs
-            Obx(() => Row(
+            Row(
               spacing: 20.w,
               children: [
                 _buildTab(AppStrings.shows, 0, colorScheme),
                 _buildTab(AppStrings.pastShows, 1, colorScheme),
               ],
-            )),
+            ),
 
             // Content
             Expanded(
@@ -164,6 +164,17 @@ class _ShowTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    if (isScheduled)
+                      GestureDetector(
+                        onTap: () => Get.toNamed(
+                          AppRoutes.scheduleLiveShowScreen,
+                          arguments: show,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 8.w),
+                          child: Icon(Icons.edit_outlined, size: 18.sp, color: colorScheme.outline),
+                        ),
+                      ),
                   ],
                 ),
                 SizedBoxWidget(height: 4.h),
@@ -211,10 +222,11 @@ class _ShowTile extends StatelessWidget {
       );
 
   String _formatDateTime(DateTime dt) {
+    final local = dt.toLocal();
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final h = dt.hour > 12 ? dt.hour - 12 : dt.hour == 0 ? 12 : dt.hour;
-    final m = dt.minute.toString().padLeft(2, '0');
-    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
-    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}  $h:$m $ampm';
+    final h = local.hour > 12 ? local.hour - 12 : local.hour == 0 ? 12 : local.hour;
+    final m = local.minute.toString().padLeft(2, '0');
+    final ampm = local.hour >= 12 ? 'PM' : 'AM';
+    return '${months[local.month - 1]} ${local.day}, ${local.year}  $h:$m $ampm';
   }
 }
