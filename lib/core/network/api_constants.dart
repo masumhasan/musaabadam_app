@@ -77,6 +77,10 @@ class ApiConstants {
   static String cancelStream(String streamId) => '/streams/$streamId/cancel';
   static const String myStreams = '/streams/me/streams';
 
+  // Replays (past shows)
+  static const String replays = '/streams/replays';
+  static String streamReplay(String streamId) => '/streams/$streamId/replay';
+
   // Uploads
   static const String presignedUploadUrl = '/uploads/presigned-url';
 

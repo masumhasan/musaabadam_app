@@ -89,6 +89,33 @@ class AuthController extends GetxController {
     }
   }
 
+  // ─── Verify Email OTP ───────────────────────────────────────────────────────
+
+  Future<void> verifyEmailOtp(String otp) async {
+    final email = pendingEmail.value;
+    if (email.isEmpty) {
+      Get.snackbar('Error', 'Session lost. Please sign up again.', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    if (isLoading.value) return;
+    isLoading.value = true;
+
+    try {
+      final result = await ApiAuthService.instance.verifyEmailOtp(email: email, otp: otp);
+      await TokenStorageService.instance.saveTokens(
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      );
+      await TokenStorageService.instance.saveUser(result.user);
+      _applyUser(result.user);
+      Get.offAndToNamed(AppRoutes.accountVerifiedScreen);
+    } on DioException catch (e) {
+      Get.snackbar('Verification failed', ApiAuthService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // ─── Resend Verification ────────────────────────────────────────────────────
 
   Future<void> resendVerification() async {
@@ -98,7 +125,7 @@ class AuthController extends GetxController {
 
     try {
       await ApiAuthService.instance.resendVerification(email);
-      Get.snackbar('Email sent', 'Check your inbox for the verification link.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Code sent', 'Check your inbox for the 6-digit code.', snackPosition: SnackPosition.BOTTOM);
     } on DioException catch (e) {
       Get.snackbar('Error', ApiAuthService.extractError(e), snackPosition: SnackPosition.BOTTOM);
     } finally {

@@ -19,6 +19,10 @@ class StreamModel {
   final int peakViewerCount;
   final bool chatEnabled;
   final DateTime createdAt;
+  final bool isRecorded;
+  final String? recordingUrl;
+  final String recordingStatus; // none | processing | ready | failed
+  final int? recordingDurationSeconds;
 
   const StreamModel({
     required this.id,
@@ -41,11 +45,18 @@ class StreamModel {
     required this.peakViewerCount,
     required this.chatEnabled,
     required this.createdAt,
+    this.isRecorded = false,
+    this.recordingUrl,
+    this.recordingStatus = 'none',
+    this.recordingDurationSeconds,
   });
 
   bool get isLive => status == 'live';
   bool get isScheduled => status == 'scheduled';
   bool get isEnded => status == 'ended';
+
+  /// A past show that has a stored replay ready to watch.
+  bool get hasReplay => recordingStatus == 'ready' && (recordingUrl?.isNotEmpty ?? false);
 
   factory StreamModel.fromJson(Map<String, dynamic> json) {
     final sellerRaw = json['sellerId'];
@@ -74,6 +85,10 @@ class StreamModel {
       peakViewerCount: json['peakViewerCount'] as int? ?? 0,
       chatEnabled: json['chatEnabled'] as bool? ?? true,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      isRecorded: json['isRecorded'] as bool? ?? false,
+      recordingUrl: json['recordingUrl'] as String?,
+      recordingStatus: json['recordingStatus'] as String? ?? 'none',
+      recordingDurationSeconds: json['recordingDurationSeconds'] as int?,
     );
   }
 
@@ -96,6 +111,10 @@ class StreamModel {
         'peakViewerCount': peakViewerCount,
         'chatEnabled': chatEnabled,
         'createdAt': createdAt.toIso8601String(),
+        'isRecorded': isRecorded,
+        'recordingUrl': recordingUrl,
+        'recordingStatus': recordingStatus,
+        'recordingDurationSeconds': recordingDurationSeconds,
       };
 
   static String _extractId(dynamic v) {
@@ -107,6 +126,33 @@ class StreamModel {
   static String? _extractIdOrNull(dynamic v) {
     if (v == null) return null;
     return _extractId(v);
+  }
+}
+
+/// Result of requesting a past show's replay (recorded video stored in S3).
+class ReplayResult {
+  final String streamId;
+  final String recordingUrl;
+  final String recordingStatus;
+  final int? recordingDurationSeconds;
+  final StreamModel stream;
+
+  const ReplayResult({
+    required this.streamId,
+    required this.recordingUrl,
+    required this.recordingStatus,
+    this.recordingDurationSeconds,
+    required this.stream,
+  });
+
+  factory ReplayResult.fromJson(Map<String, dynamic> json) {
+    return ReplayResult(
+      streamId: json['streamId'] as String,
+      recordingUrl: json['recordingUrl'] as String,
+      recordingStatus: json['recordingStatus'] as String? ?? 'ready',
+      recordingDurationSeconds: json['recordingDurationSeconds'] as int?,
+      stream: StreamModel.fromJson(json['stream'] as Map<String, dynamic>),
+    );
   }
 }
 

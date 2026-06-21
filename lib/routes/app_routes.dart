@@ -70,6 +70,8 @@ class AppRoutes {
   static final searchScreen = "/search-screen";
   static final inviteScreen = "/invite-screen";
   static final livestreamScreen = "/livestream-screen";
+  static final replayScreen = "/replay-screen";
+  static final pastShowsScreen = "/past-shows-screen";
   static final boostScreen = "/boost-screen";
   static final boostInfoScreen = "/boost-info-screen";
   static final clipEditScreen = "/clip-edit-screen";

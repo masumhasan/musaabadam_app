@@ -117,23 +117,44 @@ class _ShowTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isLive = show.status == 'live';
     final isScheduled = show.status == 'scheduled';
+    final hasReplay = show.hasReplay;
+    final isProcessingReplay = show.status == 'ended' && show.recordingStatus == 'processing';
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 14.h),
-      child: Row(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: hasReplay
+            ? () => Get.toNamed(AppRoutes.replayScreen, arguments: show)
+            : null,
+        child: Row(
         children: [
-          // Thumbnail
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10.r),
-            child: show.thumbnailUrl != null
-                ? Image.network(
-                    show.thumbnailUrl!,
-                    width: 72.w,
-                    height: 72.w,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _placeholder(),
-                  )
-                : _placeholder(),
+          // Thumbnail (with a play overlay when a replay is available)
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10.r),
+                child: show.thumbnailUrl != null
+                    ? Image.network(
+                        show.thumbnailUrl!,
+                        width: 72.w,
+                        height: 72.w,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _placeholder(),
+                      )
+                    : _placeholder(),
+              ),
+              if (hasReplay)
+                Container(
+                  padding: EdgeInsets.all(6.w),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.play_arrow, color: Colors.white, size: 22.sp),
+                ),
+            ],
           ),
           SizedBoxWidget(width: 12.w),
 
@@ -201,12 +222,41 @@ class _ShowTile extends StatelessWidget {
                         child: CustomText(text: 'Scheduled', fontSize: 11, fontColor: AppColors.orange),
                       ),
                     ],
+                    if (hasReplay) ...[
+                      SizedBoxWidget(width: 12.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.play_circle_outline, size: 13.sp, color: colorScheme.primary),
+                            SizedBoxWidget(width: 4.w),
+                            CustomText(text: 'Replay', fontSize: 11, fontColor: colorScheme.primary),
+                          ],
+                        ),
+                      ),
+                    ] else if (isProcessingReplay) ...[
+                      SizedBoxWidget(width: 12.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: colorScheme.outline.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: CustomText(text: 'Processing replay…', fontSize: 11, fontColor: colorScheme.outline),
+                      ),
+                    ],
                   ],
                 ),
               ],
             ),
           ),
         ],
+        ),
       ),
     );
   }

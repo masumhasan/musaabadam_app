@@ -14,6 +14,7 @@ class LivestreamGridItem extends StatelessWidget {
   final String streamTitle;
   final String category;
   final VoidCallback? onTap;
+  final VoidCallback? onSellerTap;
 
   const LivestreamGridItem({
     super.key,
@@ -24,6 +25,7 @@ class LivestreamGridItem extends StatelessWidget {
     required this.streamTitle,
     required this.category,
     this.onTap,
+    this.onSellerTap,
   });
 
   @override
@@ -35,31 +37,35 @@ class LivestreamGridItem extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children:[
-          // 1. User Header
-          Row(
-            children:[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(50.r),
-                child: CachedImageWidget(
-                  height: 25.h,
-                  width: 25.w,
-                  iconSize: 20,
-                  imageUrl: userAvatarUrl,
+          // 1. User Header — tapping navigates to the seller's profile
+          GestureDetector(
+            onTap: onSellerTap,
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              children:[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(50.r),
+                  child: CachedImageWidget(
+                    height: 25.h,
+                    width: 25.w,
+                    iconSize: 20,
+                    imageUrl: userAvatarUrl,
+                  ),
                 ),
-              ),
-              SizedBox(width: 4.w),
-              Expanded(
-                child: CustomText(
-                  text: userName,
-                  textAlignment: TextAlign.left,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  fontColor: colorScheme.onSurface,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                SizedBox(width: 4.w),
+                Expanded(
+                  child: CustomText(
+                    text: userName,
+                    textAlignment: TextAlign.left,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    fontColor: colorScheme.onSurface,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           SizedBox(height: 4.h),
 

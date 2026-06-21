@@ -130,6 +130,26 @@ class StreamService {
     return StreamModel.fromJson(response.data['data']['stream'] as Map<String, dynamic>);
   }
 
+  // ─── Replays (past shows) ──────────────────────────────────────────────────
+
+  /// List ended shows that have a stored replay ready to watch.
+  Future<List<StreamModel>> getReplays({String? categoryId, String? sellerId, int page = 1}) async {
+    final response = await _dio.get(ApiConstants.replays, queryParameters: {
+      'page': page,
+      'limit': 20,
+      'categoryId': ?categoryId,
+      'sellerId': ?sellerId,
+    });
+    final list = response.data['data']['streams'] as List;
+    return list.map((e) => StreamModel.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  /// Resolve the playable recording URL for a single past show.
+  Future<ReplayResult> getReplay(String streamId) async {
+    final response = await _dio.get(ApiConstants.streamReplay(streamId));
+    return ReplayResult.fromJson(response.data['data'] as Map<String, dynamic>);
+  }
+
   // ─── Seller: Own streams list ──────────────────────────────────────────────
 
   Future<List<StreamModel>> getMyStreams({String? status, int page = 1}) async {

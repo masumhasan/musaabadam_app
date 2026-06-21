@@ -86,7 +86,11 @@ import '../modules/home/screens/invite_screen.dart';
 import '../modules/home/screens/message_request_screen.dart';
 import '../modules/home/screens/notification_screen.dart';
 import '../modules/livestream/bindings/livestream_binding.dart';
+import '../modules/livestream/bindings/replay_binding.dart';
+import '../modules/livestream/bindings/past_shows_binding.dart';
 import '../modules/livestream/screens/livestream_screen.dart';
+import '../modules/livestream/screens/replay_screen.dart';
+import '../modules/livestream/screens/past_shows_screen.dart';
 import '../modules/main_nav/screens/main_nav_screen.dart';
 import '../modules/home/screens/notification_settings_screen.dart';
 import '../modules/profile/screens/order_support_screen.dart';
@@ -137,6 +141,8 @@ class AppPages {
     GetPage(name: AppRoutes.searchScreen, page: () => SearchScreen()),
     GetPage(name: AppRoutes.inviteScreen, page: () => InviteScreen()),
     GetPage(name: AppRoutes.livestreamScreen, page: () => LiveStreamScreen(), binding: LivestreamBinding()),
+    GetPage(name: AppRoutes.replayScreen, page: () => const ReplayScreen(), binding: ReplayBinding()),
+    GetPage(name: AppRoutes.pastShowsScreen, page: () => const PastShowsScreen(), binding: PastShowsBinding()),
     GetPage(name: AppRoutes.boostScreen, page: () => BoostScreen()),
     GetPage(name: AppRoutes.boostInfoScreen, page: () => BoostInfoScreen()),
     GetPage(name: AppRoutes.clipEditScreen, page: () => EditClipScreen()),

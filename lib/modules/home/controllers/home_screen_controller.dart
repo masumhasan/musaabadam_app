@@ -5,12 +5,14 @@ import 'package:musaab_adam/data/models/stream/stream_model.dart';
 
 class HomeScreenController extends GetxController {
   final RxList<StreamModel> liveStreams = <StreamModel>[].obs;
+  final RxList<StreamModel> pastShows = <StreamModel>[].obs;
   final RxBool isLoadingStreams = false.obs;
 
   @override
   void onInit() {
     super.onInit();
     loadLiveStreams();
+    loadPastShows();
   }
 
   Future<void> loadLiveStreams() async {
@@ -22,6 +24,14 @@ class HomeScreenController extends GetxController {
       // Silently fail — home screen falls back to empty list gracefully
     } finally {
       isLoadingStreams.value = false;
+    }
+  }
+
+  Future<void> loadPastShows() async {
+    try {
+      pastShows.value = await StreamService.instance.getReplays();
+    } on DioException {
+      // Silently fail — the past-shows section is simply hidden when empty
     }
   }
 

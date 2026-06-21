@@ -41,6 +41,11 @@ class ApiAuthService {
     await _dio.post(ApiConstants.logout, data: {'refreshToken': refreshToken});
   }
 
+  Future<AuthResponseModel> verifyEmailOtp({required String email, required String otp}) async {
+    final response = await _dio.post(ApiConstants.verifyEmail, data: {'email': email, 'otp': otp});
+    return AuthResponseModel.fromJson(response.data['data'] as Map<String, dynamic>);
+  }
+
   Future<void> resendVerification(String email) async {
     await _dio.post(ApiConstants.resendVerification, data: {'email': email});
   }

@@ -7,7 +7,9 @@ import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/data/models/stream/stream_model.dart';
+import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
 import 'package:musaab_adam/modules/home/controllers/home_screen_controller.dart';
+import 'package:musaab_adam/modules/livestream/screens/past_shows_screen.dart';
 import 'package:musaab_adam/modules/main_nav/controllers/main_nav_controller.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/components/livestream_grid_item.dart';
@@ -71,9 +73,49 @@ class HomeScreen extends GetView<MainNavController> {
             ),
           ),
           _liveStreamSliverGrid(homeCtrl.liveStreams),
+          if (homeCtrl.pastShows.isNotEmpty) ...[
+            SliverToBoxAdapter(child: _pastShowsHeader(theme)),
+            _pastShowsSliverGrid(homeCtrl.pastShows),
+          ],
           SliverToBoxAdapter(child: SizedBox(height: 20.h)),
         ],
       )),
+    );
+  }
+
+  Widget _pastShowsHeader(ThemeData theme) => Padding(
+    padding: EdgeInsets.fromLTRB(15.w, 20.h, 15.w, 10.h),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        CustomText(text: 'Past Shows', fontWeight: FontWeight.w600),
+        TextButton(
+          onPressed: () => Get.toNamed(AppRoutes.pastShowsScreen),
+          child: CustomText(
+            text: AppStrings.viewAll,
+            fontSize: 14,
+            fontColor: theme.colorScheme.primary,
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _pastShowsSliverGrid(List<StreamModel> streams) {
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: 15.w),
+      sliver: SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10.w,
+          mainAxisSpacing: 10.h,
+          mainAxisExtent: 185.h,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, index) => PastShowGridItem(stream: streams[index]),
+          childCount: streams.length,
+        ),
+      ),
     );
   }
 
@@ -176,6 +218,15 @@ class HomeScreen extends GetView<MainNavController> {
     ),
   );
 
+  void _navigateToSellerProfile(String sellerId) {
+    final currentUserId = Get.find<AuthController>().currentUser.value?.id;
+    if (currentUserId != null && currentUserId == sellerId) {
+      Get.toNamed(AppRoutes.profileScreen);
+    } else {
+      Get.toNamed(AppRoutes.otherUserProfileScreen, arguments: sellerId);
+    }
+  }
+
   Widget _liveStreamSliverGrid(List<StreamModel> streams) {
     if (streams.isEmpty) {
       return SliverPadding(
@@ -221,6 +272,7 @@ class HomeScreen extends GetView<MainNavController> {
               thumbnailUrl: stream.thumbnailUrl ?? Dummy.live1,
               streamTitle: stream.title,
               onTap: () => Get.toNamed(AppRoutes.livestreamScreen, arguments: stream.id),
+              onSellerTap: () => _navigateToSellerProfile(stream.sellerId),
               viewerCount: _formatViewers(stream.totalViewers),
               category: stream.categoryId ?? '',
             );
