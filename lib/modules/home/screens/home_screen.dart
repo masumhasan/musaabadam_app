@@ -88,7 +88,7 @@ class HomeScreen extends GetView<MainNavController> {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        CustomText(text: 'Past Shows', fontWeight: FontWeight.w600),
+        CustomText(text: 'Past Streams', fontWeight: FontWeight.w600),
         TextButton(
           onPressed: () => Get.toNamed(AppRoutes.pastShowsScreen),
           child: CustomText(

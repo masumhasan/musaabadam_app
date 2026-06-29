@@ -5,9 +5,12 @@ import 'package:musaab_adam/core/network/api_client.dart';
 import 'package:musaab_adam/core/network/api_constants.dart';
 import 'package:musaab_adam/core/services/socket_service.dart';
 import 'package:musaab_adam/core/services/stream_service.dart';
+import 'package:musaab_adam/core/services/api_chat_service.dart';
+import 'package:musaab_adam/data/models/chat/chat_message_model.dart';
 import 'package:musaab_adam/data/models/product/product_model.dart';
 import 'package:musaab_adam/data/models/stream/stream_model.dart';
 import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
+import 'package:musaab_adam/routes/app_pages.dart';
 
 // ignore_for_file: unawaited_futures
 
@@ -17,6 +20,15 @@ class LivestreamController extends GetxController {
   final Rx<Call?> call = Rx(null);
   final RxBool isLoading = true.obs;
   final RxBool hasError = false.obs;
+
+  // Live auction state (driven by socket events)
+  final RxInt bidCount = 0.obs;
+  final RxString leadingBidderName = ''.obs;
+  final RxString leadingBidderId = ''.obs;
+  final Rx<Map<String, dynamic>?> lastAuctionResult = Rx(null);
+
+  // Live chat state
+  final RxList<ChatMessageModel> messages = <ChatMessageModel>[].obs;
 
   Call? _sdkCall;
 
@@ -135,11 +147,94 @@ class LivestreamController extends GetxController {
 
       final newBid = _toDouble(update['currentHighBid']);
       pinnedProduct.value = _copyProductWithBid(product, newBid);
+
+      if (update['bidCount'] != null) bidCount.value = (update['bidCount'] as num).toInt();
+      final leader = update['leadingBidder'];
+      if (leader is Map) {
+        leadingBidderName.value = leader['displayName']?.toString() ?? '';
+        leadingBidderId.value = leader['userId']?.toString() ?? '';
+      }
     });
+
+    // A pinned auction was opened by the seller — refresh the product state.
+    SocketService.instance.latestAuctionStarted.listen((started) {
+      if (started == null) return;
+      final productId = started['productId'] as String?;
+      if (productId != null) _loadPinnedProduct(productId);
+    });
+
+    // Auction closed — notify the winner so they can complete checkout.
+    SocketService.instance.latestAuctionClosed.listen(_onAuctionClosed);
 
     SocketService.instance.onBidError((msg) {
       Get.snackbar('Bid Error', msg, snackPosition: SnackPosition.BOTTOM);
     });
+
+    // ── Live chat ──
+    _loadChatHistory(streamId);
+
+    SocketService.instance.latestChatMessage.listen((data) {
+      if (data == null) return;
+      if (data['streamId'] != streamId) return;
+      messages.add(ChatMessageModel.fromJson(data));
+      if (messages.length > 200) messages.removeRange(0, messages.length - 200);
+    });
+
+    SocketService.instance.lastDeletedMessageId.listen((id) {
+      if (id == null) return;
+      messages.removeWhere((m) => m.id == id);
+    });
+
+    SocketService.instance.onChatError((msg) {
+      Get.snackbar('Chat', msg, snackPosition: SnackPosition.BOTTOM);
+    });
+  }
+
+  Future<void> _loadChatHistory(String streamId) async {
+    try {
+      final history = await ApiChatService.instance.getHistory(streamId);
+      messages.assignAll(history);
+    } catch (_) {}
+  }
+
+  /// Sends a chat message over the socket (optimistic broadcast comes back via
+  /// the `chat-message` event, so we don't append locally here).
+  void sendComment(String text) {
+    final streamId = _streamId;
+    final trimmed = text.trim();
+    if (streamId == null || trimmed.isEmpty) return;
+    SocketService.instance.sendMessage(streamId: streamId, text: trimmed);
+  }
+
+  void sendReaction(String emoji) {
+    final streamId = _streamId;
+    if (streamId == null) return;
+    SocketService.instance.sendReaction(streamId: streamId, emoji: emoji);
+  }
+
+  void _onAuctionClosed(Map<String, dynamic>? result) {
+    if (result == null) return;
+    final product = pinnedProduct.value;
+    if (product != null && result['productId'] == product.id) {
+      pinnedProduct.value = _copyProductWithBid(product, _toDouble(result['currentHighBid']));
+    }
+    lastAuctionResult.value = result;
+
+    final myId = Get.find<AuthController>().currentUser.value?.id;
+    final winner = result['winner'];
+    if (result['sold'] == true && winner is Map && winner['userId'] == myId) {
+      // Winner — surface the pending order for checkout (payments pillar).
+      final orderId = result['orderId']?.toString();
+      Get.snackbar(
+        'You won! 🎉',
+        'Tap to complete payment for "${product?.title ?? 'your item'}".',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 6),
+        onTap: (_) {
+          if (orderId != null) Get.toNamed(AppRoutes.checkout, arguments: orderId);
+        },
+      );
+    }
   }
 
   Future<void> _loadPinnedProduct(String productId) async {
@@ -153,7 +248,7 @@ class LivestreamController extends GetxController {
     } catch (_) {}
   }
 
-  void placeBid(double amount) {
+  void placeBid(double amount, {double? maxAmount, bool isAutoBid = false}) {
     final product = pinnedProduct.value;
     final streamId = _streamId;
     if (product == null || streamId == null) return;
@@ -162,6 +257,8 @@ class LivestreamController extends GetxController {
       streamId: streamId,
       productId: product.id,
       amount: amount,
+      maxAmount: maxAmount,
+      isAutoBid: isAutoBid,
     );
   }
 

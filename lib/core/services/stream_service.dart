@@ -125,6 +125,20 @@ class StreamService {
     return list.map((e) => StreamModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  /// All past (ended) streams. Recorded ones are replayable; the rest are shown
+  /// as past shows without a replay.
+  Future<List<StreamModel>> getEndedStreams({String? categoryId, String? sellerId, int page = 1}) async {
+    final response = await _dio.get(ApiConstants.streams, queryParameters: {
+      'status': 'ended',
+      'page': page,
+      'limit': 20,
+      'categoryId': ?categoryId,
+      'sellerId': ?sellerId,
+    });
+    final list = response.data['data']['streams'] as List;
+    return list.map((e) => StreamModel.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   Future<StreamModel> getStream(String streamId) async {
     final response = await _dio.get(ApiConstants.stream(streamId));
     return StreamModel.fromJson(response.data['data']['stream'] as Map<String, dynamic>);

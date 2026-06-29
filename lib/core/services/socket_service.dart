@@ -12,6 +12,19 @@ class SocketService {
   io.Socket? _socket;
 
   final Rx<Map<String, dynamic>?> latestBidUpdate = Rx(null);
+  final Rx<Map<String, dynamic>?> latestAuctionStarted = Rx(null);
+  final Rx<Map<String, dynamic>?> latestAuctionClosed = Rx(null);
+
+  // Chat
+  final Rx<Map<String, dynamic>?> latestChatMessage = Rx(null);
+  final Rx<Map<String, dynamic>?> latestReaction = Rx(null);
+  final Rx<String?> lastDeletedMessageId = Rx(null);
+
+  static Map<String, dynamic>? _asMap(dynamic data) {
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return null;
+  }
 
   // Connect to the server with JWT auth
   Future<void> connect() async {
@@ -36,11 +49,53 @@ class SocketService {
     _socket!.on('error', (_) {});
 
     _socket!.on('bid-updated', (data) {
-      if (data is Map<String, dynamic>) {
-        latestBidUpdate.value = data;
-      } else if (data is Map) {
-        latestBidUpdate.value = Map<String, dynamic>.from(data);
-      }
+      final map = _asMap(data);
+      if (map != null) latestBidUpdate.value = map;
+    });
+
+    _socket!.on('auction-started', (data) {
+      final map = _asMap(data);
+      if (map != null) latestAuctionStarted.value = map;
+    });
+
+    _socket!.on('auction-closed', (data) {
+      final map = _asMap(data);
+      if (map != null) latestAuctionClosed.value = map;
+    });
+
+    _socket!.on('chat-message', (data) {
+      final map = _asMap(data);
+      if (map != null) latestChatMessage.value = map;
+    });
+
+    _socket!.on('reaction', (data) {
+      final map = _asMap(data);
+      if (map != null) latestReaction.value = map;
+    });
+
+    _socket!.on('message-deleted', (data) {
+      final map = _asMap(data);
+      if (map != null) lastDeletedMessageId.value = map['messageId']?.toString();
+    });
+  }
+
+  void sendMessage({required String streamId, required String text}) {
+    _socket?.emit('send-message', {'streamId': streamId, 'text': text});
+  }
+
+  void sendReaction({required String streamId, required String emoji}) {
+    _socket?.emit('send-reaction', {'streamId': streamId, 'emoji': emoji});
+  }
+
+  void deleteMessage(String messageId) {
+    _socket?.emit('delete-message', {'messageId': messageId});
+  }
+
+  void onChatError(void Function(String message) handler) {
+    _socket?.off('chat-error');
+    _socket?.on('chat-error', (data) {
+      final msg = data is Map ? (data['message'] as String? ?? 'Chat error') : 'Chat error';
+      handler(msg);
     });
   }
 
@@ -48,11 +103,19 @@ class SocketService {
     _socket?.emit('join-stream', {'streamId': streamId});
   }
 
-  void placeBid({required String streamId, required String productId, required double amount}) {
+  void placeBid({
+    required String streamId,
+    required String productId,
+    required double amount,
+    double? maxAmount,
+    bool isAutoBid = false,
+  }) {
     _socket?.emit('place-bid', {
       'streamId': streamId,
       'productId': productId,
       'amount': amount,
+      if (isAutoBid) 'isAutoBid': true,
+      'maxAmount': ?maxAmount,
     });
   }
 

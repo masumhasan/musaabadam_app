@@ -5,14 +5,14 @@ class ApiConstants {
   // Android emulator → 10.0.2.2 maps to host machine localhost
   // iOS simulator    → 127.0.0.1
   // Physical device  → set your machine's LAN IP here
-  static const String _devBaseUrl = 'http://10.0.2.2:3000/api/v1';
+  static const String _devBaseUrl = 'http://98.90.22.230:3000/api/v1';
   static const String _prodBaseUrl = 'https://api.bidsrush.com/api/v1';
 
   static const bool _isProduction = bool.fromEnvironment('dart.vm.product');
   static const String baseUrl = _isProduction ? _prodBaseUrl : _devBaseUrl;
 
   // Socket.io server (same host, no /api/v1 path prefix)
-  static const String _devSocketUrl = 'http://10.0.2.2:3000';
+  static const String _devSocketUrl = 'http://98.90.22.230:3000';
   static const String _prodSocketUrl = 'https://api.bidsrush.com';
   static const String socketUrl = _isProduction ? _prodSocketUrl : _devSocketUrl;
 
@@ -100,6 +100,32 @@ class ApiConstants {
 
   // Bidding
   static String placeBid(String productId) => '/products/$productId/bid';
+
+  // Auctions
+  static const String startAuction = '/auctions/start';
+  static String closeAuction(String productId) => '/auctions/$productId/close';
+  static String auctionBids(String productId) => '/auctions/$productId/bids';
+
+  // Chat
+  static String chatMessages(String streamId) => '/chat/streams/$streamId/messages';
+  static String deleteChatMessage(String messageId) => '/chat/messages/$messageId';
+
+  // Shipping
+  static const String shippingProfiles = '/shipping/profiles';
+  static String shippingProfile(String id) => '/shipping/profiles/$id';
+  static String shippingEstimate(String productId) => '/shipping/estimate/$productId';
+  static String generateLabel(String orderId) => '/shipping/orders/$orderId/label';
+  static String trackOrder(String orderId) => '/shipping/orders/$orderId/track';
+
+  // Payments / escrow / wallet
+  static const String paymentMethods = '/payments/methods';
+  static String paymentMethod(String id) => '/payments/methods/$id';
+  static String checkoutOrder(String orderId) => '/payments/orders/$orderId/checkout';
+  static String confirmOrderPayment(String orderId) => '/payments/orders/$orderId/confirm';
+  static String refundOrder(String orderId) => '/payments/orders/$orderId/refund';
+  static const String wallet = '/payments/wallet';
+  static const String walletLedger = '/payments/wallet/ledger';
+  static const String payouts = '/payments/payouts';
 
   // Auction streams
   static const String createAuctionStream = '/streams/auction';

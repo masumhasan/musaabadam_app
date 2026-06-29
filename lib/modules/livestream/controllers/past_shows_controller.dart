@@ -25,7 +25,7 @@ class PastShowsController extends GetxController {
     isLoading.value = true;
     hasError.value = false;
     try {
-      replays.value = await StreamService.instance.getReplays(sellerId: _sellerId);
+      replays.value = await StreamService.instance.getEndedStreams(sellerId: _sellerId);
     } on DioException {
       hasError.value = true;
     } finally {

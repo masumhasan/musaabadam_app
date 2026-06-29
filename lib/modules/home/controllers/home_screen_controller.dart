@@ -29,9 +29,9 @@ class HomeScreenController extends GetxController {
 
   Future<void> loadPastShows() async {
     try {
-      pastShows.value = await StreamService.instance.getReplays();
+      pastShows.value = await StreamService.instance.getEndedStreams();
     } on DioException {
-      // Silently fail — the past-shows section is simply hidden when empty
+      // Silently fail — the past-streams section is simply hidden when empty
     }
   }
 

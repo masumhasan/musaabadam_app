@@ -36,6 +36,13 @@ import 'package:musaab_adam/modules/seller/screens/schedule_live_show.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_inventory_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_order_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_payout_screen.dart';
+import 'package:musaab_adam/modules/payments/bindings/checkout_binding.dart';
+import 'package:musaab_adam/modules/payments/screens/checkout_screen.dart';
+import 'package:musaab_adam/modules/shipping/bindings/order_tracking_binding.dart';
+import 'package:musaab_adam/modules/shipping/screens/order_tracking_screen.dart';
+import 'package:musaab_adam/modules/seller/bindings/seller_orders_binding.dart';
+import 'package:musaab_adam/modules/seller/bindings/fulfillment_binding.dart';
+import 'package:musaab_adam/modules/seller/bindings/seller_payout_binding.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_tool_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/shipping_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/shows_screen.dart';
@@ -155,6 +162,16 @@ class AppPages {
     GetPage(name: AppRoutes.addPaymentMethodScreen, page: () => AddPaymentMethodScreen()),
     GetPage(name: AppRoutes.payoutScreen, page: () => PayoutScreen()),
     GetPage(name: AppRoutes.myRewardsScreen, page: () => MyRewardsScreen()),
+    GetPage(
+      name: AppRoutes.checkout,
+      page: () => const CheckoutScreen(),
+      binding: CheckoutBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.orderTrackingScreen,
+      page: () => const OrderTrackingScreen(),
+      binding: OrderTrackingBinding(),
+    ),
 
     //===================PROFILE====================
     GetPage(name: AppRoutes.profileScreen, page: () => ProfileScreen(), binding: ProfileBinding()),
@@ -185,9 +202,21 @@ class AppPages {
     //===================SELLER ====================
     GetPage(name: AppRoutes.createQualityListingScreen, page: () => CreateQualityListingScreen(), binding: CreateProductBinding()),
     GetPage(name: AppRoutes.scheduleLiveShowScreen, page: () => ScheduleLiveShowScreen(), binding: ScheduleShowBinding()),
-    GetPage(name: AppRoutes.fulfillmentScreen, page: () => FulfillmentScreen()),
-    GetPage(name: AppRoutes.sellerPayoutScreen, page: () => SellerPayoutScreen()),
-    GetPage(name: AppRoutes.sellerOrderScreen, page: () => SellerOrderScreen()),
+    GetPage(
+      name: AppRoutes.fulfillmentScreen,
+      page: () => FulfillmentScreen(),
+      binding: FulfillmentBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.sellerPayoutScreen,
+      page: () => SellerPayoutScreen(),
+      binding: SellerPayoutBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.sellerOrderScreen,
+      page: () => SellerOrderScreen(),
+      binding: SellerOrdersBinding(),
+    ),
     GetPage(name: AppRoutes.sellerInventoryScreen, page: () => SellerInventoryScreen(), binding: SellerInventoryBinding()),
     GetPage(name: AppRoutes.sellerToolsScreen, page: () => SellerToolScreen()),
     GetPage(name: AppRoutes.showsScreen, page: () => ShowsScreen(), binding: ShowsBinding()),

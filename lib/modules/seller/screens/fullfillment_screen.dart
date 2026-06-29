@@ -5,22 +5,19 @@ import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_choice_chip.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
+import 'package:musaab_adam/data/models/order/order_model.dart';
+import 'package:musaab_adam/modules/seller/controllers/fulfillment_controller.dart';
 
 import '../../../core/utils/app_colors.dart';
+import '../../../core/utils/app_constants.dart';
 import '../../../core/widgets/custom_button.dart';
 
-enum ChipCategory { none, needLabel, readyToShip, unfulfilled }
-
-class FulfillmentScreen extends StatelessWidget {
+class FulfillmentScreen extends GetView<FulfillmentController> {
   FulfillmentScreen({super.key});
 
-  final Rx<ChipCategory> selectedCategory = ChipCategory.none.obs;
-
-  // State for chips
+  // Toggle state for the filter dialog chip.
   final RxBool isFilterSelected = false.obs;
-  final RxBool isNeedLabelSelected = false.obs;
-  final RxBool isReadyToShipSelected = false.obs;
-  final RxBool isUnfulfilledSelected = false.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -55,13 +52,13 @@ class FulfillmentScreen extends StatelessWidget {
                   }
                   ),
                   SizedBoxWidget(width: 10.w),
-                  _buildChip(AppStrings.needLabel, ChipCategory.needLabel, selectedCategory),
+                  _buildChip(AppStrings.needLabel, FulfillmentFilter.needLabel),
                   SizedBoxWidget(width: 10.w),
 
-                  _buildChip(AppStrings.readyToShip, ChipCategory.readyToShip, selectedCategory),
+                  _buildChip(AppStrings.readyToShip, FulfillmentFilter.readyToShip),
                   SizedBoxWidget(width: 10.w),
 
-                  _buildChip(AppStrings.unfulfilled, ChipCategory.unfulfilled, selectedCategory),
+                  _buildChip(AppStrings.unfulfilled, FulfillmentFilter.unfulfilled),
                 ],
               ),
             ),
@@ -80,8 +77,93 @@ class FulfillmentScreen extends StatelessWidget {
               fontSize: 14,
               fontColor: colorScheme.outline,
             ),
+            SizedBoxWidget(height: 15.h),
+
+            // Shipments list
+            Expanded(
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final orders = controller.filtered;
+                if (orders.isEmpty) {
+                  return Center(child: CustomText(text: AppStrings.nothingHere, fontColor: colorScheme.outline));
+                }
+                return RefreshIndicator(
+                  onRefresh: controller.load,
+                  child: ListView.separated(
+                    itemCount: orders.length,
+                    separatorBuilder: (_, _) => SizedBoxWidget(height: 12.h),
+                    itemBuilder: (context, index) => _shipmentItem(orders[index], colorScheme),
+                  ),
+                );
+              }),
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _shipmentItem(OrderModel order, ColorScheme colorScheme) {
+    final item = order.items.isNotEmpty ? order.items.first : null;
+    final imageUrl = (item?.imageUrl?.isNotEmpty ?? false) ? item!.imageUrl! : Dummy.product1;
+    final needsLabel = order.trackingNumber == null;
+
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.25),
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12.r),
+            child: CachedImageWidget(imageUrl: imageUrl, height: 70.h, width: 70.w),
+          ),
+          SizedBoxWidget(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomText(
+                  text: item?.title ?? 'Order',
+                  fontWeight: FontWeight.w600,
+                  textAlignment: TextAlign.start,
+                  maxLines: 1,
+                ),
+                CustomText(
+                  text: '£${order.totalAmount.toStringAsFixed(2)} · ${order.status}',
+                  fontSize: 13,
+                  fontColor: colorScheme.outline,
+                  textAlignment: TextAlign.start,
+                ),
+                if (order.trackingNumber != null)
+                  CustomText(
+                    text: '${order.trackingCarrier ?? ''}  ${order.trackingNumber}',
+                    fontSize: 12,
+                    fontColor: colorScheme.primary,
+                    textAlignment: TextAlign.start,
+                  ),
+                SizedBoxWidget(height: 8.h),
+                Obx(() {
+                  final busy = controller.busyOrderId.value == order.id;
+                  return CustomButton(
+                    label: needsLabel ? AppStrings.readyToShip : 'Mark delivered',
+                    fontSize: 12,
+                    buttonHeight: 34,
+                    backgroundColor: needsLabel ? colorScheme.primary : AppColors.orange,
+                    textColor: Colors.white,
+                    isLoading: busy,
+                    onPressed: () => needsLabel ? controller.generateLabel(order) : controller.markDelivered(order),
+                  );
+                }),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -99,19 +181,16 @@ class FulfillmentScreen extends StatelessWidget {
     ));
   }
 
-  Widget _buildChip(String label, ChipCategory categoryType, Rx<ChipCategory> groupValue) {
+  Widget _buildChip(String label, FulfillmentFilter categoryType) {
     return Obx(() => CustomChoiceChip(
       label: label.tr,
-      // It's selected if the group value matches this specific chip's type
-      selected: groupValue.value == categoryType,
+      // Selected when the controller's active filter matches this chip.
+      selected: controller.filter.value == categoryType,
       borderRadius: 50,
       onSelected: (val) {
-        // If tapped while already selected, deselect it (set to none). Otherwise, select it.
-        if (groupValue.value == categoryType) {
-          groupValue.value = ChipCategory.none;
-        } else {
-          groupValue.value = categoryType;
-        }
+        // Tapping the active chip clears the filter; otherwise apply it.
+        controller.filter.value =
+            controller.filter.value == categoryType ? FulfillmentFilter.none : categoryType;
       },
     ));
   }

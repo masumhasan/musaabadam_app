@@ -17,7 +17,7 @@ class PastShowsScreen extends GetView<PastShowsController> {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      appBar: AppBar(title: const Text('Past Shows')),
+      appBar: AppBar(title: const Text('Past Streams')),
       body: RefreshIndicator(
         onRefresh: controller.loadReplays,
         child: Obx(() {
@@ -25,10 +25,10 @@ class PastShowsScreen extends GetView<PastShowsController> {
             return const Center(child: CircularProgressIndicator());
           }
           if (controller.hasError.value && controller.replays.isEmpty) {
-            return _message(context, 'Could not load past shows.', onRetry: controller.loadReplays);
+            return _message(context, 'Could not load past streams.', onRetry: controller.loadReplays);
           }
           if (controller.replays.isEmpty) {
-            return _message(context, 'No past shows to replay yet.');
+            return _message(context, 'No past streams yet.');
           }
           return GridView.builder(
             padding: EdgeInsets.all(15.w),
@@ -70,8 +70,22 @@ class PastShowGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final hasReplay = stream.hasReplay;
+    final isProcessing = stream.recordingStatus == 'processing';
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.replayScreen, arguments: stream),
+      onTap: () {
+        if (hasReplay) {
+          Get.toNamed(AppRoutes.replayScreen, arguments: stream);
+        } else {
+          Get.snackbar(
+            'Replay unavailable',
+            isProcessing
+                ? 'This replay is still being processed. Check back shortly.'
+                : 'No replay was recorded for this show.',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -118,33 +132,35 @@ class PastShowGridItem extends StatelessWidget {
                         Image.network(Dummy.live1, height: 100.h, width: 160.w, fit: BoxFit.cover),
                   ),
                 ),
-                // Play overlay
-                Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.play_arrow, color: Colors.white, size: 24.sp),
-                ),
-                // "REPLAY" badge
-                Positioned(
-                  top: 5.h,
-                  left: 5.w,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                // Play overlay (only when a replay is available)
+                if (hasReplay)
+                  Container(
+                    padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: colorScheme.surface.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(4.r),
+                      color: Colors.black.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
                     ),
-                    child: CustomText(
-                      text: 'REPLAY',
-                      fontSize: 9.sp,
-                      fontColor: colorScheme.primary,
-                      fontWeight: FontWeight.bold,
+                    child: Icon(Icons.play_arrow, color: Colors.white, size: 24.sp),
+                  ),
+                // Status badge: REPLAY when ready, PROCESSING while rendering
+                if (hasReplay || isProcessing)
+                  Positioned(
+                    top: 5.h,
+                    left: 5.w,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: CustomText(
+                        text: hasReplay ? 'REPLAY' : 'PROCESSING',
+                        fontSize: 9.sp,
+                        fontColor: hasReplay ? colorScheme.primary : colorScheme.outline,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
                 // Duration badge
                 if (_durationText != null)
                   Positioned(

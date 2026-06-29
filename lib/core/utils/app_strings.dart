@@ -619,6 +619,10 @@ class AppStrings {
   static const String shareInvite = 'Share Invite';
   static const String learnToPromote = 'Learn how to promote your livestream';
   static const String itemDimensions = 'Item Dimensions';
+  static const String shippingRate = 'Shipping Rate';
+  static const String flatRate = 'Flat rate (£)';
+  static const String freeShippingThreshold = 'Free shipping over (£)';
+  static const String carrier = 'Carrier';
   static const String royalMail = 'Royal Mail Collections and Dropoffs';
   static const String switchText = 'Switch';
   static const String veryNice = 'Very nice';

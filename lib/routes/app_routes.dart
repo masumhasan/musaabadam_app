@@ -54,6 +54,10 @@ class AppRoutes {
   static final addPaymentMethodScreen = "/add-payment-method-screen";
   static final payoutScreen = "/payout-screen";
   static final myRewardsScreen = "/my-rewards-screen";
+  static final checkout = "/checkout-screen";
+  static final paymentMethodsScreen = "/payment-methods-screen";
+  static final walletScreen = "/wallet-screen";
+  static final orderTrackingScreen = "/order-tracking-screen";
 
   //===================ADDRESS====================
   static final newAddressScreen = "/new-address-screen";

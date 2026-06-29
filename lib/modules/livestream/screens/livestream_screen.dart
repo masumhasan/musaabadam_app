@@ -25,6 +25,7 @@ class LiveStreamScreen extends StatelessWidget {
   LiveStreamScreen({Key? key}) : super(key: key);
 
   final RxBool isFullScreen = false.obs;
+  final TextEditingController _commentController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -217,34 +218,48 @@ class LiveStreamScreen extends StatelessWidget {
 
   // ── Comment section ─────────────────────────────────────────────────────────
   Widget _commentSection() {
+    final lsCtrl = Get.find<LivestreamController>();
     return Padding(
       padding: const EdgeInsets.all(12.0),
       child: SizedBox(
         height: 300.h,
-        child: SingleChildScrollView(
-          reverse: true,
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                CommentItem(user: 'Lora', comment: 'Price?', isMod: false),
-                CommentItem(user: 'Lora', comment: 'Price?', isMod: false),
-                CommentItem(user: 'Lora', comment: 'Price?', isMod: false),
-                CommentItem(user: 'David', comment: 'I want to buy', isMod: false),
-                CommentItem(user: 'Alice', comment: 'Very nice', isMod: true),
-              ],
+        child: Obx(() {
+          final msgs = lsCtrl.messages;
+          return SingleChildScrollView(
+            reverse: true,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final m in msgs)
+                    CommentItem(
+                      user: m.senderName,
+                      comment: m.text,
+                      isMod: m.type == 'system',
+                    ),
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        }),
       ),
     );
   }
 
   // ── Comment input ───────────────────────────────────────────────────────────
   Widget _writeCommentSection() {
+    final lsCtrl = Get.find<LivestreamController>();
+
+    void send() {
+      final text = _commentController.text;
+      if (text.trim().isEmpty) return;
+      lsCtrl.sendComment(text);
+      _commentController.clear();
+    }
+
     return Padding(
       padding: const EdgeInsets.only(right: 12.0, bottom: 12),
       child: Row(
@@ -252,7 +267,10 @@ class LiveStreamScreen extends StatelessWidget {
         children: [
           Expanded(
             child: TextField(
+              controller: _commentController,
               style: const TextStyle(color: Colors.white),
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => send(),
               decoration: InputDecoration(
                 hintText: 'Type comment........',
                 hintStyle: const TextStyle(color: Colors.white60),
@@ -270,11 +288,14 @@ class LiveStreamScreen extends StatelessWidget {
               ),
             ),
           ),
-          Transform.rotate(
-            angle: -pi / 4,
-            child: const CircleAvatar(
-              backgroundColor: Colors.cyan,
-              child: Icon(Icons.send, color: Colors.white),
+          GestureDetector(
+            onTap: send,
+            child: Transform.rotate(
+              angle: -pi / 4,
+              child: const CircleAvatar(
+                backgroundColor: Colors.cyan,
+                child: Icon(Icons.send, color: Colors.white),
+              ),
             ),
           ),
         ],

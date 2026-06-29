@@ -8,13 +8,17 @@ import 'package:musaab_adam/core/widgets/custom_choice_chip.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/custom_text_field.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/data/models/order/order_model.dart';
+import 'package:musaab_adam/modules/seller/controllers/seller_orders_controller.dart';
 
 import '../../../core/utils/app_constants.dart';
 
-class SellerOrderScreen extends StatelessWidget {
+class SellerOrderScreen extends GetView<SellerOrdersController> {
   SellerOrderScreen({super.key});
 
-  final RxInt selectedTabIndex = 0.obs;
+  final TextEditingController _searchController = TextEditingController();
+
+  RxInt get selectedTabIndex => controller.selectedTabIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +46,9 @@ class SellerOrderScreen extends StatelessWidget {
             // Search Bar
             CustomTextField(
               hintText: AppStrings.searchOrders,
-              controller: TextEditingController(),
+              controller: _searchController,
               label: AppStrings.searchOrders,
+              onChanged: (v) => controller.search.value = v,
             ),
             SizedBoxWidget(height: 15.h),
 
@@ -61,15 +66,26 @@ class SellerOrderScreen extends StatelessWidget {
 
             // List
             Expanded(
-              child: ListView.separated(
-                itemCount: 3,
-                separatorBuilder: (ctx, index) => SizedBoxWidget(height: 15.h),
-                itemBuilder: (context, index) {
-                  // Mock data based on screenshot
-                  String status = index == 2 ? AppStrings.processing : AppStrings.created;
-                  return _buildOrderItem(status, colorScheme);
-                },
-              ),
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (controller.hasError.value) {
+                  return Center(child: CustomText(text: AppStrings.nothingHere, fontColor: colorScheme.outline));
+                }
+                final orders = controller.filtered;
+                if (orders.isEmpty) {
+                  return Center(child: CustomText(text: AppStrings.nothingHere, fontColor: colorScheme.outline));
+                }
+                return RefreshIndicator(
+                  onRefresh: controller.load,
+                  child: ListView.separated(
+                    itemCount: orders.length,
+                    separatorBuilder: (ctx, index) => SizedBoxWidget(height: 15.h),
+                    itemBuilder: (context, index) => _buildOrderItem(orders[index], colorScheme),
+                  ),
+                );
+              }),
             ),
           ],
         ),
@@ -87,15 +103,18 @@ class SellerOrderScreen extends StatelessWidget {
     ));
   }
 
-  Widget _buildOrderItem(String status, ColorScheme colorScheme) {
-    final bool isProcessing = status == AppStrings.processing;
+  Widget _buildOrderItem(OrderModel order, ColorScheme colorScheme) {
+    final bool isProcessing = order.status == 'processing' || order.status == 'shipped';
+    final item = order.items.isNotEmpty ? order.items.first : null;
+    final title = item?.title ?? 'Order';
+    final imageUrl = (item?.imageUrl?.isNotEmpty ?? false) ? item!.imageUrl! : Dummy.product1;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children:[
         ClipRRect(
           borderRadius: BorderRadius.circular(16.r),
-          child: CachedImageWidget(imageUrl: Dummy.product1, height: 100.h, width: 100.w),
+          child: CachedImageWidget(imageUrl: imageUrl, height: 100.h, width: 100.w),
         ),
         SizedBoxWidget(width: 15.w),
         Expanded(
@@ -109,20 +128,34 @@ class SellerOrderScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: CustomText(
-                  text: status,
+                  text: _statusLabel(order.status),
                   fontSize: 12,
                   fontColor: Colors.white,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               SizedBoxWidget(height: 8.h),
-              CustomText(text: "Hand Bag", fontSize: 16, fontWeight: FontWeight.w600),
-              CustomText(text: "${AppStrings.soldFor}£5,000", fontSize: 14, fontWeight: FontWeight.w700),
-              CustomText(text: "${AppStrings.from}aum_burgains", fontSize: 14, fontColor: colorScheme.primary),
+              CustomText(text: title, fontSize: 16, fontWeight: FontWeight.w600, textAlignment: TextAlign.start),
+              CustomText(
+                text: "${AppStrings.soldFor}£${order.totalAmount.toStringAsFixed(2)}",
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                textAlignment: TextAlign.start,
+              ),
+              if (order.trackingNumber != null)
+                CustomText(
+                  text: "${order.trackingCarrier ?? ''}  ${order.trackingNumber}",
+                  fontSize: 13,
+                  fontColor: colorScheme.primary,
+                  textAlignment: TextAlign.start,
+                ),
             ],
           ),
         ),
       ],
     );
   }
+
+  String _statusLabel(String status) =>
+      status.isEmpty ? '' : '${status[0].toUpperCase()}${status.substring(1)}';
 }

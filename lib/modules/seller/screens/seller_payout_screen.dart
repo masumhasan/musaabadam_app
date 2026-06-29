@@ -6,11 +6,12 @@ import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/core/widgets/text_button_widget.dart';
+import 'package:musaab_adam/modules/seller/controllers/seller_payout_controller.dart';
 
-class SellerPayoutScreen extends StatelessWidget {
-  SellerPayoutScreen({super.key});
+class SellerPayoutScreen extends GetView<SellerPayoutController> {
+  const SellerPayoutScreen({super.key});
 
-  final RxInt currentTab = 0.obs;
+  RxInt get currentTab => controller.currentTab;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,11 @@ class SellerPayoutScreen extends StatelessWidget {
 
             // Balance
             CustomText(text: AppStrings.accountBalance, fontSize: 14, fontColor: colorScheme.outline),
-            CustomText(text: "£0", fontSize: 32, fontWeight: FontWeight.w700),
+            Obx(() => CustomText(
+                  text: "£${controller.available.toStringAsFixed(2)}",
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                )),
             SizedBoxWidget(height: 20.h),
 
             // Info Card
@@ -51,15 +56,15 @@ class SellerPayoutScreen extends StatelessWidget {
                 color: colorScheme.primaryContainer.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Column(
+              child: Obx(() => Column(
                 children:[
-                  _buildInfoRow(AppStrings.availableForPayout),
+                  _buildInfoRow(AppStrings.availableForPayout, value: '£${controller.available.toStringAsFixed(2)}'),
                   Divider(color: colorScheme.outline.withValues(alpha: 0.3)),
-                  _buildInfoRow(AppStrings.processing),
+                  _buildInfoRow(AppStrings.processing, value: '£${controller.pending.toStringAsFixed(2)}'),
                   Divider(color: colorScheme.outline.withValues(alpha: 0.3)),
                   _buildInfoRow(AppStrings.notEligible, showDivider: false),
                 ],
-              ),
+              )),
             ),
             SizedBoxWidget(height: 30.h),
 
@@ -73,22 +78,50 @@ class SellerPayoutScreen extends StatelessWidget {
             ),
             SizedBoxWidget(height: 20.h),
 
-            Center(
-              child: CustomText(text: AppStrings.nothingHere, fontColor: colorScheme.outline),
+            Expanded(
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final history = controller.payouts;
+                if (history.isEmpty) {
+                  return Center(child: CustomText(text: AppStrings.nothingHere, fontColor: colorScheme.outline));
+                }
+                return RefreshIndicator(
+                  onRefresh: controller.load,
+                  child: ListView.separated(
+                    itemCount: history.length,
+                    separatorBuilder: (_, _) => Divider(color: colorScheme.outline.withValues(alpha: 0.2)),
+                    itemBuilder: (context, index) {
+                      final p = history[index];
+                      final amount = (p['amount'] is num) ? (p['amount'] as num).toDouble() : 0.0;
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: 6.h),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            CustomText(text: '${p['status'] ?? ''}', textAlignment: TextAlign.start),
+                            CustomText(text: '£${amount.toStringAsFixed(2)}', fontWeight: FontWeight.w700),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }),
             ),
 
-            const Spacer(),
-
-            // Verification Button
+            // Request payout
             Padding(
               padding: EdgeInsets.only(bottom: 20.h),
-              child: CustomButton(
-                label: AppStrings.beginSellerVerification,
-                buttonWidth: double.infinity,
-                backgroundColor: colorScheme.primary,
-                textColor: Colors.white,
-                onPressed: () {},
-              ),
+              child: Obx(() => CustomButton(
+                    label: AppStrings.payouts,
+                    buttonWidth: double.infinity,
+                    backgroundColor: colorScheme.primary,
+                    textColor: Colors.white,
+                    isLoading: controller.isRequesting.value,
+                    onPressed: controller.requestPayout,
+                  )),
             ),
           ],
         ),
@@ -107,10 +140,16 @@ class SellerPayoutScreen extends StatelessWidget {
     ));
   }
 
-  Widget _buildInfoRow(String text, {bool showDivider = true}) {
+  Widget _buildInfoRow(String text, {bool showDivider = true, String? value}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8.h),
-      child: CustomText(text: text, textAlignment: TextAlign.start),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(child: CustomText(text: text, textAlignment: TextAlign.start)),
+          if (value != null) CustomText(text: value, fontWeight: FontWeight.w700),
+        ],
+      ),
     );
   }
 }

@@ -1,0 +1,48 @@
+import 'package:dio/dio.dart';
+import 'package:get/get.dart';
+import 'package:musaab_adam/core/services/api_order_service.dart';
+import 'package:musaab_adam/core/services/api_shipping_service.dart';
+import 'package:musaab_adam/data/models/order/order_model.dart';
+
+class OrderTrackingController extends GetxController {
+  final Rx<OrderModel?> order = Rx(null);
+  final RxList<Map<String, dynamic>> events = <Map<String, dynamic>>[].obs;
+  final RxString trackingNumber = ''.obs;
+  final RxString carrier = ''.obs;
+
+  final RxBool isLoading = true.obs;
+  final RxBool hasError = false.obs;
+
+  late final String orderId;
+
+  @override
+  void onInit() {
+    super.onInit();
+    orderId = Get.arguments as String;
+    load();
+  }
+
+  Future<void> load() async {
+    isLoading.value = true;
+    hasError.value = false;
+    try {
+      final results = await Future.wait([
+        ApiOrderService.instance.getOrder(orderId),
+        ApiShippingService.instance.track(orderId),
+      ]);
+      order.value = results[0] as OrderModel;
+      final tracking = results[1] as Map<String, dynamic>;
+      trackingNumber.value = tracking['trackingNumber']?.toString() ?? '';
+      carrier.value = tracking['carrier']?.toString() ?? '';
+      events.assignAll(
+        (tracking['events'] as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)).toList(),
+      );
+    } on DioException {
+      hasError.value = true;
+    } catch (_) {
+      hasError.value = true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+}

@@ -135,7 +135,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 SizedBoxWidget(height: 28),
 
                 // ── OTP digit boxes ─────────────────────────────────────────────
-                Row(
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(6, (i) {
                     return Padding(
@@ -190,6 +192,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       ),
                     );
                   }),
+                  ),
                 ),
 
                 SizedBoxWidget(height: 24),
