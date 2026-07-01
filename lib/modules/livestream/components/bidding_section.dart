@@ -45,7 +45,16 @@ class BiddingSection extends StatelessWidget {
                   width: 48,
                   borderRadius: 8,
                 ),
-                const SizedBox(width: 12),
+                Obx(() => IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: Icon(
+                        lsCtrl.pinnedFavorited.value ? Icons.favorite : Icons.favorite_border,
+                        color: lsCtrl.pinnedFavorited.value ? Colors.red : Colors.black54,
+                        size: 22,
+                      ),
+                      onPressed: lsCtrl.toggleFavorite,
+                    )),
+                const SizedBox(width: 4),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

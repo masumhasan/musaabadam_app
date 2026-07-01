@@ -52,6 +52,15 @@ class ApiAuthService {
     return AuthResponseModel.fromJson(response.data['data'] as Map<String, dynamic>);
   }
 
+  /// Exchange a Google/Apple ID token for our session tokens.
+  Future<AuthResponseModel> socialLogin({
+    required String provider, // 'google' | 'apple'
+    required String idToken,
+  }) async {
+    final response = await _dio.post('/auth/social/$provider', data: {'idToken': idToken});
+    return AuthResponseModel.fromJson(response.data['data'] as Map<String, dynamic>);
+  }
+
   Future<void> logout(String refreshToken) async {
     await _dio.post(ApiConstants.logout, data: {'refreshToken': refreshToken});
   }

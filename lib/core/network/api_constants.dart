@@ -58,6 +58,31 @@ class ApiConstants {
   // Search
   static const String search = '/search';
 
+  // Wishlist / favorites
+  static const String favorites = '/favorites';
+  static String toggleFavorite(String productId) => '/favorites/$productId';
+
+  // Reports
+  static const String reports = '/reports';
+
+  // Giveaways
+  static const String giveaways = '/giveaways';
+  static String joinGiveaway(String id) => '/giveaways/$id/join';
+  static String drawGiveaway(String id) => '/giveaways/$id/draw';
+  static String cancelGiveaway(String id) => '/giveaways/$id/cancel';
+  static String streamGiveaways(String streamId) => '/giveaways/stream/$streamId';
+
+  // Reviews
+  static const String reviews = '/reviews';
+  static const String reviewableOrders = '/reviews/reviewable';
+  static String sellerReviews(String sellerId) => '/reviews/seller/$sellerId';
+
+  // Notifications
+  static const String notifications = '/notifications';
+  static const String notificationsUnreadCount = '/notifications/unread-count';
+  static const String notificationsReadAll = '/notifications/read-all';
+  static String notificationRead(String id) => '/notifications/$id/read';
+
   // Referral
   static const String referral = '/users/referral';
 
@@ -87,6 +112,7 @@ class ApiConstants {
   static String pinStreamProduct(String streamId) => '/streams/$streamId/pin';
   static String unpinStreamProduct(String streamId) => '/streams/$streamId/unpin';
   static const String myStreams = '/streams/me/streams';
+  static const String streamFeed = '/streams/feed';
 
   // Replays (past shows)
   static const String replays = '/streams/replays';

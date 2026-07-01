@@ -70,6 +70,28 @@ class AuthController extends GetxController {
     }
   }
 
+  /// Sign in with a Google/Apple ID token → session tokens + apply user.
+  Future<void> socialLogin(String provider, String idToken) async {
+    if (isLoading.value) return;
+    _clearError();
+    isLoading.value = true;
+    try {
+      final result = await ApiAuthService.instance.socialLogin(provider: provider, idToken: idToken);
+      await TokenStorageService.instance.saveTokens(
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      );
+      await TokenStorageService.instance.saveUser(result.user);
+      _applyUser(result.user);
+      Get.offAllNamed(AppRoutes.mainScreen);
+    } on DioException catch (e) {
+      errorMessage.value = ApiAuthService.extractError(e);
+      Get.snackbar('Sign-in failed', errorMessage.value, snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // ─── Register ───────────────────────────────────────────────────────────────
 
   Future<void> register(String email, String password, {String? referralCode}) async {

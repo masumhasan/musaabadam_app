@@ -126,6 +126,8 @@ class LiveStreamScreen extends StatelessWidget {
                           ),
                         ),
                         _writeCommentSection(),
+                        if (lsCtrl.activeGiveaway.value != null) _giveawayBanner(lsCtrl),
+                        if (lsCtrl.isHost) _hostGiveawayControl(lsCtrl),
                         if (lsCtrl.auctionState.value == 'paused') _pausedBanner(),
                         if (lsCtrl.isHost) _hostAuctionControls(lsCtrl),
                         BiddingSection(),
@@ -466,6 +468,95 @@ class LiveStreamScreen extends StatelessWidget {
     );
   }
 
+  // Active giveaway banner — viewers join, host draws.
+  Widget _giveawayBanner(LivestreamController lsCtrl) {
+    final g = lsCtrl.activeGiveaway.value!;
+    return Container(
+      width: double.infinity,
+      color: Colors.purple.withValues(alpha: 0.9),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          const Text('🎁 ', style: TextStyle(fontSize: 16)),
+          Expanded(
+            child: Text(
+              '${g['title']}  ·  ${g['entryCount'] ?? 0} entries',
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (!lsCtrl.isHost)
+            ElevatedButton(
+              onPressed: lsCtrl.giveawayJoined.value || lsCtrl.isGiveawayBusy.value ? null : lsCtrl.joinGiveaway,
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.purple),
+              child: Text(lsCtrl.giveawayJoined.value ? 'Joined' : 'Join'),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Host giveaway controls: create one, or draw the winner of the active one.
+  Widget _hostGiveawayControl(LivestreamController lsCtrl) {
+    final hasActive = lsCtrl.activeGiveaway.value != null;
+    return Container(
+      color: Colors.black.withValues(alpha: 0.4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: lsCtrl.isGiveawayBusy.value
+                  ? null
+                  : (hasActive ? lsCtrl.hostDrawGiveaway : () => _showCreateGiveaway(lsCtrl)),
+              icon: Icon(hasActive ? Icons.casino : Icons.card_giftcard, size: 16),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
+              label: Text(hasActive ? 'Draw winner' : 'Start giveaway', style: const TextStyle(fontSize: 12)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCreateGiveaway(LivestreamController lsCtrl) {
+    final titleCtrl = TextEditingController(text: lsCtrl.pinnedProduct.value?.title ?? 'Giveaway');
+    final restriction = 'everyone'.obs;
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Start giveaway'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Prize / title')),
+            const SizedBox(height: 8),
+            Obx(() => DropdownButton<String>(
+                  value: restriction.value,
+                  isExpanded: true,
+                  items: const [
+                    DropdownMenuItem(value: 'everyone', child: Text('Everyone')),
+                    DropdownMenuItem(value: 'followers', child: Text('Followers only')),
+                    DropdownMenuItem(value: 'buyers', child: Text('Buyers only')),
+                  ],
+                  onChanged: (v) => restriction.value = v ?? 'everyone',
+                )),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              lsCtrl.hostCreateGiveaway(titleCtrl.text.trim(), restriction.value);
+            },
+            child: const Text('Start'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Viewer-facing banner shown while the seller has paused the auction.
   Widget _pausedBanner() {
     return Container(
@@ -551,7 +642,7 @@ class LiveStreamScreen extends StatelessWidget {
               iconPath: Assets.icons.more,
               text: AppStrings.more,
               fontColor: Colors.white,
-              onClick: () => showOptionsDialog(context),
+              onClick: () => showOptionsDialog(context, streamId: Get.find<LivestreamController>().stream?.id),
             ),
             LabeledIconButton(
               iconPath: Assets.icons.boost,

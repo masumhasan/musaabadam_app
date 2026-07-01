@@ -128,6 +128,51 @@ class _ProductTile extends StatelessWidget {
   final ProductModel product;
   const _ProductTile({required this.product});
 
+  // Prompt for a discounted price + duration, then start the flash sale.
+  void _showFlashSaleDialog(SellerInventoryController ctrl, ProductModel product) {
+    final priceCtrl = TextEditingController();
+    final durationCtrl = TextEditingController(text: '60');
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Start flash sale'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Regular price £${product.price.toStringAsFixed(2)}'),
+            const SizedBox(height: 8),
+            TextField(
+              controller: priceCtrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(labelText: 'Sale price (£)'),
+            ),
+            TextField(
+              controller: durationCtrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Duration (minutes)'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              final price = double.tryParse(priceCtrl.text.trim());
+              final mins = int.tryParse(durationCtrl.text.trim()) ?? 60;
+              if (price == null || price <= 0 || price >= product.price) {
+                Get.snackbar('Invalid', 'Sale price must be below £${product.price.toStringAsFixed(2)}',
+                    snackPosition: SnackPosition.BOTTOM);
+                return;
+              }
+              Get.back();
+              ctrl.startFlashSale(product.id, price: price, durationMinutes: mins);
+            },
+            child: const Text('Start'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -190,6 +235,17 @@ class _ProductTile extends StatelessWidget {
                 icon: Icon(Icons.gavel, color: AppColors.orange),
                 onPressed: () => ctrl.pinProductForAuction(product),
                 tooltip: 'Start Auction',
+              ),
+            if (product.isBuyItNow)
+              IconButton(
+                icon: Icon(
+                  Icons.flash_on,
+                  color: product.isFlashSaleActive ? AppColors.orange : colorScheme.outline,
+                ),
+                onPressed: () => product.isFlashSaleActive
+                    ? ctrl.endFlashSale(product.id)
+                    : _showFlashSaleDialog(ctrl, product),
+                tooltip: product.isFlashSaleActive ? 'End flash sale' : 'Flash sale',
               ),
             IconButton(
               icon: Icon(Icons.pause_circle_outline, color: colorScheme.outline),

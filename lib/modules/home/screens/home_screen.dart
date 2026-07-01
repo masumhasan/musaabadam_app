@@ -30,7 +30,14 @@ class HomeScreen extends GetView<MainNavController> {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: _appBar(theme, context),
-      body: Obx(() => CustomScrollView(
+      body: Obx(() => NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification.metrics.pixels >= notification.metrics.maxScrollExtent - 300) {
+            homeCtrl.loadMoreStreams();
+          }
+          return false;
+        },
+        child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
             child: Column(
@@ -68,18 +75,51 @@ class HomeScreen extends GetView<MainNavController> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                SizedBoxWidget(height: 8.h),
+                _feedChips(theme, homeCtrl),
                 SizedBoxWidget(height: 15.h),
               ],
             ),
           ),
           _liveStreamSliverGrid(homeCtrl.liveStreams, homeCtrl.isLoadingStreams.value),
+          if (homeCtrl.isLoadingMore.value)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+            ),
           if (homeCtrl.pastShows.isNotEmpty) ...[
             SliverToBoxAdapter(child: _pastShowsHeader(theme)),
             _pastShowsSliverGrid(homeCtrl.pastShows),
           ],
           SliverToBoxAdapter(child: SizedBox(height: 20.h)),
         ],
+      ),
       )),
+    );
+  }
+
+  // Feed selector: Live · Trending · Following · Recommended.
+  Widget _feedChips(ThemeData theme, HomeScreenController homeCtrl) {
+    return SizedBox(
+      height: 36.h,
+      child: Obx(() => ListView(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: 15.w),
+            children: [
+              for (final f in HomeScreenController.feeds)
+                Padding(
+                  padding: EdgeInsets.only(right: 8.w),
+                  child: ChoiceChip(
+                    label: Text(f[0].toUpperCase() + f.substring(1)),
+                    selected: homeCtrl.selectedFeed.value == f,
+                    selectedColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+                    onSelected: (_) => homeCtrl.selectFeed(f),
+                  ),
+                ),
+            ],
+          )),
     );
   }
 

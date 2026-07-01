@@ -37,6 +37,11 @@ class ProfileScreen extends StatelessWidget {
         leading: BackButton(color: colorScheme.onSurface),
         actions:[
           IconButton(
+            onPressed: () => Get.toNamed(AppRoutes.wishlistScreen),
+            icon: Icon(Icons.favorite_border, color: colorScheme.primary),
+            tooltip: 'Wishlist',
+          ),
+          IconButton(
             onPressed: () {},
             icon: Icon(
               Icons.screen_share_outlined,
@@ -141,7 +146,7 @@ class ProfileScreen extends StatelessWidget {
                 // Tab Content
                 Obx(() => IndexedStack(
                   index: mainTabCurrentIndex.value,
-                  children: [ShopTab(), ShowsTab(), ReviewTab(), ClipsTab()],
+                  children: [ShopTab(), ShowsTab(), ReviewTab(sellerId: _authController.currentUser.value?.id), ClipsTab()],
                 )),
               ],
             );

@@ -132,6 +132,17 @@ class StreamService {
     return list.map((e) => StreamModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  /// Discovery feed: feed = live | trending | following | recommended.
+  Future<List<StreamModel>> getFeed({String feed = 'live', int page = 1}) async {
+    final response = await _dio.get(ApiConstants.streamFeed, queryParameters: {
+      'feed': feed,
+      'page': page,
+      'limit': 20,
+    });
+    final list = response.data['data']['streams'] as List;
+    return list.map((e) => StreamModel.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   Future<List<StreamModel>> getScheduledStreams({int page = 1}) async {
     final response = await _dio.get(ApiConstants.streams, queryParameters: {
       'status': 'scheduled',

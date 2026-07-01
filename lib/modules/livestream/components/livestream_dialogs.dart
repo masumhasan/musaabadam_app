@@ -4,13 +4,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:musaab_adam/core/services/api_report_service.dart';
 import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 
-void showOptionsDialog(BuildContext context) {
+void showOptionsDialog(BuildContext context, {String? streamId}) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -40,7 +41,12 @@ void showOptionsDialog(BuildContext context) {
                   _buildOptionButton(
                     icon: Icons.report_problem_outlined,
                     label: 'Report',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      if (streamId != null) {
+                        ApiReportService.showReportSheet(targetType: 'stream', targetId: streamId);
+                      }
+                    },
                   ),
                   const SizedBox(width: 16),
                   _buildOptionButton(

@@ -107,9 +107,63 @@ class OrderTrackingScreen extends GetView<OrderTrackingController> {
                 ),
               ),
             ],
+
+            // Leave a review (delivered or completed, once)
+            if ((order.isDelivered || order.isCompleted) && !controller.reviewSubmitted.value) ...[
+              SizedBoxWidget(height: 12.h),
+              CustomButton(
+                label: 'Leave a review',
+                buttonWidth: double.infinity,
+                backgroundColor: Colors.transparent,
+                textColor: cs.primary,
+                borderWidth: 2,
+                borderColor: cs.primary,
+                onPressed: () => _showReviewDialog(cs),
+              ),
+            ],
           ],
         );
       }),
+    );
+  }
+
+  void _showReviewDialog(ColorScheme cs) {
+    final rating = 5.obs;
+    final commentCtrl = TextEditingController();
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Rate your order'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Obx(() => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    5,
+                    (i) => IconButton(
+                      onPressed: () => rating.value = i + 1,
+                      icon: Icon(
+                        i < rating.value ? Icons.star : Icons.star_border,
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ),
+                )),
+            TextField(
+              controller: commentCtrl,
+              maxLines: 3,
+              decoration: const InputDecoration(hintText: 'Add a comment (optional)'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => controller.submitReview(rating.value, commentCtrl.text.trim()),
+            child: const Text('Submit'),
+          ),
+        ],
+      ),
     );
   }
 

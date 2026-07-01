@@ -8,6 +8,8 @@ import 'package:musaab_adam/core/services/stream_service.dart';
 import 'package:musaab_adam/core/services/api_chat_service.dart';
 import 'package:musaab_adam/core/services/api_auction_service.dart';
 import 'package:musaab_adam/core/services/api_order_service.dart';
+import 'package:musaab_adam/core/services/api_giveaway_service.dart';
+import 'package:musaab_adam/core/services/api_favorite_service.dart';
 import 'package:musaab_adam/data/models/chat/chat_message_model.dart';
 import 'package:musaab_adam/data/models/product/product_model.dart';
 import 'package:musaab_adam/data/models/stream/stream_model.dart';
@@ -33,6 +35,11 @@ class LivestreamController extends GetxController {
 
   // Live chat state
   final RxList<ChatMessageModel> messages = <ChatMessageModel>[].obs;
+
+  // Giveaway state
+  final Rx<Map<String, dynamic>?> activeGiveaway = Rx(null);
+  final RxBool giveawayJoined = false.obs;
+  final RxBool isGiveawayBusy = false.obs;
 
   Call? _sdkCall;
 
@@ -77,7 +84,7 @@ class LivestreamController extends GetxController {
         StreamService.instance.endStream(_streamId!).catchError((_) {});
       }
     }
-    SocketService.instance.disconnect();
+    // Keep the socket connected app-wide for notifications — only leave the room.
     _leaveCall();
     super.onClose();
   }
@@ -209,6 +216,34 @@ class LivestreamController extends GetxController {
       if (data['productId'] == pinnedProduct.value?.id) {
         Get.snackbar('Sold out', 'This item just sold out.', snackPosition: SnackPosition.BOTTOM);
       }
+    });
+
+    // ── Giveaways ──
+    _loadActiveGiveaway(streamId);
+    SocketService.instance.latestGiveawayStarted.listen((data) {
+      if (data == null || data['streamId'] != streamId) return;
+      activeGiveaway.value = data;
+      giveawayJoined.value = false;
+    });
+    SocketService.instance.latestGiveawayJoined.listen((data) {
+      if (data == null) return;
+      final g = activeGiveaway.value;
+      if (g != null && g['id'] == data['giveawayId']) {
+        activeGiveaway.value = {...g, 'entryCount': data['entryCount']};
+      }
+    });
+    SocketService.instance.latestGiveawayWinner.listen((data) {
+      if (data == null || data['streamId'] != streamId) return;
+      final winner = data['winner'];
+      final myId = Get.find<AuthController>().currentUser.value?.id;
+      final title = data['title'] ?? 'the giveaway';
+      if (winner is Map && winner['userId'] == myId) {
+        Get.snackbar('You won! 🎁', 'You won $title!', snackPosition: SnackPosition.TOP, duration: const Duration(seconds: 6));
+      } else if (winner is Map) {
+        Get.snackbar('Giveaway winner', '${winner['displayName'] ?? 'Someone'} won $title', snackPosition: SnackPosition.BOTTOM);
+      }
+      activeGiveaway.value = null;
+      giveawayJoined.value = false;
     });
 
     SocketService.instance.onBidError((msg) {
@@ -345,6 +380,73 @@ class LivestreamController extends GetxController {
   Future<void> pauseAuction() => _auctionAction(ApiAuctionService.instance.pauseAuction);
   Future<void> resumeAuction() => _auctionAction(ApiAuctionService.instance.resumeAuction);
   Future<void> cancelAuction() => _auctionAction(ApiAuctionService.instance.cancelAuction);
+
+  // ── Giveaways ──
+  Future<void> _loadActiveGiveaway(String streamId) async {
+    try {
+      final list = await ApiGiveawayService.instance.forStream(streamId);
+      if (list.isNotEmpty) activeGiveaway.value = list.first;
+    } catch (_) {}
+  }
+
+  Future<void> joinGiveaway() async {
+    final g = activeGiveaway.value;
+    if (g == null || isGiveawayBusy.value) return;
+    isGiveawayBusy.value = true;
+    try {
+      await ApiGiveawayService.instance.join(g['id'].toString());
+      giveawayJoined.value = true;
+      Get.snackbar('Entered', 'You joined the giveaway. Good luck!', snackPosition: SnackPosition.BOTTOM);
+    } on DioException catch (e) {
+      Get.snackbar('Giveaway', ApiGiveawayService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isGiveawayBusy.value = false;
+    }
+  }
+
+  Future<void> hostCreateGiveaway(String title, String restriction) async {
+    final streamId = _streamId;
+    if (streamId == null || isGiveawayBusy.value) return;
+    isGiveawayBusy.value = true;
+    try {
+      final g = await ApiGiveawayService.instance.create(
+        title: title,
+        streamId: streamId,
+        productId: pinnedProduct.value?.id,
+        restriction: restriction,
+      );
+      activeGiveaway.value = g;
+    } on DioException catch (e) {
+      Get.snackbar('Giveaway', ApiGiveawayService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isGiveawayBusy.value = false;
+    }
+  }
+
+  Future<void> hostDrawGiveaway() async {
+    final g = activeGiveaway.value;
+    if (g == null || isGiveawayBusy.value) return;
+    isGiveawayBusy.value = true;
+    try {
+      await ApiGiveawayService.instance.draw(g['id'].toString());
+    } on DioException catch (e) {
+      Get.snackbar('Giveaway', ApiGiveawayService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isGiveawayBusy.value = false;
+    }
+  }
+
+  // ── Wishlist: favorite the pinned product ──
+  final RxBool pinnedFavorited = false.obs;
+  Future<void> toggleFavorite() async {
+    final p = pinnedProduct.value;
+    if (p == null) return;
+    try {
+      pinnedFavorited.value = await ApiFavoriteService.instance.toggle(p.id);
+    } on DioException catch (e) {
+      Get.snackbar('Wishlist', ApiFavoriteService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    }
+  }
 
   // ── One-tap Buy Now on the pinned product ──
   final RxBool isBuying = false.obs;

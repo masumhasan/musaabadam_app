@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:musaab_adam/core/services/social_auth_service.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/utils/app_validator.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
@@ -97,6 +98,31 @@ class SignInScreen extends StatelessWidget {
                       }
                     },
                   )),
+                  SizedBoxWidget(height: 14.h),
+                  Row(
+                    children: [
+                      const Expanded(child: Divider()),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.w),
+                        child: Text('or', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
+                      ),
+                      const Expanded(child: Divider()),
+                    ],
+                  ),
+                  SizedBoxWidget(height: 12.h),
+                  OutlinedButton.icon(
+                    onPressed: () => SocialAuthService.instance.signInWithGoogle(),
+                    icon: const Icon(Icons.g_mobiledata, size: 28),
+                    label: const Text('Continue with Google'),
+                    style: OutlinedButton.styleFrom(minimumSize: Size(double.infinity, 44.h)),
+                  ),
+                  SizedBoxWidget(height: 10.h),
+                  OutlinedButton.icon(
+                    onPressed: () => SocialAuthService.instance.signInWithApple(),
+                    icon: const Icon(Icons.apple, size: 22),
+                    label: const Text('Continue with Apple'),
+                    style: OutlinedButton.styleFrom(minimumSize: Size(double.infinity, 44.h)),
+                  ),
                   SizedBoxWidget(height: 10.h),
                   Align(
                     alignment: Alignment.center,

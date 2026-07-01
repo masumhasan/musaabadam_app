@@ -92,6 +92,8 @@ import '../modules/home/screens/archive_screen.dart';
 import '../modules/home/screens/inbox_screen.dart';
 import '../modules/home/screens/invite_screen.dart';
 import '../modules/home/bindings/invite_binding.dart';
+import '../modules/home/screens/wishlist_screen.dart';
+import '../modules/home/bindings/wishlist_binding.dart';
 import '../modules/home/screens/message_request_screen.dart';
 import '../modules/home/screens/notification_screen.dart';
 import '../modules/livestream/bindings/livestream_binding.dart';
@@ -149,6 +151,7 @@ class AppPages {
     //===================FEATURES====================
     GetPage(name: AppRoutes.searchScreen, page: () => const SearchScreen(), binding: SearchBinding()),
     GetPage(name: AppRoutes.inviteScreen, page: () => const InviteScreen(), binding: InviteBinding()),
+    GetPage(name: AppRoutes.wishlistScreen, page: () => const WishlistScreen(), binding: WishlistBinding()),
     GetPage(name: AppRoutes.livestreamScreen, page: () => LiveStreamScreen(), binding: LivestreamBinding()),
     GetPage(name: AppRoutes.replayScreen, page: () => const ReplayScreen(), binding: ReplayBinding()),
     GetPage(name: AppRoutes.pastShowsScreen, page: () => const PastShowsScreen(), binding: PastShowsBinding()),

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/services/api_order_service.dart';
+import 'package:musaab_adam/core/services/api_review_service.dart';
 import 'package:musaab_adam/core/services/api_shipping_service.dart';
 import 'package:musaab_adam/data/models/order/order_model.dart';
 
@@ -13,6 +14,7 @@ class OrderTrackingController extends GetxController {
   final RxBool isLoading = true.obs;
   final RxBool hasError = false.obs;
   final RxBool isConfirming = false.obs;
+  final RxBool reviewSubmitted = false.obs;
 
   late final String orderId;
 
@@ -44,6 +46,18 @@ class OrderTrackingController extends GetxController {
       hasError.value = true;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  /// Submit a rating + comment review for this (delivered/completed) order.
+  Future<void> submitReview(int rating, String comment) async {
+    try {
+      await ApiReviewService.instance.submitReview(orderId: orderId, rating: rating, comment: comment);
+      reviewSubmitted.value = true;
+      Get.back();
+      Get.snackbar('Thanks!', 'Your review was submitted.', snackPosition: SnackPosition.BOTTOM);
+    } on DioException catch (e) {
+      Get.snackbar('Review', ApiReviewService.extractError(e), snackPosition: SnackPosition.BOTTOM);
     }
   }
 
