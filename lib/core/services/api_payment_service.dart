@@ -71,6 +71,18 @@ class ApiPaymentService {
     return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
   }
 
+  /// Whether the seller has a payout account able to receive funds.
+  Future<Map<String, dynamic>> getPayoutAccount() async {
+    final response = await _dio.get(ApiConstants.payoutAccount);
+    return Map<String, dynamic>.from(response.data['data']['account'] as Map);
+  }
+
+  /// Starts (or resumes) payout-account onboarding; returns the onboarding URL.
+  Future<String?> startPayoutOnboarding() async {
+    final response = await _dio.post(ApiConstants.payoutOnboard);
+    return response.data['data']['onboardingUrl']?.toString();
+  }
+
   static String extractError(DioException e) {
     try {
       final data = e.response?.data;

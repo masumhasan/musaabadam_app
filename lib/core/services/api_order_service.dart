@@ -65,6 +65,21 @@ class ApiOrderService {
     return OrderModel.fromJson(response.data['data']['order'] as Map<String, dynamic>);
   }
 
+  /// Buyer confirms receipt of a delivered order → marks it completed.
+  Future<OrderModel> completeOrder(String orderId) async {
+    final response = await _dio.post(ApiConstants.completeOrder(orderId));
+    return OrderModel.fromJson(response.data['data']['order'] as Map<String, dynamic>);
+  }
+
+  /// Sets the shipping address on a pending order and recomputes shipping + tax.
+  Future<OrderModel> setAddress(String orderId, Map<String, dynamic> address) async {
+    final response = await _dio.patch(
+      ApiConstants.orderAddress(orderId),
+      data: {'shippingAddressSnapshot': address},
+    );
+    return OrderModel.fromJson(response.data['data']['order'] as Map<String, dynamic>);
+  }
+
   static String extractError(DioException e) {
     try {
       final data = e.response?.data;

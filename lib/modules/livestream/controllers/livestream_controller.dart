@@ -6,6 +6,8 @@ import 'package:musaab_adam/core/network/api_constants.dart';
 import 'package:musaab_adam/core/services/socket_service.dart';
 import 'package:musaab_adam/core/services/stream_service.dart';
 import 'package:musaab_adam/core/services/api_chat_service.dart';
+import 'package:musaab_adam/core/services/api_auction_service.dart';
+import 'package:musaab_adam/core/services/api_order_service.dart';
 import 'package:musaab_adam/data/models/chat/chat_message_model.dart';
 import 'package:musaab_adam/data/models/product/product_model.dart';
 import 'package:musaab_adam/data/models/stream/stream_model.dart';
@@ -26,6 +28,8 @@ class LivestreamController extends GetxController {
   final RxString leadingBidderName = ''.obs;
   final RxString leadingBidderId = ''.obs;
   final Rx<Map<String, dynamic>?> lastAuctionResult = Rx(null);
+  final RxString auctionState = 'none'.obs; // none | running | paused
+  final RxBool isAuctionBusy = false.obs;
 
   // Live chat state
   final RxList<ChatMessageModel> messages = <ChatMessageModel>[].obs;
@@ -39,10 +43,15 @@ class LivestreamController extends GetxController {
   bool get isHost => joinResult.value?.role == 'host';
 
   String get viewerCountText {
-    final count = joinResult.value?.stream.totalViewers ?? 0;
+    // Prefer the live socket count; fall back to the persisted total.
+    final live = SocketService.instance.viewerCount.value;
+    final count = live > 0 ? live : (joinResult.value?.stream.totalViewers ?? 0);
     if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k';
     return count.toString();
   }
+
+  // Currently pinned chat message (from socket), or null.
+  Map<String, dynamic>? get pinnedMessage => SocketService.instance.pinnedMessage.value;
 
   StreamModel? get stream => joinResult.value?.stream;
 
@@ -159,12 +168,48 @@ class LivestreamController extends GetxController {
     // A pinned auction was opened by the seller — refresh the product state.
     SocketService.instance.latestAuctionStarted.listen((started) {
       if (started == null) return;
+      auctionState.value = 'running';
       final productId = started['productId'] as String?;
       if (productId != null) _loadPinnedProduct(productId);
     });
 
+    // Auction pause/resume/cancel state changes.
+    SocketService.instance.latestAuctionState.listen((data) {
+      if (data == null) return;
+      final ev = data['_event'];
+      if (ev == 'auction-paused') {
+        auctionState.value = 'paused';
+        Get.snackbar('Auction paused', 'The seller paused bidding.', snackPosition: SnackPosition.BOTTOM);
+      } else if (ev == 'auction-resumed') {
+        auctionState.value = 'running';
+      } else if (ev == 'auction-cancelled') {
+        auctionState.value = 'none';
+        Get.snackbar('Auction cancelled', 'The seller cancelled this auction.', snackPosition: SnackPosition.BOTTOM);
+      }
+    });
+
     // Auction closed — notify the winner so they can complete checkout.
-    SocketService.instance.latestAuctionClosed.listen(_onAuctionClosed);
+    SocketService.instance.latestAuctionClosed.listen((r) {
+      auctionState.value = 'none';
+      _onAuctionClosed(r);
+    });
+
+    // Buy-now realtime: pinned product changes + sold-out.
+    SocketService.instance.latestProductPinned.listen((data) {
+      if (data == null || data['streamId'] != streamId) return;
+      final productId = data['productId']?.toString();
+      if (productId != null) _loadPinnedProduct(productId);
+    });
+    SocketService.instance.latestProductUnpinned.listen((data) {
+      if (data == null || data['streamId'] != streamId) return;
+      if (data['productId'] == pinnedProduct.value?.id) pinnedProduct.value = null;
+    });
+    SocketService.instance.latestSoldOut.listen((data) {
+      if (data == null || data['streamId'] != streamId) return;
+      if (data['productId'] == pinnedProduct.value?.id) {
+        Get.snackbar('Sold out', 'This item just sold out.', snackPosition: SnackPosition.BOTTOM);
+      }
+    });
 
     SocketService.instance.onBidError((msg) {
       Get.snackbar('Bid Error', msg, snackPosition: SnackPosition.BOTTOM);
@@ -188,7 +233,42 @@ class LivestreamController extends GetxController {
     SocketService.instance.onChatError((msg) {
       Get.snackbar('Chat', msg, snackPosition: SnackPosition.BOTTOM);
     });
+
+    // If THIS user is banned, leave the stream.
+    SocketService.instance.lastBanEvent.listen((data) {
+      if (data == null) return;
+      final myId = Get.find<AuthController>().currentUser.value?.id;
+      final targetId = data['userId']?.toString();
+      final isMe = targetId == null || targetId == myId; // 'banned' event has no userId
+      if (isMe && data['banned'] != false) {
+        Get.snackbar('Removed', data['message']?.toString() ?? 'You were removed from this stream.',
+            snackPosition: SnackPosition.BOTTOM);
+        Get.back();
+      }
+    });
   }
+
+  // ── Moderator actions ──
+  void banViewer(String userId) {
+    final streamId = _streamId;
+    if (streamId == null) return;
+    SocketService.instance.banUser(streamId: streamId, userId: userId, ban: true);
+    Get.snackbar('Moderation', 'User banned.', snackPosition: SnackPosition.BOTTOM);
+  }
+
+  void pinChatMessage(String messageId) {
+    final streamId = _streamId;
+    if (streamId == null) return;
+    SocketService.instance.pinMessage(streamId: streamId, messageId: messageId);
+  }
+
+  void unpinChatMessage() {
+    final streamId = _streamId;
+    if (streamId == null) return;
+    SocketService.instance.pinMessage(streamId: streamId, messageId: null);
+  }
+
+  bool get canModerate => isHost;
 
   Future<void> _loadChatHistory(String streamId) async {
     try {
@@ -197,19 +277,94 @@ class LivestreamController extends GetxController {
     } catch (_) {}
   }
 
+  // Message the user is currently replying to (null = not replying).
+  final Rx<ChatMessageModel?> replyingTo = Rx(null);
+  void startReply(ChatMessageModel m) => replyingTo.value = m;
+  void cancelReply() => replyingTo.value = null;
+
   /// Sends a chat message over the socket (optimistic broadcast comes back via
   /// the `chat-message` event, so we don't append locally here).
   void sendComment(String text) {
     final streamId = _streamId;
     final trimmed = text.trim();
     if (streamId == null || trimmed.isEmpty) return;
-    SocketService.instance.sendMessage(streamId: streamId, text: trimmed);
+    SocketService.instance.sendMessage(streamId: streamId, text: trimmed, replyTo: replyingTo.value?.id);
+    replyingTo.value = null;
+  }
+
+  /// Host sets chat slow-mode interval (seconds; 0 = off).
+  void setSlowMode(int seconds) {
+    final streamId = _streamId;
+    if (streamId == null) return;
+    SocketService.instance.setSlowMode(streamId: streamId, seconds: seconds);
+    Get.snackbar('Slow mode', seconds == 0 ? 'Turned off' : 'Set to ${seconds}s', snackPosition: SnackPosition.BOTTOM);
   }
 
   void sendReaction(String emoji) {
     final streamId = _streamId;
     if (streamId == null) return;
     SocketService.instance.sendReaction(streamId: streamId, emoji: emoji);
+  }
+
+  // ── Host auction controls ──
+  Future<void> startAuctionRound({int durationMs = 30000, double? startingPrice, double? reservePrice, double? bidIncrement}) async {
+    final product = pinnedProduct.value;
+    final streamId = _streamId;
+    if (product == null || streamId == null || isAuctionBusy.value) return;
+    isAuctionBusy.value = true;
+    try {
+      await ApiAuctionService.instance.startAuction(
+        productId: product.id,
+        streamId: streamId,
+        durationMs: durationMs,
+        startingPrice: startingPrice,
+        reservePrice: reservePrice,
+        bidIncrement: bidIncrement,
+      );
+      auctionState.value = 'running';
+    } on DioException catch (e) {
+      Get.snackbar('Auction', ApiAuctionService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isAuctionBusy.value = false;
+    }
+  }
+
+  Future<void> _auctionAction(Future<Map<String, dynamic>> Function(String productId) action) async {
+    final product = pinnedProduct.value;
+    if (product == null || isAuctionBusy.value) return;
+    isAuctionBusy.value = true;
+    try {
+      await action(product.id);
+    } on DioException catch (e) {
+      Get.snackbar('Auction', ApiAuctionService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isAuctionBusy.value = false;
+    }
+  }
+
+  Future<void> pauseAuction() => _auctionAction(ApiAuctionService.instance.pauseAuction);
+  Future<void> resumeAuction() => _auctionAction(ApiAuctionService.instance.resumeAuction);
+  Future<void> cancelAuction() => _auctionAction(ApiAuctionService.instance.cancelAuction);
+
+  // ── One-tap Buy Now on the pinned product ──
+  final RxBool isBuying = false.obs;
+  Future<void> buyNow() async {
+    final product = pinnedProduct.value;
+    if (product == null || isBuying.value) return;
+    isBuying.value = true;
+    try {
+      final order = await ApiOrderService.instance.createOrder(
+        items: [
+          {'productId': product.id, 'quantity': 1},
+        ],
+        streamId: _streamId,
+      );
+      Get.toNamed(AppRoutes.checkout, arguments: order.id);
+    } on DioException catch (e) {
+      Get.snackbar('Buy Now', ApiOrderService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isBuying.value = false;
+    }
   }
 
   void _onAuctionClosed(Map<String, dynamic>? result) {

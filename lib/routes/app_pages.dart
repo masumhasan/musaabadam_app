@@ -10,6 +10,7 @@ import 'package:musaab_adam/modules/livestream/screens/boost_info_screen.dart';
 import 'package:musaab_adam/modules/livestream/screens/edit_clip_screen.dart';
 import 'package:musaab_adam/modules/home/screens/message_screen.dart';
 import 'package:musaab_adam/modules/home/screens/search_screen.dart';
+import 'package:musaab_adam/modules/home/bindings/search_binding.dart';
 import 'package:musaab_adam/modules/livestream/screens/story_screen.dart';
 import 'package:musaab_adam/modules/livestream/screens/tip_amount_screen.dart';
 import 'package:musaab_adam/modules/livestream/screens/tip_info_screen.dart';
@@ -90,6 +91,7 @@ import '../screens/error_screen/error_screen.dart';
 import '../modules/home/screens/archive_screen.dart';
 import '../modules/home/screens/inbox_screen.dart';
 import '../modules/home/screens/invite_screen.dart';
+import '../modules/home/bindings/invite_binding.dart';
 import '../modules/home/screens/message_request_screen.dart';
 import '../modules/home/screens/notification_screen.dart';
 import '../modules/livestream/bindings/livestream_binding.dart';
@@ -145,8 +147,8 @@ class AppPages {
     GetPage(name: AppRoutes.notificationSettingsScreen, page: () => NotificationSettingsScreen()),
 
     //===================FEATURES====================
-    GetPage(name: AppRoutes.searchScreen, page: () => SearchScreen()),
-    GetPage(name: AppRoutes.inviteScreen, page: () => InviteScreen()),
+    GetPage(name: AppRoutes.searchScreen, page: () => const SearchScreen(), binding: SearchBinding()),
+    GetPage(name: AppRoutes.inviteScreen, page: () => const InviteScreen(), binding: InviteBinding()),
     GetPage(name: AppRoutes.livestreamScreen, page: () => LiveStreamScreen(), binding: LivestreamBinding()),
     GetPage(name: AppRoutes.replayScreen, page: () => const ReplayScreen(), binding: ReplayBinding()),
     GetPage(name: AppRoutes.pastShowsScreen, page: () => const PastShowsScreen(), binding: PastShowsBinding()),

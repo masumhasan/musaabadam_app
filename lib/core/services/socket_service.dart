@@ -14,11 +14,22 @@ class SocketService {
   final Rx<Map<String, dynamic>?> latestBidUpdate = Rx(null);
   final Rx<Map<String, dynamic>?> latestAuctionStarted = Rx(null);
   final Rx<Map<String, dynamic>?> latestAuctionClosed = Rx(null);
+  final Rx<Map<String, dynamic>?> latestAuctionState = Rx(null); // paused/resumed/cancelled
 
   // Chat
   final Rx<Map<String, dynamic>?> latestChatMessage = Rx(null);
   final Rx<Map<String, dynamic>?> latestReaction = Rx(null);
   final Rx<String?> lastDeletedMessageId = Rx(null);
+
+  // Presence + moderation
+  final RxInt viewerCount = 0.obs;
+  final Rx<Map<String, dynamic>?> pinnedMessage = Rx(null); // null when unpinned
+  final Rx<Map<String, dynamic>?> lastBanEvent = Rx(null);
+
+  // Buy Now realtime
+  final Rx<Map<String, dynamic>?> latestProductPinned = Rx(null);
+  final Rx<Map<String, dynamic>?> latestProductUnpinned = Rx(null);
+  final Rx<Map<String, dynamic>?> latestSoldOut = Rx(null);
 
   static Map<String, dynamic>? _asMap(dynamic data) {
     if (data is Map<String, dynamic>) return data;
@@ -63,6 +74,13 @@ class SocketService {
       if (map != null) latestAuctionClosed.value = map;
     });
 
+    for (final ev in ['auction-paused', 'auction-resumed', 'auction-cancelled']) {
+      _socket!.on(ev, (data) {
+        final map = _asMap(data);
+        if (map != null) latestAuctionState.value = {...map, '_event': ev};
+      });
+    }
+
     _socket!.on('chat-message', (data) {
       final map = _asMap(data);
       if (map != null) latestChatMessage.value = map;
@@ -77,10 +95,45 @@ class SocketService {
       final map = _asMap(data);
       if (map != null) lastDeletedMessageId.value = map['messageId']?.toString();
     });
+
+    _socket!.on('viewer-count', (data) {
+      final map = _asMap(data);
+      if (map != null && map['count'] != null) viewerCount.value = (map['count'] as num).toInt();
+    });
+
+    _socket!.on('message-pinned', (data) {
+      final map = _asMap(data);
+      if (map != null) pinnedMessage.value = _asMap(map['message']);
+    });
+
+    _socket!.on('message-unpinned', (_) => pinnedMessage.value = null);
+
+    _socket!.on('banned', (data) => lastBanEvent.value = _asMap(data) ?? {'banned': true});
+
+    _socket!.on('user-banned', (data) {
+      final map = _asMap(data);
+      if (map != null) lastBanEvent.value = map;
+    });
+
+    _socket!.on('product-pinned', (data) => latestProductPinned.value = _asMap(data));
+    _socket!.on('product-unpinned', (data) => latestProductUnpinned.value = _asMap(data));
+    _socket!.on('product-sold-out', (data) => latestSoldOut.value = _asMap(data));
   }
 
-  void sendMessage({required String streamId, required String text}) {
-    _socket?.emit('send-message', {'streamId': streamId, 'text': text});
+  void banUser({required String streamId, required String userId, bool ban = true}) {
+    _socket?.emit('ban-user', {'streamId': streamId, 'userId': userId, 'ban': ban});
+  }
+
+  void pinMessage({required String streamId, String? messageId}) {
+    _socket?.emit('pin-message', {'streamId': streamId, 'messageId': ?messageId});
+  }
+
+  void sendMessage({required String streamId, required String text, String? replyTo}) {
+    _socket?.emit('send-message', {'streamId': streamId, 'text': text, 'replyTo': ?replyTo});
+  }
+
+  void setSlowMode({required String streamId, required int seconds}) {
+    _socket?.emit('set-slow-mode', {'streamId': streamId, 'seconds': seconds});
   }
 
   void sendReaction({required String streamId, required String emoji}) {

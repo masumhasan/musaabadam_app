@@ -72,13 +72,17 @@ class AuthController extends GetxController {
 
   // ─── Register ───────────────────────────────────────────────────────────────
 
-  Future<void> register(String email, String password) async {
+  Future<void> register(String email, String password, {String? referralCode}) async {
     if (isLoading.value) return;
     _clearError();
     isLoading.value = true;
 
     try {
-      final result = await ApiAuthService.instance.register(email: email, password: password);
+      final result = await ApiAuthService.instance.register(
+        email: email,
+        password: password,
+        referralCode: (referralCode != null && referralCode.trim().isNotEmpty) ? referralCode.trim() : null,
+      );
       pendingEmail.value = result.email;
       Get.offAndToNamed(AppRoutes.verifyEmailScreen);
     } on DioException catch (e) {

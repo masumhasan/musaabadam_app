@@ -15,6 +15,8 @@ import 'package:musaab_adam/core/widgets/svg_icon.dart';
 import 'package:musaab_adam/modules/livestream/components/bidding_section.dart';
 import 'package:musaab_adam/modules/livestream/components/comment_item.dart';
 import 'package:musaab_adam/modules/livestream/components/livestream_dialogs.dart';
+import 'package:musaab_adam/modules/livestream/components/reactions_overlay.dart';
+import 'package:musaab_adam/core/services/socket_service.dart';
 import 'package:musaab_adam/modules/livestream/controllers/livestream_controller.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:share_plus/share_plus.dart';
@@ -26,6 +28,7 @@ class LiveStreamScreen extends StatelessWidget {
 
   final RxBool isFullScreen = false.obs;
   final TextEditingController _commentController = TextEditingController();
+  final GlobalKey<ReactionsOverlayState> _reactionsKey = GlobalKey<ReactionsOverlayState>();
 
   @override
   Widget build(BuildContext context) {
@@ -59,12 +62,20 @@ class LiveStreamScreen extends StatelessWidget {
         // ── Live video via GetStream ───────────────────────────────────────────
         // Host: enable camera + mic so the seller's webcam streams.
         // Viewer: default (camera disabled — they only watch).
+        // Host publishes camera + mic; viewers only watch, so their tracks must
+        // be explicitly disabled. The default CallConnectOptions() resolves
+        // tracks from call settings, which makes a viewer try to acquire the
+        // microphone on a livestream call — and with no RECORD_AUDIO runtime
+        // permission that crashes the native WebRTC audio engine.
         final connectOpts = lsCtrl.isHost
             ? CallConnectOptions(
                 camera: TrackOption.enabled(),
                 microphone: TrackOption.enabled(),
               )
-            : const CallConnectOptions();
+            : CallConnectOptions(
+                camera: TrackOption.disabled(),
+                microphone: TrackOption.disabled(),
+              );
 
         return StreamCallContainer(
           call: lsCtrl.call.value!,
@@ -75,6 +86,14 @@ class LiveStreamScreen extends StatelessWidget {
                 // Live video feed fills the background
                 Positioned.fill(
                   child: _VideoBackground(call: call, isHost: lsCtrl.isHost),
+                ),
+
+                // Floating emoji reactions (above video, below controls)
+                Positioned.fill(
+                  child: ReactionsOverlay(
+                    key: _reactionsKey,
+                    streamId: lsCtrl.stream?.id ?? '',
+                  ),
                 ),
 
                 // Full-screen exit button only
@@ -107,6 +126,8 @@ class LiveStreamScreen extends StatelessWidget {
                           ),
                         ),
                         _writeCommentSection(),
+                        if (lsCtrl.auctionState.value == 'paused') _pausedBanner(),
+                        if (lsCtrl.isHost) _hostAuctionControls(lsCtrl),
                         BiddingSection(),
                       ],
                     ),
@@ -221,30 +242,72 @@ class LiveStreamScreen extends StatelessWidget {
     final lsCtrl = Get.find<LivestreamController>();
     return Padding(
       padding: const EdgeInsets.all(12.0),
-      child: SizedBox(
-        height: 300.h,
-        child: Obx(() {
-          final msgs = lsCtrl.messages;
-          return SingleChildScrollView(
-            reverse: true,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Pinned message banner (visible to everyone)
+          Obx(() {
+            final pinned = lsCtrl.pinnedMessage;
+            if (pinned == null) return const SizedBox.shrink();
+            return Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.cyan.withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
                 children: [
-                  for (final m in msgs)
-                    CommentItem(
-                      user: m.senderName,
-                      comment: m.text,
-                      isMod: m.type == 'system',
+                  const Icon(Icons.push_pin, size: 14, color: Colors.white),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      '${(pinned['sender']?['displayName'] ?? '')}: ${pinned['text'] ?? ''}',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  if (lsCtrl.canModerate)
+                    GestureDetector(
+                      onTap: lsCtrl.unpinChatMessage,
+                      child: const Icon(Icons.close, size: 14, color: Colors.white),
                     ),
                 ],
               ),
-            ),
-          );
-        }),
+            );
+          }),
+          SizedBox(
+            height: 260.h,
+            child: Obx(() {
+              final msgs = lsCtrl.messages;
+              return SingleChildScrollView(
+                reverse: true,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final m in msgs)
+                        GestureDetector(
+                          onTap: () => lsCtrl.startReply(m),
+                          onLongPress: lsCtrl.canModerate ? () => _showModMenu(lsCtrl, m.id, m.senderId, m.senderName) : null,
+                          child: CommentItem(
+                            user: m.senderName,
+                            comment: m.replyTo != null ? '↳ @${m.replyTo!.senderName}  ${m.text}' : m.text,
+                            isMod: m.type == 'system',
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }
@@ -260,11 +323,44 @@ class LiveStreamScreen extends StatelessWidget {
       _commentController.clear();
     }
 
-    return Padding(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Reply banner
+        Obx(() {
+          final r = lsCtrl.replyingTo.value;
+          if (r == null) return const SizedBox.shrink();
+          return Container(
+            margin: const EdgeInsets.only(left: 12, right: 12, bottom: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(8)),
+            child: Row(
+              children: [
+                const Icon(Icons.reply, size: 14, color: Colors.cyan),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text('Replying to ${r.senderName}: ${r.text}',
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                ),
+                GestureDetector(onTap: lsCtrl.cancelReply, child: const Icon(Icons.close, size: 14, color: Colors.white70)),
+              ],
+            ),
+          );
+        }),
+        Padding(
       padding: const EdgeInsets.only(right: 12.0, bottom: 12),
       child: Row(
         spacing: 8,
         children: [
+          if (lsCtrl.canModerate)
+            GestureDetector(
+              onTap: () => _showSlowModeMenu(lsCtrl),
+              child: const Padding(
+                padding: EdgeInsets.only(left: 12),
+                child: Icon(Icons.slow_motion_video, color: Colors.white),
+              ),
+            ),
           Expanded(
             child: TextField(
               controller: _commentController,
@@ -300,6 +396,144 @@ class LiveStreamScreen extends StatelessWidget {
           ),
         ],
       ),
+        ),
+      ],
+    );
+  }
+
+  // Host slow-mode picker.
+  void _showSlowModeMenu(LivestreamController lsCtrl) {
+    Get.bottomSheet(
+      Container(
+        color: Colors.white,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final s in [0, 3, 5, 10, 30])
+                ListTile(
+                  leading: const Icon(Icons.slow_motion_video),
+                  title: Text(s == 0 ? 'Slow mode off' : 'Slow mode: ${s}s'),
+                  onTap: () {
+                    Get.back();
+                    lsCtrl.setSlowMode(s);
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Moderator action sheet for a chat message (long-press).
+  void _showModMenu(LivestreamController lsCtrl, String messageId, String senderId, String senderName) {
+    Get.bottomSheet(
+      Container(
+        color: Colors.white,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.push_pin),
+                title: const Text('Pin message'),
+                onTap: () {
+                  Get.back();
+                  lsCtrl.pinChatMessage(messageId);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: const Text('Delete message'),
+                onTap: () {
+                  Get.back();
+                  SocketService.instance.deleteMessage(messageId);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.block, color: Colors.red),
+                title: Text('Ban $senderName', style: const TextStyle(color: Colors.red)),
+                onTap: () {
+                  Get.back();
+                  lsCtrl.banViewer(senderId);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Viewer-facing banner shown while the seller has paused the auction.
+  Widget _pausedBanner() {
+    return Container(
+      width: double.infinity,
+      color: Colors.orange.withValues(alpha: 0.9),
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: const Text(
+        'Auction paused',
+        textAlign: TextAlign.center,
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  // Host-only auction controls: start a round, or pause/resume/cancel it.
+  Widget _hostAuctionControls(LivestreamController lsCtrl) {
+    Widget btn(String label, Color color, VoidCallback onTap) => Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 3),
+            child: ElevatedButton(
+              onPressed: lsCtrl.isAuctionBusy.value ? null : onTap,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+              child: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        );
+
+    final state = lsCtrl.auctionState.value;
+    return Container(
+      color: Colors.black.withValues(alpha: 0.4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: Row(
+        children: [
+          if (state == 'none') btn('Start auction', Colors.green, () => lsCtrl.startAuctionRound()),
+          if (state == 'running') ...[
+            btn('Pause', Colors.orange, lsCtrl.pauseAuction),
+            btn('End now', Colors.blueGrey, lsCtrl.cancelAuction),
+          ],
+          if (state == 'paused') ...[
+            btn('Resume', Colors.green, lsCtrl.resumeAuction),
+            btn('Cancel', Colors.red, lsCtrl.cancelAuction),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // Emoji reaction button: instantly shows a local floating emoji and
+  // broadcasts it to the room via the socket.
+  Widget _reactionButton(String emoji) {
+    return GestureDetector(
+      onTap: () {
+        _reactionsKey.currentState?.spawn(emoji);
+        Get.find<LivestreamController>().sendReaction(emoji);
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.3),
+          shape: BoxShape.circle,
+        ),
+        child: Text(emoji, style: const TextStyle(fontSize: 22)),
+      ),
     );
   }
 
@@ -312,6 +546,7 @@ class LiveStreamScreen extends StatelessWidget {
           spacing: 8,
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
+            _reactionButton('❤️'),
             LabeledIconButton(
               iconPath: Assets.icons.more,
               text: AppStrings.more,

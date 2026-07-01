@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/services/api_order_service.dart';
 import 'package:musaab_adam/core/services/api_payment_service.dart';
+import 'package:musaab_adam/core/services/api_user_service.dart';
+import 'package:musaab_adam/data/models/address/address_model.dart';
 import 'package:musaab_adam/data/models/order/order_model.dart';
 import 'package:musaab_adam/data/models/payment/payment_method_model.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
@@ -9,7 +11,9 @@ import 'package:musaab_adam/routes/app_pages.dart';
 class CheckoutController extends GetxController {
   final Rx<OrderModel?> order = Rx(null);
   final RxList<PaymentMethodModel> methods = <PaymentMethodModel>[].obs;
+  final RxList<AddressModel> addresses = <AddressModel>[].obs;
   final Rxn<String> selectedMethodId = Rxn<String>();
+  final Rxn<String> selectedAddressId = Rxn<String>();
 
   final RxBool isLoading = true.obs;
   final RxBool hasError = false.obs;
@@ -31,13 +35,20 @@ class CheckoutController extends GetxController {
       final results = await Future.wait([
         ApiOrderService.instance.getOrder(orderId),
         ApiPaymentService.instance.listMethods(),
+        ApiUserService.instance.getAddresses(),
       ]);
       order.value = results[0] as OrderModel;
       methods.assignAll(results[1] as List<PaymentMethodModel>);
+      addresses.assignAll(results[2] as List<AddressModel>);
 
       final def = methods.firstWhereOrNull((m) => m.isDefault) ??
           (methods.isNotEmpty ? methods.first : null);
       selectedMethodId.value = def?.id;
+
+      // Auto-apply the default address so tax/shipping compute up front.
+      final defAddr = addresses.firstWhereOrNull((a) => a.isDefault) ??
+          (addresses.isNotEmpty ? addresses.first : null);
+      if (defAddr != null) await selectAddress(defAddr);
     } on DioException {
       hasError.value = true;
     } catch (_) {
@@ -48,6 +59,26 @@ class CheckoutController extends GetxController {
   }
 
   void selectMethod(String id) => selectedMethodId.value = id;
+
+  /// Applies an address to the order → recomputes shipping + tax on the server.
+  Future<void> selectAddress(AddressModel a) async {
+    selectedAddressId.value = a.id;
+    try {
+      final updated = await ApiOrderService.instance.setAddress(orderId, {
+        'fullName': a.fullName,
+        'line1': a.line1,
+        'line2': a.line2,
+        'city': a.city,
+        'state': a.state,
+        'postalCode': a.postalCode,
+        'country': a.country,
+        'phone': a.phone,
+      });
+      order.value = updated;
+    } on DioException catch (e) {
+      Get.snackbar('Address', ApiPaymentService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    }
+  }
 
   Future<void> addCardQuick() async {
     // Adds a default test card via the provider, then refreshes the list.

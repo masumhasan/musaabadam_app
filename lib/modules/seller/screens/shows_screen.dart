@@ -113,6 +113,39 @@ class _ShowTile extends StatelessWidget {
   final ColorScheme colorScheme;
   const _ShowTile({required this.show, required this.colorScheme});
 
+  void _showManageSheet(StreamModel show) {
+    final controller = Get.find<ShowsController>();
+    Get.bottomSheet(
+      Container(
+        color: Colors.white,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (show.status == 'draft')
+                ListTile(
+                  leading: const Icon(Icons.publish),
+                  title: const Text('Publish show'),
+                  onTap: () {
+                    Get.back();
+                    controller.publishShow(show.id);
+                  },
+                ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: const Text('Delete show', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Get.back();
+                  controller.deleteShow(show.id);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLive = show.status == 'live';
@@ -126,6 +159,9 @@ class _ShowTile extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: hasReplay
             ? () => Get.toNamed(AppRoutes.replayScreen, arguments: show)
+            : null,
+        onLongPress: (show.status == 'draft' || isScheduled || show.status == 'cancelled')
+            ? () => _showManageSheet(show)
             : null,
         child: Row(
         children: [

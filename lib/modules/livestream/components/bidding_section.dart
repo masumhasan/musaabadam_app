@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -25,8 +27,9 @@ class BiddingSection extends StatelessWidget {
 
       final price = product.isAuction
           ? (product.currentHighBid > 0 ? product.currentHighBid : (product.startingPrice ?? 0))
-          : product.price;
+          : product.effectivePrice;
       final priceText = '£${price.toStringAsFixed(2)}';
+      final flashActive = product.isFlashSaleActive;
       final imageUrl = product.images.isNotEmpty ? product.images.first : Dummy.product1;
 
       return Container(
@@ -82,45 +85,118 @@ class BiddingSection extends StatelessWidget {
                           ),
                         ],
                       ),
+                    // Flash sale: original price struck through + live countdown.
+                    if (flashActive) ...[
+                      Text(
+                        '£${product.price.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          decoration: TextDecoration.lineThrough,
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('⚡ ', style: TextStyle(fontSize: 12)),
+                          _FlashCountdown(endsAt: product.flashSaleEndsAt!),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: CustomButton(
-                    label: AppStrings.custom,
-                    backgroundColor: Colors.transparent,
-                    textColor: AppColors.primaryColor,
-                    fontWeight: FontWeight.w900,
-                    borderWidth: 2,
-                    borderColor: AppColors.primaryColor,
-                    buttonRadius: 8,
-                    onPressed: () {
-                      showBiddingDialog();
-                    },
+            // Auction → Custom + Bid. Buy-now → single full-width Buy now.
+            if (product.isAuction)
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomButton(
+                      label: AppStrings.custom,
+                      backgroundColor: Colors.transparent,
+                      textColor: AppColors.primaryColor,
+                      fontWeight: FontWeight.w900,
+                      borderWidth: 2,
+                      borderColor: AppColors.primaryColor,
+                      buttonRadius: 8,
+                      onPressed: () {
+                        showBiddingDialog();
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: CustomButton(
-                    label: AppStrings.bid,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: CustomButton(
+                      label: AppStrings.bid,
+                      backgroundColor: AppColors.orange,
+                      textColor: AppColors.white,
+                      fontWeight: FontWeight.w900,
+                      buttonRadius: 8,
+                      onPressed: () => lsCtrl.placeBid(price + 1.0),
+                    ),
+                  ),
+                ],
+              )
+            else
+              Obx(() => CustomButton(
+                    label: 'Buy now  £${price.toStringAsFixed(2)}',
                     backgroundColor: AppColors.orange,
                     textColor: AppColors.white,
                     fontWeight: FontWeight.w900,
                     buttonRadius: 8,
-                    onPressed: product.isAuction
-                        ? () => lsCtrl.placeBid(price + 1.0)
-                        : null,
-                  ),
-                ),
-              ],
-            ),
+                    buttonWidth: double.infinity,
+                    isLoading: lsCtrl.isBuying.value,
+                    onPressed: lsCtrl.buyNow,
+                  )),
           ],
         ),
       );
     });
+  }
+}
+
+/// Live MM:SS countdown to a flash-sale end time.
+class _FlashCountdown extends StatefulWidget {
+  final DateTime endsAt;
+  const _FlashCountdown({required this.endsAt});
+
+  @override
+  State<_FlashCountdown> createState() => _FlashCountdownState();
+}
+
+class _FlashCountdownState extends State<_FlashCountdown> {
+  late Duration _left;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _tick();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  }
+
+  void _tick() {
+    final left = widget.endsAt.difference(DateTime.now());
+    if (mounted) setState(() => _left = left.isNegative ? Duration.zero : left);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final h = _left.inHours;
+    final m = _left.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = _left.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final text = h > 0 ? '${h}h ${m}m' : '$m:$s';
+    return Text(
+      text,
+      style: const TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.bold, fontSize: 12),
+    );
   }
 }

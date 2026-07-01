@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/services/social_service.dart';
+import 'package:musaab_adam/core/services/stream_service.dart';
 import 'package:musaab_adam/data/models/social/public_profile_model.dart';
+import 'package:musaab_adam/data/models/stream/stream_model.dart';
 
 class OtherUserProfileController extends GetxController {
   final String userId;
@@ -14,10 +16,16 @@ class OtherUserProfileController extends GetxController {
   final RxBool isBlockedByMe = false.obs;
   final RxInt followersCount = 0.obs;
 
+  // Seller's shows for the profile tabs.
+  final RxList<StreamModel> upcomingShows = <StreamModel>[].obs;
+  final RxList<StreamModel> previousShows = <StreamModel>[].obs;
+  final RxBool showsLoading = false.obs;
+
   @override
   void onInit() {
     super.onInit();
     _loadProfile();
+    _loadShows();
   }
 
   Future<void> _loadProfile() async {
@@ -32,6 +40,23 @@ class OtherUserProfileController extends GetxController {
       Get.snackbar('Error', SocialService.extractError(e), snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> _loadShows() async {
+    showsLoading.value = true;
+    try {
+      final results = await Future.wait([
+        StreamService.instance.getSellerStreams(sellerId: userId, status: 'live'),
+        StreamService.instance.getSellerStreams(sellerId: userId, status: 'scheduled'),
+        StreamService.instance.getSellerStreams(sellerId: userId, status: 'ended'),
+      ]);
+      upcomingShows.assignAll([...results[0], ...results[1]]);
+      previousShows.assignAll(results[2]);
+    } catch (_) {
+      // Non-fatal: profile still renders without shows.
+    } finally {
+      showsLoading.value = false;
     }
   }
 

@@ -1,3 +1,16 @@
+class ChatReplyRef {
+  final String id;
+  final String text;
+  final String senderName;
+  const ChatReplyRef({required this.id, required this.text, required this.senderName});
+
+  factory ChatReplyRef.fromJson(Map<String, dynamic> j) => ChatReplyRef(
+        id: j['id']?.toString() ?? '',
+        text: j['text']?.toString() ?? '',
+        senderName: j['senderName']?.toString() ?? '',
+      );
+}
+
 class ChatMessageModel {
   final String id;
   final String streamId;
@@ -6,6 +19,7 @@ class ChatMessageModel {
   final String senderId;
   final String senderName;
   final String? senderAvatarUrl;
+  final ChatReplyRef? replyTo;
   final DateTime? createdAt;
 
   const ChatMessageModel({
@@ -16,6 +30,7 @@ class ChatMessageModel {
     required this.senderId,
     required this.senderName,
     this.senderAvatarUrl,
+    this.replyTo,
     this.createdAt,
   });
 
@@ -29,6 +44,9 @@ class ChatMessageModel {
       senderId: sender['userId']?.toString() ?? '',
       senderName: sender['displayName']?.toString() ?? 'User',
       senderAvatarUrl: sender['avatarUrl']?.toString(),
+      replyTo: json['replyTo'] is Map
+          ? ChatReplyRef.fromJson(Map<String, dynamic>.from(json['replyTo'] as Map))
+          : null,
       createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
     );
   }

@@ -16,6 +16,7 @@ class SignUpScreen extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController referralCodeController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   final AuthController _authController = Get.find<AuthController>();
@@ -40,6 +41,14 @@ class SignUpScreen extends StatelessWidget {
                   CustomTextField(label: AppStrings.email, hintText: AppStrings.enterEmail, controller: emailController, validator: (v) => !isEmailValid(email: v ?? "") ? "Enter valid email" : null),
                   CustomTextField(label: AppStrings.password, hintText: AppStrings.enterPassword, controller: passwordController, isPassword: true, validator: (v) => !isPasswordValid(password: v ?? "") ? "Invalid password" : null),
                   CustomTextField(label: AppStrings.confirmPassword, hintText: AppStrings.enterPassword, controller: confirmPasswordController, isPassword: true, validator: (v) => passwordController.text != v ? "Passwords do not match" : null),
+                  CustomTextField(
+                    label: AppStrings.referralCodeOptional,
+                    hintText: AppStrings.enterReferralCode,
+                    controller: referralCodeController,
+                    validator: (v) => (v == null || v.trim().isEmpty || RegExp(r'^[a-zA-Z0-9]{4,16}$').hasMatch(v.trim()))
+                        ? null
+                        : "Invalid referral code",
+                  ),
                   SizedBoxWidget(height: 20.h),
                   Obx(() => CustomButton(
                     label: AppStrings.signUp,
@@ -51,6 +60,7 @@ class SignUpScreen extends StatelessWidget {
                         _authController.register(
                           emailController.text.trim(),
                           passwordController.text,
+                          referralCode: referralCodeController.text.trim(),
                         );
                       }
                     },

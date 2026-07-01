@@ -75,6 +75,7 @@ class OrderModel {
 
   bool get isPending => status == 'pending';
   bool get isDelivered => status == 'delivered';
+  bool get isCompleted => status == 'completed';
   bool get isCancelled => status == 'cancelled';
 
   factory OrderModel.fromJson(Map<String, dynamic> json) => OrderModel(

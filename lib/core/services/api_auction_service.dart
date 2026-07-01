@@ -16,6 +16,7 @@ class ApiAuctionService {
     int? durationMs,
     double? startingPrice,
     double? reservePrice,
+    double? bidIncrement,
   }) async {
     final response = await _dio.post(ApiConstants.startAuction, data: {
       'productId': productId,
@@ -23,8 +24,24 @@ class ApiAuctionService {
       'durationMs': ?durationMs,
       'startingPrice': ?startingPrice,
       'reservePrice': ?reservePrice,
+      'bidIncrement': ?bidIncrement,
     });
     return Map<String, dynamic>.from(response.data['data']['auction'] as Map);
+  }
+
+  Future<Map<String, dynamic>> pauseAuction(String productId) async {
+    final r = await _dio.post(ApiConstants.pauseAuction(productId));
+    return Map<String, dynamic>.from(r.data['data']['auction'] as Map);
+  }
+
+  Future<Map<String, dynamic>> resumeAuction(String productId) async {
+    final r = await _dio.post(ApiConstants.resumeAuction(productId));
+    return Map<String, dynamic>.from(r.data['data']['auction'] as Map);
+  }
+
+  Future<Map<String, dynamic>> cancelAuction(String productId) async {
+    final r = await _dio.post(ApiConstants.cancelAuction(productId));
+    return Map<String, dynamic>.from(r.data['data']['auction'] as Map);
   }
 
   /// Seller manually closes an auction early.

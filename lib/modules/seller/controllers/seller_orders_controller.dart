@@ -36,7 +36,7 @@ class SellerOrdersController extends GetxController {
   static const _tabStatuses = <int, List<String>>{
     1: ['pending', 'confirmed'],
     2: ['processing', 'shipped'],
-    3: ['delivered'],
+    3: ['delivered', 'completed'],
   };
 
   List<OrderModel> get filtered {

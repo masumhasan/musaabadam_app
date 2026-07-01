@@ -126,7 +126,20 @@ class ScheduleShowController extends GetxController {
     return true;
   }
 
-  Future<void> scheduleShow() async {
+  // Maps the UI discoverability label to the backend visibility value.
+  String get _visibility {
+    switch (discoverability.value.toLowerCase()) {
+      case 'followers':
+      case 'followers only':
+        return 'followers';
+      case 'private':
+        return 'private';
+      default:
+        return 'public';
+    }
+  }
+
+  Future<void> scheduleShow({bool asDraft = false}) async {
     if (isLoading.value) return;
     if (!_validate()) return;
 
@@ -139,6 +152,7 @@ class ScheduleShowController extends GetxController {
           categoryId: selectedCategory.value?.id,
           scheduledAt: scheduledAt.value,
           tags: tags.isEmpty ? null : tags.toList(),
+          visibility: _visibility,
         );
         Get.back();
         Get.snackbar(
@@ -154,11 +168,13 @@ class ScheduleShowController extends GetxController {
           scheduledAt: scheduledAt.value,
           tags: tags.isEmpty ? null : tags.toList(),
           chatEnabled: true,
+          visibility: _visibility,
+          asDraft: asDraft,
         );
         Get.back();
         Get.snackbar(
-          'Show Scheduled!',
-          'Your live show has been scheduled.',
+          asDraft ? 'Draft Saved!' : 'Show Scheduled!',
+          asDraft ? 'Your show was saved as a draft.' : 'Your live show has been scheduled.',
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 3),
         );

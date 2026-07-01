@@ -111,17 +111,29 @@ class SellerPayoutScreen extends GetView<SellerPayoutController> {
               }),
             ),
 
-            // Request payout
+            // Set up payouts (onboarding) OR request payout when enabled
             Padding(
               padding: EdgeInsets.only(bottom: 20.h),
-              child: Obx(() => CustomButton(
-                    label: AppStrings.payouts,
+              child: Obx(() {
+                if (!controller.payoutsEnabled.value) {
+                  return CustomButton(
+                    label: 'Set up payouts',
                     buttonWidth: double.infinity,
                     backgroundColor: colorScheme.primary,
                     textColor: Colors.white,
-                    isLoading: controller.isRequesting.value,
-                    onPressed: controller.requestPayout,
-                  )),
+                    isLoading: controller.isOnboarding.value,
+                    onPressed: controller.setupPayouts,
+                  );
+                }
+                return CustomButton(
+                  label: AppStrings.payouts,
+                  buttonWidth: double.infinity,
+                  backgroundColor: colorScheme.primary,
+                  textColor: Colors.white,
+                  isLoading: controller.isRequesting.value,
+                  onPressed: controller.requestPayout,
+                );
+              }),
             ),
           ],
         ),

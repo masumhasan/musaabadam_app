@@ -12,6 +12,7 @@ class OrderTrackingController extends GetxController {
 
   final RxBool isLoading = true.obs;
   final RxBool hasError = false.obs;
+  final RxBool isConfirming = false.obs;
 
   late final String orderId;
 
@@ -43,6 +44,22 @@ class OrderTrackingController extends GetxController {
       hasError.value = true;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  /// Buyer confirms receipt → order becomes `completed`.
+  Future<void> confirmReceipt() async {
+    if (isConfirming.value) return;
+    isConfirming.value = true;
+    try {
+      final updated = await ApiOrderService.instance.completeOrder(orderId);
+      order.value = updated;
+      await load();
+      Get.snackbar('Thank you!', 'Order marked as completed.', snackPosition: SnackPosition.BOTTOM);
+    } on DioException catch (e) {
+      Get.snackbar('Error', ApiOrderService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isConfirming.value = false;
     }
   }
 }

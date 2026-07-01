@@ -19,6 +19,8 @@ class StreamService {
     List<String>? tags,
     DateTime? scheduledAt,
     bool chatEnabled = true,
+    String? visibility, // public | followers | private
+    bool asDraft = false,
   }) async {
     final response = await _dio.post(ApiConstants.streams, data: {
       'title': title,
@@ -28,8 +30,21 @@ class StreamService {
       'tags': ?tags,
       'scheduledAt': ?scheduledAt?.toUtc().toIso8601String(),
       'chatEnabled': chatEnabled,
+      'visibility': ?visibility,
+      if (asDraft) 'status': 'draft',
     });
     return StreamModel.fromJson(response.data['data']['stream'] as Map<String, dynamic>);
+  }
+
+  /// Publish a draft show → scheduled.
+  Future<StreamModel> publishStream(String streamId) async {
+    final response = await _dio.patch(ApiConstants.publishStream(streamId));
+    return StreamModel.fromJson(response.data['data']['stream'] as Map<String, dynamic>);
+  }
+
+  /// Delete a draft / scheduled / cancelled show.
+  Future<void> deleteStream(String streamId) async {
+    await _dio.delete(ApiConstants.deleteStream(streamId));
   }
 
   // ─── Seller: Start an auction stream immediately ───────────────────────────
@@ -65,6 +80,7 @@ class StreamService {
     List<String>? tags,
     DateTime? scheduledAt,
     bool? chatEnabled,
+    String? visibility,
   }) async {
     final response = await _dio.patch(ApiConstants.updateStream(streamId), data: {
       if (title != null) 'title': title,
@@ -74,6 +90,7 @@ class StreamService {
       if (tags != null) 'tags': tags,
       if (scheduledAt != null) 'scheduledAt': scheduledAt.toUtc().toIso8601String(),
       if (chatEnabled != null) 'chatEnabled': chatEnabled,
+      if (visibility != null) 'visibility': visibility,
     });
     return StreamModel.fromJson(response.data['data']['stream'] as Map<String, dynamic>);
   }
@@ -118,6 +135,22 @@ class StreamService {
   Future<List<StreamModel>> getScheduledStreams({int page = 1}) async {
     final response = await _dio.get(ApiConstants.streams, queryParameters: {
       'status': 'scheduled',
+      'page': page,
+      'limit': 20,
+    });
+    final list = response.data['data']['streams'] as List;
+    return list.map((e) => StreamModel.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  /// A specific seller's public shows filtered by status (for their profile).
+  Future<List<StreamModel>> getSellerStreams({
+    required String sellerId,
+    required String status, // live | scheduled | ended
+    int page = 1,
+  }) async {
+    final response = await _dio.get(ApiConstants.streams, queryParameters: {
+      'status': status,
+      'sellerId': sellerId,
       'page': page,
       'limit': 20,
     });

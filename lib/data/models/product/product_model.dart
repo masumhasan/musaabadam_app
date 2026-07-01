@@ -16,6 +16,8 @@ class ProductModel {
   final int quantitySold;
   final List<String> images;
   final bool flashSale;
+  final double? flashSalePrice;
+  final DateTime? flashSaleEndsAt;
   final bool acceptOffers;
   final double maxDiscount;
   final bool reserveForLive;
@@ -46,6 +48,8 @@ class ProductModel {
     required this.quantitySold,
     required this.images,
     required this.flashSale,
+    this.flashSalePrice,
+    this.flashSaleEndsAt,
     required this.acceptOffers,
     required this.maxDiscount,
     required this.reserveForLive,
@@ -64,6 +68,15 @@ class ProductModel {
   bool get isGiveaway => listingType == 'giveaway';
   bool get isActive => status == 'active';
   bool get isDraft => status == 'draft';
+
+  bool get isFlashSaleActive =>
+      flashSale &&
+      flashSalePrice != null &&
+      flashSaleEndsAt != null &&
+      flashSaleEndsAt!.isAfter(DateTime.now());
+
+  /// Price the buyer actually pays right now (honours an active flash sale).
+  double get effectivePrice => isFlashSaleActive ? flashSalePrice! : price;
 
   String get displayPrice {
     if (isGiveaway) return 'Free';
@@ -92,6 +105,8 @@ class ProductModel {
       quantitySold: json['quantitySold'] as int? ?? 0,
       images: List<String>.from(json['images'] ?? []),
       flashSale: json['flashSale'] as bool? ?? false,
+      flashSalePrice: json['flashSalePrice'] != null ? _toDouble(json['flashSalePrice']) : null,
+      flashSaleEndsAt: json['flashSaleEndsAt'] != null ? DateTime.tryParse(json['flashSaleEndsAt'].toString()) : null,
       acceptOffers: json['acceptOffers'] as bool? ?? false,
       maxDiscount: _toDouble(json['maxDiscount']),
       reserveForLive: json['reserveForLive'] as bool? ?? false,

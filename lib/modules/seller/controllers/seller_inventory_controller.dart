@@ -77,4 +77,24 @@ class SellerInventoryController extends GetxController {
   void pinProductForAuction(ProductModel product) {
     Get.toNamed(AppRoutes.startAuctionScreen, arguments: product);
   }
+
+  Future<void> startFlashSale(String productId, {required double price, int durationMinutes = 60}) async {
+    try {
+      await ProductService.instance.startFlashSale(productId, flashSalePrice: price, durationMinutes: durationMinutes);
+      await loadProducts();
+      Get.snackbar('Flash sale started', 'Runs for $durationMinutes min.', snackPosition: SnackPosition.BOTTOM);
+    } on DioException catch (e) {
+      Get.snackbar('Error', ProductService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  Future<void> endFlashSale(String productId) async {
+    try {
+      await ProductService.instance.endFlashSale(productId);
+      await loadProducts();
+      Get.snackbar('Flash sale ended', '', snackPosition: SnackPosition.BOTTOM);
+    } on DioException catch (e) {
+      Get.snackbar('Error', ProductService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    }
+  }
 }

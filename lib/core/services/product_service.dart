@@ -105,6 +105,26 @@ class ProductService {
     await _dio.delete(ApiConstants.product(productId));
   }
 
+  /// Starts a flash sale on a buy-now product.
+  Future<ProductModel> startFlashSale(
+    String productId, {
+    required double flashSalePrice,
+    int? durationMinutes,
+    int? stock,
+  }) async {
+    final response = await _dio.post(ApiConstants.flashSale(productId), data: {
+      'flashSalePrice': flashSalePrice,
+      'durationMinutes': ?durationMinutes,
+      'stock': ?stock,
+    });
+    return ProductModel.fromJson(response.data['data']['product'] as Map<String, dynamic>);
+  }
+
+  Future<ProductModel> endFlashSale(String productId) async {
+    final response = await _dio.delete(ApiConstants.flashSale(productId));
+    return ProductModel.fromJson(response.data['data']['product'] as Map<String, dynamic>);
+  }
+
   static String extractError(DioException e) {
     try {
       final data = e.response?.data;

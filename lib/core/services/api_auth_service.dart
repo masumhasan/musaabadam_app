@@ -16,14 +16,29 @@ class ApiAuthService {
     required String email,
     required String password,
     String? username,
+    String? referralCode,
   }) async {
     final response = await _dio.post(ApiConstants.register, data: {
       'email': email,
       'password': password,
       'username': ?username,
+      'referralCode': ?referralCode,
     });
     final data = response.data['data'] as Map<String, dynamic>;
     return (email: data['email'] as String, userId: data['userId'] as String);
+  }
+
+  /// Fetches the current user's referral code + invite stats.
+  Future<({String referralCode, int credit, int complete, int pending})> getReferralInfo() async {
+    final response = await _dio.get(ApiConstants.referral);
+    final data = response.data['data'] as Map<String, dynamic>;
+    final stats = (data['stats'] as Map?) ?? const {};
+    return (
+      referralCode: data['referralCode']?.toString() ?? '',
+      credit: (stats['credit'] as num?)?.toInt() ?? 0,
+      complete: (stats['complete'] as num?)?.toInt() ?? 0,
+      pending: (stats['pending'] as num?)?.toInt() ?? 0,
+    );
   }
 
   Future<AuthResponseModel> login({

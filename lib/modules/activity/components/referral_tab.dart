@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
+import 'package:musaab_adam/modules/home/controllers/invite_controller.dart';
 
 import '../../../core/assets_gen/assets.gen.dart';
 
@@ -8,6 +10,8 @@ class ReferralTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller =
+        Get.isRegistered<InviteController>() ? Get.find<InviteController>() : Get.put(InviteController());
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -62,7 +66,7 @@ class ReferralTab extends StatelessWidget {
 
           const SizedBox(height: 30),
 
-          // Referral Link Section
+          // Referral Code Section
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
@@ -71,18 +75,21 @@ class ReferralTab extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Expanded(
-                  child: Text(
-                    "Bidsrush.com/invite/sharvagin",
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.black87),
-                  ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Obx(() => Text(
+                        controller.isLoading.value
+                            ? "…"
+                            : (controller.referralCode.value.isEmpty ? "—" : controller.referralCode.value),
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16),
+                      )),
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: controller.copyCode,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF008EAB),
-                    shape: StadiumBorder(),
+                    shape: const StadiumBorder(),
                   ),
                   child: const Text("Copy", style: TextStyle(color: Colors.white)),
                 ),
@@ -96,7 +103,7 @@ class ReferralTab extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: controller.shareCode,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE0F2F5),
                 foregroundColor: const Color(0xFF008EAB),

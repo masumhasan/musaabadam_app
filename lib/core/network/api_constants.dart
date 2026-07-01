@@ -5,14 +5,14 @@ class ApiConstants {
   // Android emulator → 10.0.2.2 maps to host machine localhost
   // iOS simulator    → 127.0.0.1
   // Physical device  → set your machine's LAN IP here
-  static const String _devBaseUrl = 'http://98.90.22.230:3000/api/v1';
+  static const String _devBaseUrl = 'http://10.0.2.2:3000/api/v1';
   static const String _prodBaseUrl = 'https://api.bidsrush.com/api/v1';
 
   static const bool _isProduction = bool.fromEnvironment('dart.vm.product');
   static const String baseUrl = _isProduction ? _prodBaseUrl : _devBaseUrl;
 
   // Socket.io server (same host, no /api/v1 path prefix)
-  static const String _devSocketUrl = 'http://98.90.22.230:3000';
+  static const String _devSocketUrl = 'http://10.0.2.2:3000';
   static const String _prodSocketUrl = 'https://api.bidsrush.com';
   static const String socketUrl = _isProduction ? _prodSocketUrl : _devSocketUrl;
 
@@ -53,6 +53,13 @@ class ApiConstants {
   static const String productInventory = '/products/inventory';
   static String publishProduct(String id) => '/products/$id/publish';
   static String deactivateProduct(String id) => '/products/$id/deactivate';
+  static String flashSale(String id) => '/products/$id/flash-sale';
+
+  // Search
+  static const String search = '/search';
+
+  // Referral
+  static const String referral = '/users/referral';
 
   // Seller application
   static const String sellerApplication = '/users/seller-application';
@@ -75,6 +82,10 @@ class ApiConstants {
   static String endStream(String streamId) => '/streams/$streamId/end';
   static String updateStream(String streamId) => '/streams/$streamId';
   static String cancelStream(String streamId) => '/streams/$streamId/cancel';
+  static String publishStream(String streamId) => '/streams/$streamId/publish';
+  static String deleteStream(String streamId) => '/streams/$streamId';
+  static String pinStreamProduct(String streamId) => '/streams/$streamId/pin';
+  static String unpinStreamProduct(String streamId) => '/streams/$streamId/unpin';
   static const String myStreams = '/streams/me/streams';
 
   // Replays (past shows)
@@ -90,6 +101,8 @@ class ApiConstants {
   static const String sellerOrders = '/orders/seller';
   static String orderDetail(String orderId) => '/orders/$orderId';
   static String cancelOrder(String orderId) => '/orders/$orderId/cancel';
+  static String completeOrder(String orderId) => '/orders/$orderId/complete';
+  static String orderAddress(String orderId) => '/orders/$orderId/address';
   static String updateOrderStatus(String orderId) => '/orders/$orderId/status';
 
   // Analytics
@@ -103,6 +116,9 @@ class ApiConstants {
 
   // Auctions
   static const String startAuction = '/auctions/start';
+  static String pauseAuction(String productId) => '/auctions/$productId/pause';
+  static String resumeAuction(String productId) => '/auctions/$productId/resume';
+  static String cancelAuction(String productId) => '/auctions/$productId/cancel';
   static String closeAuction(String productId) => '/auctions/$productId/close';
   static String auctionBids(String productId) => '/auctions/$productId/bids';
 
@@ -126,6 +142,8 @@ class ApiConstants {
   static const String wallet = '/payments/wallet';
   static const String walletLedger = '/payments/wallet/ledger';
   static const String payouts = '/payments/payouts';
+  static const String payoutAccount = '/payments/payout-account';
+  static const String payoutOnboard = '/payments/payout-account/onboard';
 
   // Auction streams
   static const String createAuctionStream = '/streams/auction';

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:musaab_adam/core/services/api_payment_service.dart';
 import 'package:musaab_adam/data/models/payment/wallet_model.dart';
 
@@ -11,6 +12,10 @@ class SellerPayoutController extends GetxController {
   final RxBool isLoading = true.obs;
   final RxBool hasError = false.obs;
   final RxBool isRequesting = false.obs;
+
+  // Payout account onboarding state
+  final RxBool payoutsEnabled = false.obs;
+  final RxBool isOnboarding = false.obs;
 
   double get available => wallet.value?.available ?? 0;
   double get pending => wallet.value?.pending ?? 0;
@@ -28,15 +33,38 @@ class SellerPayoutController extends GetxController {
       final results = await Future.wait([
         ApiPaymentService.instance.getWallet(),
         ApiPaymentService.instance.listPayouts(),
+        ApiPaymentService.instance.getPayoutAccount(),
       ]);
       wallet.value = results[0] as WalletModel;
       payouts.assignAll(results[1] as List<Map<String, dynamic>>);
+      final account = results[2] as Map<String, dynamic>;
+      payoutsEnabled.value = account['payoutsEnabled'] == true;
     } on DioException {
       hasError.value = true;
     } catch (_) {
       hasError.value = true;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  /// Opens the payout-account onboarding flow (Stripe Connect / mock).
+  Future<void> setupPayouts() async {
+    if (isOnboarding.value) return;
+    isOnboarding.value = true;
+    try {
+      final url = await ApiPaymentService.instance.startPayoutOnboarding();
+      if (url != null) {
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      }
+      await load(); // refresh connected state on return
+    } on DioException catch (e) {
+      Get.snackbar('Payouts', ApiPaymentService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isOnboarding.value = false;
     }
   }
 

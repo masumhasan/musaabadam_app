@@ -61,6 +61,7 @@ class AppStrings {
   static const String forYou = "For You";
   static const String followedHosts = "Followed Hosts";
   static const String liveStreams = "Live streams";
+  static const String noLiveStreams = "No live streams right now";
   static const String trendingProducts = "Trending products";
   static const String home = "Home";
   static const String sell = "Sell";
@@ -618,6 +619,12 @@ class AppStrings {
   static const String inviteSellerEarn10 = 'Invite a seller, earn £10';
   static const String shareInvite = 'Share Invite';
   static const String learnToPromote = 'Learn how to promote your livestream';
+  static const String referralCodeOptional = 'Referral code (optional)';
+  static const String enterReferralCode = 'Enter referral code';
+  static const String yourReferralCode = 'Your referral code';
+  static const String shareYourCode = 'Share your code with friends';
+  static const String copied = 'Copied';
+  static const String referralCodeCopied = 'Referral code copied to clipboard';
   static const String itemDimensions = 'Item Dimensions';
   static const String shippingRate = 'Shipping Rate';
   static const String flatRate = 'Flat rate (£)';

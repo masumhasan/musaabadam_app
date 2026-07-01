@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/modules/shipping/controllers/order_tracking_controller.dart';
@@ -78,6 +79,34 @@ class OrderTrackingScreen extends GetView<OrderTrackingController> {
               CustomText(text: 'No tracking events yet.', fontColor: cs.outline, textAlignment: TextAlign.start)
             else
               ...events.map((e) => _timelineRow(e, cs)),
+
+            // Buyer confirm-receipt action (delivered → completed)
+            if (order.isDelivered) ...[
+              SizedBoxWidget(height: 28.h),
+              CustomButton(
+                label: 'Confirm receipt',
+                buttonWidth: double.infinity,
+                backgroundColor: cs.primary,
+                textColor: Colors.white,
+                isLoading: controller.isConfirming.value,
+                onPressed: controller.confirmReceipt,
+              ),
+              SizedBoxWidget(height: 6.h),
+              CustomText(
+                text: 'Confirms your order arrived and completes it.',
+                fontSize: 12,
+                fontColor: cs.outline,
+              ),
+            ] else if (order.isCompleted) ...[
+              SizedBoxWidget(height: 24.h),
+              Center(
+                child: CustomText(
+                  text: '✓ Order completed',
+                  fontWeight: FontWeight.w700,
+                  fontColor: cs.primary,
+                ),
+              ),
+            ],
           ],
         );
       }),

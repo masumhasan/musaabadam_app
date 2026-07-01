@@ -72,7 +72,7 @@ class HomeScreen extends GetView<MainNavController> {
               ],
             ),
           ),
-          _liveStreamSliverGrid(homeCtrl.liveStreams),
+          _liveStreamSliverGrid(homeCtrl.liveStreams, homeCtrl.isLoadingStreams.value),
           if (homeCtrl.pastShows.isNotEmpty) ...[
             SliverToBoxAdapter(child: _pastShowsHeader(theme)),
             _pastShowsSliverGrid(homeCtrl.pastShows),
@@ -227,28 +227,18 @@ class HomeScreen extends GetView<MainNavController> {
     }
   }
 
-  Widget _liveStreamSliverGrid(List<StreamModel> streams) {
+  Widget _liveStreamSliverGrid(List<StreamModel> streams, bool isLoading) {
     if (streams.isEmpty) {
-      return SliverPadding(
-        padding: EdgeInsets.symmetric(horizontal: 15.w),
-        sliver: SliverGrid(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10.w,
-            mainAxisSpacing: 10.h,
-            mainAxisExtent: 185.h,
-          ),
-          delegate: SliverChildBuilderDelegate(
-            (context, index) => LivestreamGridItem(
-              userName: "Suja Rae",
-              userAvatarUrl: Dummy.user2,
-              thumbnailUrl: Dummy.live1,
-              streamTitle: "Live Bag Haul",
-              onTap: () => Get.toNamed(AppRoutes.livestreamScreen),
-              viewerCount: '2.5 k',
-              category: "Women's category",
-            ),
-            childCount: 8,
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 40.h),
+          child: Center(
+            child: isLoading
+                ? const CircularProgressIndicator()
+                : CustomText(
+                    text: AppStrings.noLiveStreams,
+                    fontColor: Get.theme.colorScheme.outline,
+                  ),
           ),
         ),
       );

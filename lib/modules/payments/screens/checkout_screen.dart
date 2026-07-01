@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/data/models/address/address_model.dart';
 import 'package:musaab_adam/data/models/payment/payment_method_model.dart';
 import 'package:musaab_adam/modules/payments/controllers/checkout_controller.dart';
 
@@ -65,6 +66,19 @@ class CheckoutScreen extends GetView<CheckoutController> {
                   _row('Total', order.totalAmount, cs, bold: true),
                   SizedBoxWidget(height: 24.h),
 
+                  // Shipping address
+                  CustomText(text: 'Shipping address', fontWeight: FontWeight.w700, textAlignment: TextAlign.start),
+                  SizedBoxWidget(height: 12.h),
+                  if (controller.addresses.isEmpty)
+                    CustomText(
+                      text: 'No saved addresses. Add one in your profile to set shipping & tax.',
+                      fontColor: cs.outline,
+                      textAlignment: TextAlign.start,
+                    )
+                  else
+                    ...controller.addresses.map((a) => _addressTile(a, cs)),
+                  SizedBoxWidget(height: 20.h),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -115,6 +129,39 @@ class CheckoutScreen extends GetView<CheckoutController> {
         ],
       ),
     );
+  }
+
+  Widget _addressTile(AddressModel a, ColorScheme cs) {
+    return Obx(() {
+      final selected = controller.selectedAddressId.value == a.id;
+      return GestureDetector(
+        onTap: () => controller.selectAddress(a),
+        child: Container(
+          margin: EdgeInsets.only(bottom: 10.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: cs.primaryContainer.withValues(alpha: selected ? 0.5 : 0.2),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: selected ? cs.primary : cs.outline.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.location_on_outlined, color: cs.onSurface, size: 20.r),
+              SizedBoxWidget(width: 12.w),
+              Expanded(
+                child: CustomText(
+                  text: '${a.fullName}, ${a.line1}, ${a.city} ${a.postalCode}, ${a.country}',
+                  textAlignment: TextAlign.start,
+                  maxLines: 2,
+                  fontSize: 13,
+                ),
+              ),
+              if (selected) Icon(Icons.check_circle, color: cs.primary, size: 20.r),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   Widget _methodTile(PaymentMethodModel m, ColorScheme cs) {
