@@ -30,6 +30,7 @@ class ApiClient {
 class _AuthInterceptor extends Interceptor {
   final Dio dio;
   bool _isRefreshing = false;
+  final List<Map<String, dynamic>> _queue = [];
 
   _AuthInterceptor(this.dio);
 
@@ -44,22 +45,62 @@ class _AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401 && !_isRefreshing) {
+    if (err.response?.statusCode == 401) {
+      final requestPath = err.requestOptions.path;
+      // If the 401 is from the refresh-token endpoint itself, the refresh token is expired.
+      if (requestPath.contains(ApiConstants.refreshToken)) {
+        await TokenStorageService.instance.clearTokens();
+        _isRefreshing = false;
+        _queue.clear();
+        Get.offAllNamed(AppRoutes.signInScreen);
+        return handler.next(err);
+      }
+
+      if (_isRefreshing) {
+        _queue.add({
+          'options': err.requestOptions,
+          'handler': handler,
+        });
+        return;
+      }
+
       _isRefreshing = true;
       try {
         final newToken = await _refreshToken();
         if (newToken != null) {
-          // Retry original request with new token
+          // Retry the original request
           err.requestOptions.headers['Authorization'] = 'Bearer $newToken';
           final retryResponse = await dio.fetch(err.requestOptions);
-          _isRefreshing = false;
-          return handler.resolve(retryResponse);
+          handler.resolve(retryResponse);
+
+          // Retry all queued requests
+          final localQueue = List.from(_queue);
+          _queue.clear();
+          for (final item in localQueue) {
+            final opts = item['options'] as RequestOptions;
+            final h = item['handler'] as ErrorInterceptorHandler;
+            opts.headers['Authorization'] = 'Bearer $newToken';
+            try {
+              final resp = await dio.fetch(opts);
+              h.resolve(resp);
+            } catch (e) {
+              h.next(e is DioException ? e : DioException(requestOptions: opts, error: e));
+            }
+          }
+          return;
         }
       } catch (_) {
-        // Refresh failed — clear session and redirect to sign-in
         await TokenStorageService.instance.clearTokens();
-        _isRefreshing = false;
+        final localQueue = List.from(_queue);
+        _queue.clear();
+        for (final item in localQueue) {
+          final h = item['handler'] as ErrorInterceptorHandler;
+          final opts = item['options'] as RequestOptions;
+          h.next(DioException(requestOptions: opts, error: 'Session expired'));
+        }
         Get.offAllNamed(AppRoutes.signInScreen);
+      } finally {
+        _isRefreshing = false;
       }
     }
     handler.next(err);
