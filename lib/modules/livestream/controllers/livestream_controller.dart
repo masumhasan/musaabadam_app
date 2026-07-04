@@ -145,11 +145,15 @@ class LivestreamController extends GetxController {
       callType: StreamCallType.fromString(result.callType),
       id: result.callId,
     );
-    await _sdkCall!.getOrCreate();
+    await _sdkCall!.join();
+    if (isHost) {
+      await _sdkCall!.goLive();
+    }
     call.value = _sdkCall;
   }
 
   Future<void> _connectSocket(String streamId) async {
+    SocketService.instance.resetStreamState();
     await SocketService.instance.connect();
     SocketService.instance.joinStream(streamId);
 

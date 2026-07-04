@@ -198,6 +198,25 @@ class SocketService {
     });
   }
 
+  void resetStreamState() {
+    latestBidUpdate.value = null;
+    latestAuctionStarted.value = null;
+    latestAuctionClosed.value = null;
+    latestAuctionState.value = null;
+    latestChatMessage.value = null;
+    latestReaction.value = null;
+    lastDeletedMessageId.value = null;
+    viewerCount.value = 0;
+    pinnedMessage.value = null;
+    lastBanEvent.value = null;
+    latestProductPinned.value = null;
+    latestProductUnpinned.value = null;
+    latestSoldOut.value = null;
+    latestGiveawayStarted.value = null;
+    latestGiveawayJoined.value = null;
+    latestGiveawayWinner.value = null;
+  }
+
   void disconnect() {
     _socket?.disconnect();
     _socket = null;
