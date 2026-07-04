@@ -15,6 +15,7 @@ import 'package:musaab_adam/data/models/product/product_model.dart';
 import 'package:musaab_adam/data/models/stream/stream_model.dart';
 import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
+import 'package:musaab_adam/core/services/social_service.dart';
 
 // ignore_for_file: unawaited_futures
 
@@ -24,6 +25,10 @@ class LivestreamController extends GetxController {
   final Rx<Call?> call = Rx(null);
   final RxBool isLoading = true.obs;
   final RxBool hasError = false.obs;
+
+  // Follow seller state
+  final RxBool isFollowingSeller = false.obs;
+  final RxBool followLoading = false.obs;
 
   // Live auction state (driven by socket events)
   final RxInt bidCount = 0.obs;
@@ -116,6 +121,14 @@ class LivestreamController extends GetxController {
 
       await _initStreamVideo(result);
       await _connectSocket(streamId);
+
+      // Fetch follow status of the seller
+      final sellerId = result.stream.sellerId;
+      if (sellerId != null) {
+        SocialService.instance.getPublicProfile(sellerId).then((profile) {
+          isFollowingSeller.value = profile.isFollowing;
+        }).catchError((_) {});
+      }
     } on DioException {
       hasError.value = true;
     } catch (_) {
@@ -559,6 +572,29 @@ class LivestreamController extends GetxController {
     if (v is int) return v.toDouble();
     if (v is double) return v;
     return double.tryParse(v.toString()) ?? 0.0;
+  }
+
+  Future<void> toggleFollowSeller() async {
+    final sellerId = joinResult.value?.stream.sellerId;
+    if (sellerId == null || followLoading.value) return;
+    followLoading.value = true;
+    try {
+      if (isFollowingSeller.value) {
+        await SocialService.instance.unfollowUser(sellerId);
+        isFollowingSeller.value = false;
+        Get.snackbar('Success', 'Unfollowed successfully', snackPosition: SnackPosition.BOTTOM);
+      } else {
+        await SocialService.instance.followUser(sellerId);
+        isFollowingSeller.value = true;
+        Get.snackbar('Success', 'Followed successfully', snackPosition: SnackPosition.BOTTOM);
+      }
+    } on DioException catch (e) {
+      Get.snackbar('Error', SocialService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    } catch (_) {
+      Get.snackbar('Error', 'Failed to update follow status', snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      followLoading.value = false;
+    }
   }
 
 }

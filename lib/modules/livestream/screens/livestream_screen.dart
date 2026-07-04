@@ -187,7 +187,12 @@ class LiveStreamScreen extends StatelessWidget {
                 },
               ),
               GestureDetector(
-                onTap: () => Get.toNamed(AppRoutes.storyScreen),
+                onTap: () {
+                  final sellerId = lsCtrl.joinResult.value?.stream.sellerId;
+                  if (sellerId != null) {
+                    Get.toNamed(AppRoutes.otherUserProfileScreen, arguments: sellerId);
+                  }
+                },
                 child: CachedImageWidget(
                   imageUrl: lsCtrl.sellerAvatarUrl ?? Dummy.user1,
                   height: 40,
@@ -196,13 +201,21 @@ class LiveStreamScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                lsCtrl.sellerName.isNotEmpty ? lsCtrl.sellerName : 'Live Stream',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+              GestureDetector(
+                onTap: () {
+                  final sellerId = lsCtrl.joinResult.value?.stream.sellerId;
+                  if (sellerId != null) {
+                    Get.toNamed(AppRoutes.otherUserProfileScreen, arguments: sellerId);
+                  }
+                },
+                child: Text(
+                  lsCtrl.sellerName.isNotEmpty ? lsCtrl.sellerName : 'Live Stream',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                  ),
                 ),
               ),
               const Spacer(),
@@ -230,8 +243,14 @@ class LiveStreamScreen extends StatelessWidget {
                 lsCtrl.viewerCountText,
                 style: const TextStyle(color: AppColors.primaryColor, fontSize: 14),
               ),
-              const SizedBoxWidget(width: 10),
-              CustomButton(label: AppStrings.follow, buttonHeight: 30),
+              if (!lsCtrl.isHost) ...[
+                const SizedBoxWidget(width: 10),
+                CustomButton(
+                  label: lsCtrl.isFollowingSeller.value ? 'Following' : AppStrings.follow,
+                  buttonHeight: 30,
+                  onPressed: lsCtrl.toggleFollowSeller,
+                ),
+              ],
             ],
           ),
         ],
@@ -301,6 +320,7 @@ class LiveStreamScreen extends StatelessWidget {
                             user: m.senderName,
                             comment: m.replyTo != null ? '↳ @${m.replyTo!.senderName}  ${m.text}' : m.text,
                             isMod: m.type == 'system',
+                            avatarUrl: m.senderAvatarUrl,
                           ),
                         ),
                     ],

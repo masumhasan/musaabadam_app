@@ -6,12 +6,14 @@ class CommentItem extends StatelessWidget {
   final String user;
   final String comment;
   final bool isMod;
+  final String? avatarUrl;
 
   const CommentItem({
     super.key,
     required this.user,
     required this.comment,
     required this.isMod,
+    this.avatarUrl,
   });
 
   @override
@@ -22,7 +24,7 @@ class CommentItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CachedImageWidget(
-              imageUrl: Dummy.user1,
+            imageUrl: avatarUrl ?? Dummy.user1,
             height: 30,
             width: 30,
             borderRadius: 50,
