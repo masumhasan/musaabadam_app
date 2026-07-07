@@ -38,22 +38,25 @@ class OtherUserProfileScreen extends StatelessWidget {
             onPressed: () {},
             icon: Icon(Icons.screen_share_outlined, color: colorScheme.primary),
           ),
-          Obx(() => PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'block') _controller.blockThisUser();
-              if (value == 'unblock') _controller.unblockThisUser();
-              if (value == 'report') {
-                ApiReportService.showReportSheet(targetType: 'user', targetId: userId);
-              }
-            },
-            itemBuilder: (_) => [
-              if (!_controller.isBlockedByMe.value)
-                const PopupMenuItem(value: 'block', child: Text('Block user'))
-              else
-                const PopupMenuItem(value: 'unblock', child: Text('Unblock user')),
-              const PopupMenuItem(value: 'report', child: Text('Report user')),
-            ],
-          )),
+          Obx(() {
+            final isBlocked = _controller.isBlockedByMe.value; // Access Rx variable inside builder
+            return PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'block') _controller.blockThisUser();
+                if (value == 'unblock') _controller.unblockThisUser();
+                if (value == 'report') {
+                  ApiReportService.showReportSheet(targetType: 'user', targetId: userId);
+                }
+              },
+              itemBuilder: (_) => [
+                if (!isBlocked)
+                  const PopupMenuItem(value: 'block', child: Text('Block user'))
+                else
+                  const PopupMenuItem(value: 'unblock', child: Text('Unblock user')),
+                const PopupMenuItem(value: 'report', child: Text('Report user')),
+              ],
+            );
+          }),
         ],
       ),
       body: Obx(() {
@@ -166,7 +169,7 @@ class OtherUserProfileScreen extends StatelessWidget {
 
                 Obx(() => IndexedStack(
                   index: _tabIndex.value,
-                  children: [ShopTab(), _buildShowsSection(colorScheme), ReviewTab(sellerId: userId), ClipsTab()],
+                  children: [ShopTab(sellerId: userId), _buildShowsSection(colorScheme), ReviewTab(sellerId: userId), ClipsTab()],
                 )),
 
                 SizedBoxWidget(height: 20),

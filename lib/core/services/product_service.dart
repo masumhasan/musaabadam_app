@@ -91,6 +91,23 @@ class ProductService {
     );
   }
 
+  Future<List<ProductModel>> getPublicProducts({
+    String? sellerId,
+    String? status,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final response = await _dio.get(ApiConstants.products, queryParameters: {
+      'page': page,
+      'limit': limit,
+      if (sellerId != null) 'sellerId': sellerId,
+      if (status != null) 'status': status,
+    });
+    final data = response.data['data'];
+    final list = data['products'] as List;
+    return list.map((e) => ProductModel.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   Future<ProductModel> publishProduct(String productId) async {
     final response = await _dio.patch(ApiConstants.publishProduct(productId));
     return ProductModel.fromJson(response.data['data'] as Map<String, dynamic>);

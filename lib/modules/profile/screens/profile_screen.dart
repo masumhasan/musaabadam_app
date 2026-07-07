@@ -136,7 +136,7 @@ class ProfileScreen extends StatelessWidget {
                 // Tab Content
                 Obx(() => IndexedStack(
                   index: mainTabCurrentIndex.value,
-                  children: [ShopTab(), ShowsTab(), ReviewTab(sellerId: _authController.currentUser.value?.id), ClipsTab()],
+                  children: [ShopTab(sellerId: _authController.currentUser.value?.id), ShowsTab(), ReviewTab(sellerId: _authController.currentUser.value?.id), ClipsTab()],
                 )),
               ],
             );
