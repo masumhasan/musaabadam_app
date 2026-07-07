@@ -77,6 +77,15 @@ class ApiAuctionService {
     return list.map((e) => BidModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  Future<List<BidModel>> getMyBids({int page = 1}) async {
+    final response = await _dio.get(ApiConstants.myBids, queryParameters: {
+      'page': page,
+      'limit': 20,
+    });
+    final list = response.data['data']['bids'] as List;
+    return list.map((e) => BidModel.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   static String extractError(DioException e) {
     try {
       final data = e.response?.data;

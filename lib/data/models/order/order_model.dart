@@ -39,6 +39,7 @@ class OrderModel {
   final String? streamId;
   final String? buyerUsername;
   final String? sellerUsername;
+  final Map<String, dynamic>? shippingAddressSnapshot;
   final List<OrderItemModel> items;
   final double subtotal;
   final double shippingCost;
@@ -61,6 +62,7 @@ class OrderModel {
     this.streamId,
     this.buyerUsername,
     this.sellerUsername,
+    this.shippingAddressSnapshot,
     required this.items,
     required this.subtotal,
     required this.shippingCost,
@@ -89,6 +91,7 @@ class OrderModel {
         streamId: _extractIdOrNull(json['streamId']),
         buyerUsername: _extractUsername(json['buyerId']),
         sellerUsername: _extractUsername(json['sellerId']),
+        shippingAddressSnapshot: json['shippingAddressSnapshot'] as Map<String, dynamic>?,
         items: (json['items'] as List? ?? [])
             .map((e) => OrderItemModel.fromJson(e as Map<String, dynamic>))
             .toList(),

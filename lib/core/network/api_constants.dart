@@ -125,6 +125,11 @@ class ApiConstants {
   static const String orders = '/orders';
   static const String myOrders = '/orders/my';
   static const String sellerOrders = '/orders/seller';
+  
+  // Offers
+  static const String offers = '/offers';
+  static const String buyerOffers = '/offers/buyer';
+  static const String sellerOffers = '/offers/seller';
   static String orderDetail(String orderId) => '/orders/$orderId';
   static String cancelOrder(String orderId) => '/orders/$orderId/cancel';
   static String completeOrder(String orderId) => '/orders/$orderId/complete';
@@ -147,6 +152,7 @@ class ApiConstants {
   static String cancelAuction(String productId) => '/auctions/$productId/cancel';
   static String closeAuction(String productId) => '/auctions/$productId/close';
   static String auctionBids(String productId) => '/auctions/$productId/bids';
+  static const String myBids = '/auctions/my';
 
   // Chat
   static String chatMessages(String streamId) => '/chat/streams/$streamId/messages';
