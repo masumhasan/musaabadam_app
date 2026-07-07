@@ -37,6 +37,8 @@ class OrderModel {
   final String buyerId;
   final String sellerId;
   final String? streamId;
+  final String? buyerUsername;
+  final String? sellerUsername;
   final List<OrderItemModel> items;
   final double subtotal;
   final double shippingCost;
@@ -57,6 +59,8 @@ class OrderModel {
     required this.buyerId,
     required this.sellerId,
     this.streamId,
+    this.buyerUsername,
+    this.sellerUsername,
     required this.items,
     required this.subtotal,
     required this.shippingCost,
@@ -83,6 +87,8 @@ class OrderModel {
         buyerId: _extractId(json['buyerId']),
         sellerId: _extractId(json['sellerId']),
         streamId: _extractIdOrNull(json['streamId']),
+        buyerUsername: _extractUsername(json['buyerId']),
+        sellerUsername: _extractUsername(json['sellerId']),
         items: (json['items'] as List? ?? [])
             .map((e) => OrderItemModel.fromJson(e as Map<String, dynamic>))
             .toList(),
@@ -100,6 +106,11 @@ class OrderModel {
         isPaid: json['isPaid'] as bool? ?? false,
         createdAt: DateTime.parse(json['createdAt'] as String),
       );
+
+  static String? _extractUsername(dynamic v) {
+    if (v is Map) return v['username'] as String?;
+    return null;
+  }
 
   static String _extractId(dynamic v) {
     if (v is String) return v;
