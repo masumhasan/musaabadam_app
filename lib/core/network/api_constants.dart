@@ -174,6 +174,10 @@ class ApiConstants {
   // Auction streams
   static const String createAuctionStream = '/streams/auction';
 
+  // Direct Messages (DMs)
+  static const String dmConversations = '/dms/conversations';
+  static String dmMessages(String partnerId) => '/dms/messages/$partnerId';
+
   // Storage keys
   static const String accessTokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';

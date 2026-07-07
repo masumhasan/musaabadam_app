@@ -11,6 +11,7 @@ import 'package:musaab_adam/modules/livestream/screens/edit_clip_screen.dart';
 import 'package:musaab_adam/modules/home/screens/message_screen.dart';
 import 'package:musaab_adam/modules/home/screens/search_screen.dart';
 import 'package:musaab_adam/modules/home/bindings/search_binding.dart';
+import 'package:musaab_adam/modules/home/bindings/message_binding.dart';
 import 'package:musaab_adam/modules/livestream/screens/story_screen.dart';
 import 'package:musaab_adam/modules/livestream/screens/tip_amount_screen.dart';
 import 'package:musaab_adam/modules/livestream/screens/tip_info_screen.dart';
@@ -140,7 +141,7 @@ class AppPages {
     GetPage(name: AppRoutes.videoReceiptScreen, page: () => VideoReceiptScreen()),
     //===================MESSAGING====================
     GetPage(name: AppRoutes.inboxScreen, page: () => InboxScreen()),
-    GetPage(name: AppRoutes.messageScreen, page: () => MessageScreen()),
+    GetPage(name: AppRoutes.messageScreen, page: () => MessageScreen(), binding: MessageBinding()),
     GetPage(name: AppRoutes.messageRequestScreen, page: () => MessageRequestScreen()),
     GetPage(name: AppRoutes.archiveScreen, page: () => ArchiveScreen()),
 

@@ -60,8 +60,8 @@ class NotificationScreen extends StatelessWidget {
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 12.h),
-        color: n.isRead ? null : theme.colorScheme.primaryContainer.withValues(alpha: 0.18),
         decoration: BoxDecoration(
+          color: n.isRead ? null : theme.colorScheme.primaryContainer.withValues(alpha: 0.18),
           border: Border(bottom: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.2))),
         ),
         child: Row(

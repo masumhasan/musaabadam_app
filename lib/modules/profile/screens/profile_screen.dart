@@ -111,16 +111,6 @@ class ProfileScreen extends StatelessWidget {
                   children:[
                     Expanded(
                       child: CustomButton(
-                        label: AppStrings.message,
-                        textColor: Colors.white,
-                        backgroundColor: Colors.orange,
-                        buttonHeight: 40,
-                        fontSize: 14,
-                        onPressed: () => Get.toNamed(AppRoutes.messageScreen),
-                      ),
-                    ),
-                    Expanded(
-                      child: CustomButton(
                         label: AppStrings.editProfile,
                         textColor: Colors.white,
                         backgroundColor: colorScheme.primary,

@@ -3,19 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/utils/app_constants.dart';
-import 'package:musaab_adam/data/models/message/message_model.dart';
+import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
+import 'package:musaab_adam/modules/home/controllers/message_controller.dart';
 import '../components/message_tile.dart';
 
 class MessageScreen extends StatelessWidget {
   MessageScreen({super.key});
 
-  final RxList<MessageModel> messages = <MessageModel>[
-    MessageModel(message: "Hello !", isMe: false),
-    MessageModel(message: "How Much?", isMe: true),
-    MessageModel(message: "This product is original £25", isMe: false),
-  ].obs;
-
-  final TextEditingController messageController = TextEditingController();
+  final _controller = Get.find<MessageController>();
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +22,20 @@ class MessageScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: colorScheme.surface,
         leading: BackButton(color: colorScheme.onSurface),
-        title: Text('Lucy', style: TextStyle(color: colorScheme.onSurface)),
+        title: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(50),
+              child: CachedImageWidget(
+                imageUrl: _controller.partnerAvatar ?? Dummy.user1,
+                height: 35.h,
+                width: 35.w,
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Text(_controller.partnerName, style: TextStyle(color: colorScheme.onSurface, fontSize: 18.sp)),
+          ],
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.more_vert, color: colorScheme.onSurface),
@@ -41,14 +49,22 @@ class MessageScreen extends StatelessWidget {
           children: [
             Expanded(
               child: Obx(
-                () => ListView.builder(
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) => MessageTile(
-                    message: messages[index].message,
-                    isMe: messages[index].isMe,
-                    imageUrl: Dummy.user1,
-                  ),
-                ),
+                () {
+                  if (_controller.isLoading.value && _controller.messages.isEmpty) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  return ListView.builder(
+                    itemCount: _controller.messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = _controller.messages[index];
+                      return MessageTile(
+                        message: msg.text,
+                        isMe: msg.isMe,
+                        imageUrl: msg.isMe ? Dummy.user2 : (_controller.partnerAvatar ?? Dummy.user1),
+                      );
+                    },
+                  );
+                },
               ),
             ),
             Padding(
@@ -62,10 +78,11 @@ class MessageScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: TextField(
-                        controller: messageController,
+                        controller: _controller.textCtrl,
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           hintText: 'Your message...',
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
                         ),
                       ),
                     ),
@@ -81,10 +98,7 @@ class MessageScreen extends StatelessWidget {
                           color: colorScheme.onPrimary,
                           size: 20,
                         ),
-                        onPressed: () {
-                          if( messageController.text.trim().isEmpty ) return;
-                          messages.add(MessageModel(message: messageController.text.trim(), isMe: true),);
-                        },
+                        onPressed: _controller.sendMsg,
                       ),
                     ),
                   ),

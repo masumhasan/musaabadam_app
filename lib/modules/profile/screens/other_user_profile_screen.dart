@@ -128,7 +128,11 @@ class OtherUserProfileScreen extends StatelessWidget {
                         backgroundColor: Colors.orange,
                         buttonHeight: 40,
                         fontSize: 14,
-                        onPressed: () => Get.toNamed(AppRoutes.messageScreen),
+                        onPressed: () => Get.toNamed(AppRoutes.messageScreen, arguments: {
+                          'id': profile.id,
+                          'name': profile.displayNameOrUsername,
+                          'avatar': profile.avatarUrl,
+                        }),
                       ),
                     ),
                     Expanded(

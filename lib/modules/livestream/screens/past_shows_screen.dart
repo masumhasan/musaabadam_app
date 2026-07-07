@@ -6,6 +6,7 @@ import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/data/models/stream/stream_model.dart';
 import 'package:musaab_adam/modules/livestream/controllers/past_shows_controller.dart';
+import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 
 /// Grid of past shows whose recording is ready to replay.
@@ -89,30 +90,41 @@ class PastShowGridItem extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(50.r),
-                child: CachedImageWidget(
-                  height: 25.h,
-                  width: 25.w,
-                  iconSize: 20,
-                  imageUrl: stream.sellerAvatarUrl ?? Dummy.user2,
+          GestureDetector(
+            onTap: () {
+              final currentUserId = Get.find<AuthController>().currentUser.value?.id;
+              final sellerId = stream.sellerId;
+              if (currentUserId != null && currentUserId == sellerId) {
+                Get.toNamed(AppRoutes.profileScreen);
+              } else {
+                Get.toNamed(AppRoutes.otherUserProfileScreen, arguments: sellerId);
+              }
+            },
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(50.r),
+                  child: CachedImageWidget(
+                    height: 25.h,
+                    width: 25.w,
+                    iconSize: 20,
+                    imageUrl: stream.sellerAvatarUrl ?? Dummy.user2,
+                  ),
                 ),
-              ),
-              SizedBox(width: 4.w),
-              Expanded(
-                child: CustomText(
-                  text: stream.sellerName ?? '',
-                  textAlignment: TextAlign.left,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  fontColor: colorScheme.onSurface,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                SizedBox(width: 4.w),
+                Expanded(
+                  child: CustomText(
+                    text: stream.sellerName ?? '',
+                    textAlignment: TextAlign.left,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    fontColor: colorScheme.onSurface,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           SizedBox(height: 4.h),
           SizedBox(
