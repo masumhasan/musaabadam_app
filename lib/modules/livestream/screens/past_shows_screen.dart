@@ -75,17 +75,7 @@ class PastShowGridItem extends StatelessWidget {
     final isProcessing = stream.recordingStatus == 'processing';
     return GestureDetector(
       onTap: () {
-        if (hasReplay) {
-          Get.toNamed(AppRoutes.replayScreen, arguments: stream);
-        } else {
-          Get.snackbar(
-            'Replay unavailable',
-            isProcessing
-                ? 'This replay is still being processed. Check back shortly.'
-                : 'No replay was recorded for this show.',
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        }
+        Get.toNamed(AppRoutes.replayScreen, arguments: stream);
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

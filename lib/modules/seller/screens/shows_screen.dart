@@ -157,7 +157,7 @@ class _ShowTile extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 14.h),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: hasReplay
+        onTap: (show.status == 'ended' || hasReplay)
             ? () => Get.toNamed(AppRoutes.replayScreen, arguments: show)
             : null,
         onLongPress: (show.status == 'draft' || isScheduled || show.status == 'cancelled')
