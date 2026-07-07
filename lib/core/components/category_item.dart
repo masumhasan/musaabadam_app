@@ -14,6 +14,9 @@ class CategoryItem extends StatefulWidget {
   final double imageHeight;
   final double marginRight;
 
+  final bool? isSelected;
+  final VoidCallback? onTap;
+
   final Function(bool isSelected)? onSelectionChanged;
 
   const CategoryItem({
@@ -26,6 +29,8 @@ class CategoryItem extends StatefulWidget {
     this.imageHeight = 60,
     this.imageWidth = 60,
     this.marginRight = 10,
+    this.isSelected,
+    this.onTap,
     this.onSelectionChanged,
   });
 
@@ -34,15 +39,22 @@ class CategoryItem extends StatefulWidget {
 }
 
 class _CategoryItemState extends State<CategoryItem> {
-  bool isSelected = false;
+  bool _internalSelected = false;
+
+  bool get _isSelected => widget.isSelected ?? _internalSelected;
 
   void toggleSelection() {
+    if (widget.onTap != null) {
+      widget.onTap!();
+      return;
+    }
+
     setState(() {
-      isSelected = !isSelected;
+      _internalSelected = !_internalSelected;
     });
 
     if (widget.onSelectionChanged != null) {
-      widget.onSelectionChanged!(isSelected);
+      widget.onSelectionChanged!(_internalSelected);
     }
   }
 
@@ -72,7 +84,7 @@ class _CategoryItemState extends State<CategoryItem> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? colorScheme.primary : Colors.transparent,
+            color: _isSelected ? colorScheme.primary : Colors.transparent,
             width: 2.w,
           ),
         ),

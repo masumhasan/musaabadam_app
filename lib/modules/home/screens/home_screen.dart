@@ -14,8 +14,9 @@ import 'package:musaab_adam/modules/main_nav/controllers/main_nav_controller.dar
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/components/livestream_grid_item.dart';
 import '../../../core/assets_gen/assets.gen.dart';
-import '../../../core/components/category_item.dart';
-import '../../../core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/core/components/category_item.dart';
+import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/data/models/category/category_model.dart';
 
 class HomeScreen extends GetView<MainNavController> {
   HomeScreen({super.key});
@@ -232,31 +233,38 @@ class HomeScreen extends GetView<MainNavController> {
     ),
   );
 
-  Widget _categoryItems() => SingleChildScrollView(
-    scrollDirection: Axis.horizontal,
-    child: Row(
-      children: [
-        SizedBoxWidget(width: 15.w),
-        CategoryItem(
-          image: "",
-          assetImage: Assets.images.forYou.keyName,
-          itemName: AppStrings.forYou,
-        ),
-        CategoryItem(
-          image: "",
-          assetImage: Assets.images.followedHost.keyName,
-          itemName: AppStrings.followedHosts,
-        ),
-        ...List.generate(
-          8,
-          (i) => CategoryItem(
-            image: Dummy.product1,
-            itemName: "Watch",
+  Widget _categoryItems() {
+    final homeCtrl = Get.find<HomeScreenController>();
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          SizedBoxWidget(width: 15.w),
+          CategoryItem(
+            image: "",
+            assetImage: Assets.images.forYou.keyName,
+            itemName: AppStrings.forYou,
+            isSelected: homeCtrl.selectedCategoryType.value == 'for_you',
+            onTap: () => homeCtrl.selectCategory('for_you'),
           ),
-        ),
-      ],
-    ),
-  );
+          CategoryItem(
+            image: "",
+            assetImage: Assets.images.followedHost.keyName,
+            itemName: AppStrings.followedHosts,
+            isSelected: homeCtrl.selectedCategoryType.value == 'followed',
+            onTap: () => homeCtrl.selectCategory('followed'),
+          ),
+          ...homeCtrl.categories.map((cat) => CategoryItem(
+                image: cat.iconUrl ?? Dummy.product1,
+                itemName: cat.name,
+                isSelected: homeCtrl.selectedCategoryType.value == 'category' &&
+                    homeCtrl.selectedCategory.value?.id == cat.id,
+                onTap: () => homeCtrl.selectCategory('category', category: cat),
+              )),
+        ],
+      ),
+    );
+  }
 
   void _navigateToSellerProfile(String sellerId) {
     final currentUserId = Get.find<AuthController>().currentUser.value?.id;
