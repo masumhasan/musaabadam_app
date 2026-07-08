@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/modules/home/controllers/message_controller.dart';
+import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
 import '../components/message_tile.dart';
 
 class MessageScreen extends StatelessWidget {
@@ -16,6 +17,7 @@ class MessageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final myAvatar = Get.find<AuthController>().currentUser.value?.avatarUrl;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -60,7 +62,7 @@ class MessageScreen extends StatelessWidget {
                       return MessageTile(
                         message: msg.text,
                         isMe: msg.isMe,
-                        imageUrl: msg.isMe ? Dummy.user2 : (_controller.partnerAvatar ?? Dummy.user1),
+                        imageUrl: msg.isMe ? (myAvatar ?? Dummy.user2) : (_controller.partnerAvatar ?? Dummy.user1),
                       );
                     },
                   );

@@ -7,6 +7,7 @@ import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 
+import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
 import '../../../core/widgets/sized_box_widget.dart';
 
 class InviteSellerScreen extends StatelessWidget {
@@ -59,9 +60,10 @@ class InviteSellerScreen extends StatelessWidget {
                 children:[
                   Expanded(
                     child: CustomText(
-                      text: "invite link",
+                      text: "bidsrush.com/invite/${Get.find<AuthController>().currentUser.value?.username ?? 'user'}",
                       textAlignment: TextAlign.start,
                       fontColor: colorScheme.onSurface,
+                      fontSize: 12,
                     ),
                   ),
                   CustomButton(
@@ -71,8 +73,9 @@ class InviteSellerScreen extends StatelessWidget {
                     textColor: Colors.white,
                     backgroundColor: colorScheme.primary,
                     onPressed: () {
-                      Clipboard.setData(const ClipboardData(text: "https://example.com/invite"));
-                      Get.snackbar("Copied", "Link copied to clipboard");
+                      final link = "https://bidsrush.com/invite/${Get.find<AuthController>().currentUser.value?.username ?? 'user'}";
+                      Clipboard.setData(ClipboardData(text: link));
+                      Get.snackbar("Copied 📋", "Invite link copied to clipboard");
                     },
                   ),
                 ],
@@ -90,7 +93,15 @@ class InviteSellerScreen extends StatelessWidget {
                 textColor: Colors.white,
                 backgroundColor: AppColors.orange,
                 onPressed: () {
-                  // Add share logic
+                  final link = "https://bidsrush.com/invite/${Get.find<AuthController>().currentUser.value?.username ?? 'user'}";
+                  Clipboard.setData(ClipboardData(text: "Join me on BidsRush! Use my invite link to register: $link"));
+                  Get.snackbar(
+                    "Share Copied 🚀", 
+                    "Share text copied to clipboard! Paste it anywhere to invite sellers.",
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.green,
+                    colorText: Colors.white,
+                  );
                 },
               ),
             ),

@@ -29,6 +29,7 @@ class LiveStreamScreen extends StatelessWidget {
   final RxBool isFullScreen = false.obs;
   final TextEditingController _commentController = TextEditingController();
   final GlobalKey<ReactionsOverlayState> _reactionsKey = GlobalKey<ReactionsOverlayState>();
+  final RxString _mentionQuery = ''.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -343,11 +344,64 @@ class LiveStreamScreen extends StatelessWidget {
       if (text.trim().isEmpty) return;
       lsCtrl.sendComment(text);
       _commentController.clear();
+      _mentionQuery.value = '';
     }
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Mention autocomplete picker
+        Obx(() {
+          final query = _mentionQuery.value;
+          if (query.isEmpty) return const SizedBox.shrink();
+
+          final usernames = <String>{};
+          if (lsCtrl.sellerName.isNotEmpty) {
+            usernames.add(lsCtrl.sellerName);
+          }
+          for (final m in lsCtrl.messages) {
+            if (m.senderName.isNotEmpty) {
+              usernames.add(m.senderName);
+            }
+          }
+
+          final matches = usernames
+              .where((name) => name.toLowerCase().contains(query.toLowerCase()))
+              .toList();
+
+          if (matches.isEmpty) return const SizedBox.shrink();
+
+          return Container(
+            margin: const EdgeInsets.only(left: 12, right: 12, bottom: 6),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            height: 40.h,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.75),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.cyan.withValues(alpha: 0.5)),
+            ),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: matches.length,
+              itemBuilder: (context, index) {
+                final name = matches[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: ActionChip(
+                    backgroundColor: Colors.cyan.withValues(alpha: 0.3),
+                    side: BorderSide.none,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    label: Text(
+                      '@$name',
+                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () => _selectMention(name),
+                  ),
+                );
+              },
+            ),
+          );
+        }),
         // Reply banner
         Obx(() {
           final r = lsCtrl.replyingTo.value;
@@ -386,6 +440,10 @@ class LiveStreamScreen extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: _commentController,
+              onChanged: (val) {
+                final query = _getMentionQuery(val, _commentController.selection.start);
+                _mentionQuery.value = query ?? '';
+              },
               style: const TextStyle(color: Colors.white),
               textInputAction: TextInputAction.send,
               onSubmitted: (_) => send(),
@@ -650,6 +708,7 @@ class LiveStreamScreen extends StatelessWidget {
 
   // ── Right-side action buttons ────────────────────────────────────────────────
   Widget _rightSideButtons(BuildContext context) {
+    final lsCtrl = Get.find<LivestreamController>();
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0, right: 12.0),
       child: SingleChildScrollView(
@@ -658,6 +717,58 @@ class LiveStreamScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             _reactionButton('❤️'),
+            if (lsCtrl.isHost) ...[
+              Obx(() => GestureDetector(
+                    onTap: lsCtrl.toggleCamera,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: const BoxDecoration(
+                            color: Colors.cyan,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            lsCtrl.isCameraEnabled.value ? Icons.videocam : Icons.videocam_off,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        const Text(
+                          'Camera',
+                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  )),
+              Obx(() => GestureDetector(
+                    onTap: lsCtrl.toggleMic,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: const BoxDecoration(
+                            color: Colors.cyan,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            lsCtrl.isMicEnabled.value ? Icons.mic : Icons.mic_off,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        const Text(
+                          'Mic',
+                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  )),
+            ],
             LabeledIconButton(
               iconPath: Assets.icons.more,
               text: AppStrings.more,
@@ -707,6 +818,31 @@ class LiveStreamScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String? _getMentionQuery(String text, int selectionStart) {
+    if (selectionStart <= 0) return null;
+    final textBeforeCursor = text.substring(0, selectionStart);
+    final lastAt = textBeforeCursor.lastIndexOf('@');
+    if (lastAt == -1) return null;
+    final part = textBeforeCursor.substring(lastAt);
+    if (part.contains(' ')) return null;
+    return part.substring(1);
+  }
+
+  void _selectMention(String username) {
+    final text = _commentController.text;
+    final selection = _commentController.selection;
+    if (selection.start <= 0) return;
+    final textBeforeCursor = text.substring(0, selection.start);
+    final lastAt = textBeforeCursor.lastIndexOf('@');
+    if (lastAt == -1) return;
+    final newText = text.replaceRange(lastAt, selection.start, '@$username ');
+    _commentController.text = newText;
+    _commentController.selection = TextSelection.fromPosition(
+      TextPosition(offset: lastAt + username.length + 2),
+    );
+    _mentionQuery.value = '';
   }
 }
 

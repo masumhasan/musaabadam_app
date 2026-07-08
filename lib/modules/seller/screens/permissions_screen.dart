@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
@@ -72,7 +74,7 @@ class PermissionsScreen extends StatelessWidget {
             CustomText(text: AppStrings.resources, fontSize: 18, fontWeight: FontWeight.w700),
             SizedBoxWidget(height: 10.h),
             TextButton(
-              onPressed: () {},
+              onPressed: () => Get.toNamed(AppRoutes.inboxScreen),
               child: CustomText(
                 text: AppStrings.contactSellerSupport,
                 fontColor: colorScheme.primary,

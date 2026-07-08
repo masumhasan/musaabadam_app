@@ -39,7 +39,9 @@ import 'package:musaab_adam/modules/seller/screens/seller_inventory_screen.dart'
 import 'package:musaab_adam/modules/seller/screens/seller_order_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_payout_screen.dart';
 import 'package:musaab_adam/modules/payments/bindings/checkout_binding.dart';
+import 'package:musaab_adam/modules/payments/bindings/wallet_binding.dart';
 import 'package:musaab_adam/modules/payments/screens/checkout_screen.dart';
+import 'package:musaab_adam/modules/payments/screens/wallet_screen.dart';
 import 'package:musaab_adam/modules/shipping/bindings/order_tracking_binding.dart';
 import 'package:musaab_adam/modules/shipping/screens/order_tracking_screen.dart';
 import 'package:musaab_adam/modules/seller/bindings/seller_orders_binding.dart';
@@ -245,6 +247,7 @@ class AppPages {
     GetPage(name: AppRoutes.sellerAddressScreen, page: () => SellerAddressScreen()),
     GetPage(name: AppRoutes.sellerAverageEarningScreen, page: () => SellerAverageEarning()),
     //===================MISC====================
-    GetPage(name: AppRoutes.errorScreen, page: () => ErrorScreen())
+    GetPage(name: AppRoutes.errorScreen, page: () => ErrorScreen()),
+    GetPage(name: AppRoutes.walletScreen, page: () => WalletScreen(), binding: WalletBinding()),
   ];
 }

@@ -119,6 +119,7 @@ class AccountScreen extends StatelessWidget {
                 SizedBoxWidget(height: 20),
                 _buildTile(AppStrings.accountHealth, Icons.verified_user_outlined, () => Get.toNamed(AppRoutes.accountHealthScreen)),
                 _buildTile(AppStrings.paymentsShipping, Icons.payment, showPaymentDialog),
+                _buildTile(AppStrings.wallet, Icons.account_balance_wallet_outlined, () => Get.toNamed(AppRoutes.walletScreen)),
                 _buildTile(AppStrings.addresses, Icons.location_pin, () => Get.toNamed(AppRoutes.addressesScreen)),
                 _buildTile(AppStrings.notificationSettings, Icons.notifications_none_rounded, () => Get.toNamed(AppRoutes.notificationSettingsScreen)),
                 _buildTile(AppStrings.changeEmail, Icons.mail_outline_rounded, () => Get.toNamed(AppRoutes.changeCredential, arguments: {'isPasswordChange': false})),

@@ -26,6 +26,23 @@ class LivestreamController extends GetxController {
   final RxBool isLoading = true.obs;
   final RxBool hasError = false.obs;
 
+  final RxBool isCameraEnabled = true.obs;
+  final RxBool isMicEnabled = true.obs;
+
+  Future<void> toggleCamera() async {
+    final c = call.value;
+    if (c == null) return;
+    await c.setCameraEnabled(enabled: !isCameraEnabled.value);
+    isCameraEnabled.value = !isCameraEnabled.value;
+  }
+
+  Future<void> toggleMic() async {
+    final c = call.value;
+    if (c == null) return;
+    await c.setMicrophoneEnabled(enabled: !isMicEnabled.value);
+    isMicEnabled.value = !isMicEnabled.value;
+  }
+
   // Follow seller state
   final RxBool isFollowingSeller = false.obs;
   final RxBool followLoading = false.obs;

@@ -89,16 +89,35 @@ class _AuthInterceptor extends Interceptor {
           }
           return;
         }
-      } catch (_) {
-        await TokenStorageService.instance.clearTokens();
-        final localQueue = List.from(_queue);
-        _queue.clear();
-        for (final item in localQueue) {
-          final h = item['handler'] as ErrorInterceptorHandler;
-          final opts = item['options'] as RequestOptions;
-          h.next(DioException(requestOptions: opts, error: 'Session expired'));
+      } catch (e) {
+        bool shouldLogout = true;
+        if (e is DioException) {
+          final status = e.response?.statusCode;
+          // Keep session intact if it's a network glitch, timeout, or server error (5xx)
+          if (status == null || status >= 500) {
+            shouldLogout = false;
+          }
         }
-        Get.offAllNamed(AppRoutes.signInScreen);
+
+        if (shouldLogout) {
+          await TokenStorageService.instance.clearTokens();
+          final localQueue = List.from(_queue);
+          _queue.clear();
+          for (final item in localQueue) {
+            final h = item['handler'] as ErrorInterceptorHandler;
+            final opts = item['options'] as RequestOptions;
+            h.next(DioException(requestOptions: opts, error: 'Session expired'));
+          }
+          Get.offAllNamed(AppRoutes.signInScreen);
+        } else {
+          final localQueue = List.from(_queue);
+          _queue.clear();
+          for (final item in localQueue) {
+            final h = item['handler'] as ErrorInterceptorHandler;
+            final opts = item['options'] as RequestOptions;
+            h.next(e is DioException ? e : DioException(requestOptions: opts, error: e));
+          }
+        }
       } finally {
         _isRefreshing = false;
       }

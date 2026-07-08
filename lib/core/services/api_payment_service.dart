@@ -46,7 +46,7 @@ class ApiPaymentService {
   /// Confirms payment server-side and moves funds into escrow.
   Future<Map<String, dynamic>> confirmPayment(String orderId, {String? paymentMethodId}) async {
     final response = await _dio.post(ApiConstants.confirmOrderPayment(orderId), data: {
-      'paymentMethodId': ?paymentMethodId,
+      'paymentMethodId': paymentMethodId,
     });
     return Map<String, dynamic>.from(response.data['data'] as Map);
   }
@@ -57,10 +57,16 @@ class ApiPaymentService {
     return WalletModel.fromJson(response.data['data']['wallet'] as Map<String, dynamic>);
   }
 
+  Future<List<Map<String, dynamic>>> getWalletLedger({int page = 1, int limit = 20}) async {
+    final response = await _dio.get(ApiConstants.walletLedger, queryParameters: {'page': page, 'limit': limit});
+    final list = response.data['data']['entries'] as List;
+    return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+  }
+
   Future<Map<String, dynamic>> requestPayout({double? amount, String? destination}) async {
     final response = await _dio.post(ApiConstants.payouts, data: {
-      'amount': ?amount,
-      'destination': ?destination,
+      'amount': amount,
+      'destination': destination,
     });
     return Map<String, dynamic>.from(response.data['data']['payout'] as Map);
   }
