@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
+import 'package:musaab_adam/core/assets_gen/assets.gen.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/data/models/stream/stream_model.dart';
 import 'package:musaab_adam/modules/livestream/controllers/past_shows_controller.dart';
@@ -125,14 +126,33 @@ class PastShowGridItem extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10.r),
-                  child: Image.network(
-                    stream.thumbnailUrl ?? Dummy.live1,
-                    height: 100.h,
-                    width: 160.w,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        Image.network(Dummy.live1, height: 100.h, width: 160.w, fit: BoxFit.cover),
-                  ),
+                  child: (stream.thumbnailUrl == Dummy.live1 || (stream.thumbnailUrl?.isEmpty ?? true))
+                      ? Container(
+                          height: 100.h,
+                          width: 160.w,
+                          color: colorScheme.surfaceContainerHighest,
+                          padding: EdgeInsets.all(12.w),
+                          child: Image.asset(
+                            Assets.images.appLogo.keyName,
+                            fit: BoxFit.contain,
+                          ),
+                        )
+                      : Image.network(
+                          stream.thumbnailUrl!,
+                          height: 100.h,
+                          width: 160.w,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            height: 100.h,
+                            width: 160.w,
+                            color: colorScheme.surfaceContainerHighest,
+                            padding: EdgeInsets.all(12.w),
+                            child: Image.asset(
+                              Assets.images.appLogo.keyName,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
                 ),
                 // Play overlay (only when a replay is available)
                 if (hasReplay)

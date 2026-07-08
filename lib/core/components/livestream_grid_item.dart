@@ -5,6 +5,7 @@ import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import '../assets_gen/assets.gen.dart';
+import 'package:musaab_adam/core/utils/app_constants.dart';
 
 class LivestreamGridItem extends StatelessWidget {
   final String userName;
@@ -77,12 +78,21 @@ class LivestreamGridItem extends StatelessWidget {
               children:[
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10.r),
-                  child: Image.network(
-                    thumbnailUrl,
-                    height: 100.h,
-                    width: 160.w,
-                    fit: BoxFit.cover,
-                  ),
+                  child: (thumbnailUrl == Dummy.live1 || thumbnailUrl.isEmpty)
+                      ? Container(
+                          color: colorScheme.surfaceContainerHighest,
+                          padding: EdgeInsets.all(12.w),
+                          child: Image.asset(
+                            Assets.images.appLogo.keyName,
+                            fit: BoxFit.contain,
+                          ),
+                        )
+                      : Image.network(
+                          thumbnailUrl,
+                          height: 100.h,
+                          width: 160.w,
+                          fit: BoxFit.cover,
+                        ),
                 ),
                 // Viewer Count Overlay
                 Positioned(

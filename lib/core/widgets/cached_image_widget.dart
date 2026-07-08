@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:musaab_adam/core/utils/app_constants.dart';
+import 'package:musaab_adam/core/assets_gen/assets.gen.dart';
 
 class CachedImageWidget extends StatelessWidget {
   final String imageUrl;
@@ -31,6 +33,7 @@ class CachedImageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       height: height?.h,
@@ -41,18 +44,27 @@ class CachedImageWidget extends StatelessWidget {
         border: Border.all(color: borderColor, width: borderWidth),
       ),
       clipBehavior: Clip.antiAlias,
-      child: CachedNetworkImage(
-        imageUrl: imageUrl,
-        fit: fit,
-        placeholder: (context, url) => Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
-          child: Container(color: Colors.white),
-        ),
-        errorWidget: (context, url, error) => Center(
-          child: Icon(icon, size: iconSize.r, color: Colors.grey),
-        ),
-      ),
+      child: (imageUrl == Dummy.live1 || imageUrl.isEmpty)
+          ? Container(
+              color: colorScheme.surfaceContainerHighest,
+              padding: EdgeInsets.all(12.w),
+              child: Image.asset(
+                Assets.images.appLogo.keyName,
+                fit: fit,
+              ),
+            )
+          : CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: fit,
+              placeholder: (context, url) => Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(color: Colors.white),
+              ),
+              errorWidget: (context, url, error) => Center(
+                child: Icon(icon, size: iconSize.r, color: Colors.grey),
+              ),
+            ),
     );
   }
 
