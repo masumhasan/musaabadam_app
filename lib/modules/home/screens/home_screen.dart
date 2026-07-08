@@ -166,25 +166,30 @@ class HomeScreen extends GetView<MainNavController> {
     backgroundColor: Colors.transparent,
     title: Padding(
       padding: EdgeInsets.symmetric(horizontal: 12.w),
-      child: TextField(
-        enabled: false,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(50)
-          ),
-          hintText: 'Search...',
-          prefixIcon: Padding(
-            padding: EdgeInsets.all(12.w),
-            child: SvgPicture.asset(
-              Assets.icons.search,
-              colorFilter: ColorFilter.mode(
-                theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                BlendMode.srcIn,
+      child: GestureDetector(
+        onTap: () => Get.toNamed(AppRoutes.searchScreen),
+        child: AbsorbPointer(
+          child: TextField(
+            enabled: false,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(50)
+              ),
+              hintText: 'Search...',
+              prefixIcon: Padding(
+                padding: EdgeInsets.all(12.w),
+                child: SvgPicture.asset(
+                  Assets.icons.search,
+                  colorFilter: ColorFilter.mode(
+                    theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+              fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.3,
               ),
             ),
-          ),
-          fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
-            alpha: 0.3,
           ),
         ),
       ),
