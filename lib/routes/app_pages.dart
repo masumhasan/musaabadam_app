@@ -64,6 +64,7 @@ import 'package:musaab_adam/modules/seller_verification/screens/seller_category_
 import 'package:musaab_adam/modules/seller_verification/screens/seller_faq_screen.dart';
 import 'package:musaab_adam/modules/seller_verification/screens/seller_subcategory_screen.dart';
 import 'package:musaab_adam/modules/seller_verification/screens/seller_type_screen.dart';
+import 'package:musaab_adam/modules/seller_verification/screens/seller_kyc_screen.dart';
 
 import '../modules/activity/screens/activity_details_screen.dart';
 import '../modules/auth/screens/check_email_screen.dart';
@@ -246,6 +247,7 @@ class AppPages {
     GetPage(name: AppRoutes.sellerTypeScreen, page: () => SellerTypeScreen()),
     GetPage(name: AppRoutes.sellerAddressScreen, page: () => SellerAddressScreen()),
     GetPage(name: AppRoutes.sellerAverageEarningScreen, page: () => SellerAverageEarning()),
+    GetPage(name: AppRoutes.sellerKycScreen, page: () => SellerKycScreen()),
     //===================MISC====================
     GetPage(name: AppRoutes.errorScreen, page: () => ErrorScreen()),
     GetPage(name: AppRoutes.walletScreen, page: () => WalletScreen(), binding: WalletBinding()),

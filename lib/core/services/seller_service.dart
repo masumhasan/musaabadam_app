@@ -15,6 +15,8 @@ class SellerService {
     required String sellerType,
     required Map<String, String> businessAddress,
     required String averageEarningRange,
+    String? identityDocUrl,
+    String? businessLicenseUrl,
   }) async {
     final response = await _dio.post(ApiConstants.sellerApplication, data: {
       'primaryCategory': primaryCategory,
@@ -22,6 +24,8 @@ class SellerService {
       'sellerType': sellerType,
       'businessAddress': businessAddress,
       'averageEarningRange': averageEarningRange,
+      'identityDocUrl': identityDocUrl,
+      'businessLicenseUrl': businessLicenseUrl,
     });
     return UserModel.fromJson(response.data['data'] as Map<String, dynamic>);
   }

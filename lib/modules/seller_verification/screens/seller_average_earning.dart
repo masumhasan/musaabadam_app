@@ -7,6 +7,7 @@ import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/modules/seller_verification/controllers/seller_verification_controller.dart';
+import 'package:musaab_adam/routes/app_pages.dart';
 
 class SellerAverageEarning extends GetView<SellerVerificationController> {
   SellerAverageEarning({super.key});
@@ -109,7 +110,15 @@ class SellerAverageEarning extends GetView<SellerVerificationController> {
                 backgroundColor: AppColors.orange,
                 isLoading: controller.isLoading.value,
                 onPressed: controller.isLoading.value ? null : () {
-                  controller.submitApplication();
+                  if (controller.selectedRange.value == AppStrings.select) {
+                    Get.snackbar(
+                      'Required',
+                      'Please select your average monthly earnings.',
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                    return;
+                  }
+                  Get.toNamed(AppRoutes.sellerKycScreen);
                 },
               )),
             ),

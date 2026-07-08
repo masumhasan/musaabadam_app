@@ -108,6 +108,7 @@ class AppRoutes {
   static final sellerTypeScreen = "/seller-type-screen";
   static final sellerAddressScreen = "/seller-address-screen";
   static final sellerAverageEarningScreen = "/seller-average-earning-screen";
+  static final sellerKycScreen = "/seller-kyc-screen";
   //===================MISC====================
   static final errorScreen = "/error-screen";
 }

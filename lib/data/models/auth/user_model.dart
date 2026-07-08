@@ -22,6 +22,7 @@ class UserModel {
   final String? referralCode;
   final bool isSellerApproved;
   final bool isSuspended;
+  final String? accountHealth;
   final DateTime createdAt;
   final DateTime? lastLoginAt;
   final List<AddressModel> addresses;
@@ -48,6 +49,7 @@ class UserModel {
     this.referralCode,
     required this.isSellerApproved,
     required this.isSuspended,
+    this.accountHealth,
     required this.createdAt,
     this.lastLoginAt,
     this.addresses = const [],
@@ -76,6 +78,7 @@ class UserModel {
       referralCode: json['referralCode'] as String?,
       isSellerApproved: json['isSellerApproved'] as bool? ?? false,
       isSuspended: json['isSuspended'] as bool? ?? false,
+      accountHealth: json['accountHealth'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       lastLoginAt: json['lastLoginAt'] != null
           ? DateTime.parse(json['lastLoginAt'] as String)
@@ -109,6 +112,7 @@ class UserModel {
         'referralCode': referralCode,
         'isSellerApproved': isSellerApproved,
         'isSuspended': isSuspended,
+        'accountHealth': accountHealth,
         'createdAt': createdAt.toIso8601String(),
         'lastLoginAt': lastLoginAt?.toIso8601String(),
         'addresses': addresses.map((a) => a.toJson()).toList(),

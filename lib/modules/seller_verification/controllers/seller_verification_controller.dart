@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:musaab_adam/core/services/api_upload_service.dart';
 import 'package:musaab_adam/core/services/api_auth_service.dart';
 import 'package:musaab_adam/core/services/category_service.dart';
 import 'package:musaab_adam/core/services/seller_service.dart';
@@ -36,6 +39,52 @@ class SellerVerificationController extends GetxController {
   // ─── Step 5: Average Earning ──────────────────────────────────────────────
   final RxBool isDropdownExpanded = false.obs;
   final RxString selectedRange = AppStrings.select.obs;
+
+  // ─── Step 6: KYC Document Upload ──────────────────────────────────────────
+  final RxnString identityDocUrl = RxnString();
+  final RxnString businessLicenseUrl = RxnString();
+  final RxBool identityDocUploading = false.obs;
+  final RxBool businessLicenseUploading = false.obs;
+
+  Future<void> pickIdentityDoc() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (picked == null) return;
+
+    identityDocUploading.value = true;
+    try {
+      final url = await ApiUploadService.instance.uploadFile(
+        file: File(picked.path),
+        folder: 'profile',
+        contentType: 'image/jpeg',
+      );
+      identityDocUrl.value = url;
+    } catch (_) {
+      Get.snackbar('Upload Error', 'Failed to upload identity document.');
+    } finally {
+      identityDocUploading.value = false;
+    }
+  }
+
+  Future<void> pickBusinessLicense() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (picked == null) return;
+
+    businessLicenseUploading.value = true;
+    try {
+      final url = await ApiUploadService.instance.uploadFile(
+        file: File(picked.path),
+        folder: 'profile',
+        contentType: 'image/jpeg',
+      );
+      businessLicenseUrl.value = url;
+    } catch (_) {
+      Get.snackbar('Upload Error', 'Failed to upload business license.');
+    } finally {
+      businessLicenseUploading.value = false;
+    }
+  }
 
   // ─── Loading ──────────────────────────────────────────────────────────────
   final RxBool isLoading = false.obs;
@@ -150,6 +199,8 @@ class SellerVerificationController extends GetxController {
           'country': selectedCountry.value,
         },
         averageEarningRange: selectedRange.value,
+        identityDocUrl: identityDocUrl.value,
+        businessLicenseUrl: businessLicenseUrl.value,
       );
 
       final user = await ApiAuthService.instance.getMyProfile();
