@@ -23,8 +23,8 @@ class ApiPaymentService {
     bool makeDefault = false,
   }) async {
     final response = await _dio.post(ApiConstants.paymentMethods, data: {
-      'card': ?card,
-      'providerPaymentMethodId': ?providerPaymentMethodId,
+      'card': card,
+      'providerPaymentMethodId': providerPaymentMethodId,
       'makeDefault': makeDefault,
     });
     return PaymentMethodModel.fromJson(response.data['data']['method'] as Map<String, dynamic>);
@@ -36,9 +36,10 @@ class ApiPaymentService {
 
   // ── Checkout / escrow ───────────────────────────────────────────────────────
   /// Starts checkout for an order, returning the provider client secret.
-  Future<String?> startCheckout(String orderId, {String? paymentMethodId}) async {
+  Future<String?> startCheckout(String orderId, {String? paymentMethodId, String? couponId}) async {
     final response = await _dio.post(ApiConstants.checkoutOrder(orderId), data: {
-      'paymentMethodId': ?paymentMethodId,
+      'paymentMethodId': paymentMethodId,
+      'couponId': couponId,
     });
     return response.data['data']['clientSecret']?.toString();
   }

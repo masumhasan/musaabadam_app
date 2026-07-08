@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:musaab_adam/core/services/api_order_service.dart';
 import 'package:musaab_adam/core/services/api_payment_service.dart';
 import 'package:musaab_adam/core/services/api_user_service.dart';
+import 'package:musaab_adam/core/services/api_reward_service.dart';
 import 'package:musaab_adam/data/models/address/address_model.dart';
 import 'package:musaab_adam/data/models/order/order_model.dart';
 import 'package:musaab_adam/data/models/payment/payment_method_model.dart';
@@ -18,6 +19,9 @@ class CheckoutController extends GetxController {
   final RxBool isLoading = true.obs;
   final RxBool hasError = false.obs;
   final RxBool isPaying = false.obs;
+
+  final RxList<Map<String, dynamic>> coupons = <Map<String, dynamic>>[].obs;
+  final Rxn<Map<String, dynamic>> selectedCoupon = Rxn<Map<String, dynamic>>();
 
   late final String orderId;
 
@@ -36,10 +40,12 @@ class CheckoutController extends GetxController {
         ApiOrderService.instance.getOrder(orderId),
         ApiPaymentService.instance.listMethods(),
         ApiUserService.instance.getAddresses(),
+        ApiRewardService.instance.getMyRewards(),
       ]);
       order.value = results[0] as OrderModel;
       methods.assignAll(results[1] as List<PaymentMethodModel>);
       addresses.assignAll(results[2] as List<AddressModel>);
+      coupons.assignAll(results[3] as List<Map<String, dynamic>>);
 
       final def = methods.firstWhereOrNull((m) => m.isDefault) ??
           (methods.isNotEmpty ? methods.first : null);
@@ -104,7 +110,11 @@ class CheckoutController extends GetxController {
 
     isPaying.value = true;
     try {
-      await ApiPaymentService.instance.startCheckout(orderId, paymentMethodId: selectedMethodId.value);
+      await ApiPaymentService.instance.startCheckout(
+        orderId,
+        paymentMethodId: selectedMethodId.value,
+        couponId: selectedCoupon.value?['_id']?.toString(),
+      );
       final result = await ApiPaymentService.instance.confirmPayment(orderId, paymentMethodId: selectedMethodId.value);
 
       if (result['order'] != null) {

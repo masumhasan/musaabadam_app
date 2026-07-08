@@ -56,6 +56,19 @@ class _AuthInterceptor extends Interceptor {
         return handler.next(err);
       }
 
+      // Check if another concurrent request already refreshed the token
+      final currentToken = await TokenStorageService.instance.getAccessToken();
+      final requestToken = err.requestOptions.headers['Authorization']?.toString().replaceFirst('Bearer ', '');
+      if (currentToken != null && requestToken != null && currentToken != requestToken) {
+        err.requestOptions.headers['Authorization'] = 'Bearer $currentToken';
+        try {
+          final retryResponse = await dio.fetch(err.requestOptions);
+          return handler.resolve(retryResponse);
+        } catch (e) {
+          return handler.next(e is DioException ? e : DioException(requestOptions: err.requestOptions, error: e));
+        }
+      }
+
       if (_isRefreshing) {
         _queue.add({
           'options': err.requestOptions,
