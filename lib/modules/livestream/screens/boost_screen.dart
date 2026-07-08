@@ -95,7 +95,7 @@ class BoostScreen extends StatelessWidget {
                     backgroundColor: const Color(0xFFFFD5A1),
                     textColor: const Color(0xFFE67E22),
                     onPressed: () {
-                      Get.toNamed(AppRoutes.sendTipScreen);
+                      Get.toNamed(AppRoutes.sendTipScreen, arguments: Get.arguments);
                     },
                   ),
                 ),

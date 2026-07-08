@@ -779,7 +779,16 @@ class LiveStreamScreen extends StatelessWidget {
               iconPath: Assets.icons.boost,
               text: AppStrings.boost,
               fontColor: Colors.white,
-              onClick: () => Get.toNamed(AppRoutes.boostScreen),
+              onClick: () {
+                final ctrl = Get.find<LivestreamController>();
+                Get.toNamed(
+                  AppRoutes.boostScreen,
+                  arguments: {
+                    'streamId': ctrl.stream?.id,
+                    'sellerId': ctrl.stream?.sellerId,
+                  },
+                );
+              },
             ),
             LabeledIconButton(
               iconPath: Assets.icons.clip,
