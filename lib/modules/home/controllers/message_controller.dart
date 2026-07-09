@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/services/api_dm_service.dart';
 import 'package:musaab_adam/data/models/message/message_model.dart';
+import 'package:musaab_adam/core/services/socket_service.dart';
+import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
 
 class MessageController extends GetxController {
   late final String partnerId;
@@ -20,6 +22,29 @@ class MessageController extends GetxController {
     partnerName = args['name'] as String;
     partnerAvatar = args['avatar'] as String?;
     loadMessages();
+
+    // Listen to real-time DMs
+    ever(SocketService.instance.latestDmMessage, _handleNewMessage);
+  }
+
+  void _handleNewMessage(Map<String, dynamic>? data) {
+    if (data == null) return;
+    
+    // Check if the message belongs to this conversation
+    final senderId = data['senderId'];
+    final receiverId = data['receiverId'];
+    final currentUserId = Get.find<AuthController>().currentUser.value?.id;
+    
+    final isRelevant = (senderId == partnerId && receiverId == currentUserId) || 
+                       (senderId == currentUserId && receiverId == partnerId);
+                       
+    if (isRelevant) {
+      // Prevent duplicates if we already added it via sendMsg
+      if (!messages.any((m) => m.id == data['_id'])) {
+        final msg = MessageModel.fromJson(data, currentUserId ?? '');
+        messages.add(msg);
+      }
+    }
   }
 
   Future<void> loadMessages() async {
@@ -37,7 +62,9 @@ class MessageController extends GetxController {
     textCtrl.clear();
     try {
       final msg = await ApiDmService.instance.sendMessage(partnerId, text);
-      messages.add(msg);
+      if (!messages.any((m) => m.id == msg.id)) {
+        messages.add(msg);
+      }
     } catch (_) {}
   }
 }

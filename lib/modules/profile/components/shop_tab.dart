@@ -6,6 +6,7 @@ import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/data/models/product/product_model.dart';
+import 'package:musaab_adam/core/services/api_offer_service.dart';
 import '../../../core/utils/app_strings.dart';
 import '../../../core/widgets/custom_choice_chip.dart';
 
@@ -203,10 +204,70 @@ class _ShopTabState extends State<ShopTab> {
                 fontSize: 12,
                 textAlignment: TextAlign.start,
               ),
+              const SizedBox(height: 8),
+              if (product.status == 'active')
+                OutlinedButton(
+                  onPressed: () => _showMakeOfferDialog(context, product, colorScheme),
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                    minimumSize: Size.zero,
+                  ),
+                  child: const Text('Make Offer', style: TextStyle(fontSize: 12)),
+                ),
             ],
           ),
         )
       ],
+    );
+  }
+
+  void _showMakeOfferDialog(BuildContext context, ProductModel product, ColorScheme colorScheme) {
+    final TextEditingController amountController = TextEditingController();
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: colorScheme.surface,
+        title: CustomText(text: 'Make Offer', fontColor: colorScheme.onSurface, fontWeight: FontWeight.bold),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CustomText(text: product.title, maxLines: 1, textAlignment: TextAlign.start),
+            const SizedBox(height: 12),
+            TextField(
+              controller: amountController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                prefixText: '\$ ',
+                labelText: 'Offer Amount',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final amount = double.tryParse(amountController.text);
+              if (amount == null || amount <= 0) {
+                Get.snackbar('Error', 'Please enter a valid amount');
+                return;
+              }
+              Get.back();
+              try {
+                await ApiOfferService.instance.createOffer(productId: product.id, amount: amount);
+                Get.snackbar('Success', 'Offer sent successfully!', backgroundColor: Colors.green, colorText: Colors.white);
+              } catch (e) {
+                Get.snackbar('Error', 'Failed to send offer');
+              }
+            },
+            child: const Text('Send'),
+          ),
+        ],
+      ),
     );
   }
 }

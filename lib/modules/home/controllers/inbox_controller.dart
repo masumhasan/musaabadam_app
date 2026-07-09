@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/services/api_dm_service.dart';
 import 'package:musaab_adam/data/models/message/conversation_model.dart';
+import 'package:musaab_adam/core/services/socket_service.dart';
 
 class InboxController extends GetxController {
   final RxList<InboxConversationModel> conversations = <InboxConversationModel>[].obs;
@@ -10,6 +11,7 @@ class InboxController extends GetxController {
   void onInit() {
     super.onInit();
     loadConversations();
+    ever(SocketService.instance.latestDmMessage, (_) => loadConversations());
   }
 
   Future<void> loadConversations() async {

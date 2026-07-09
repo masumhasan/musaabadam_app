@@ -5,6 +5,7 @@ import '../../../core/utils/app_strings.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text.dart';
 import '../../../core/widgets/sized_box_widget.dart';
+import '../controllers/offers_controller.dart';
 
 class OffersScreen extends StatelessWidget {
   const OffersScreen({super.key});
@@ -12,34 +13,7 @@ class OffersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
-    // Reactive mock list of offers
-    final RxList<Map<String, dynamic>> offers = [
-      {
-        'id': '1',
-        'buyer': 'sneaker_dan',
-        'item': 'Air Jordan 1 Chicago (2015)',
-        'listPrice': 450,
-        'offeredPrice': 400,
-        'status': 'pending',
-      },
-      {
-        'id': '2',
-        'buyer': 'vintage_clot',
-        'item': 'Vintage Harley Davidson Tee 90s',
-        'listPrice': 85,
-        'offeredPrice': 70,
-        'status': 'pending',
-      },
-      {
-        'id': '3',
-        'buyer': 'hype_beast_9',
-        'item': 'Supreme Box Logo Hooded Sweatshirt',
-        'listPrice': 280,
-        'offeredPrice': 250,
-        'status': 'pending',
-      },
-    ].obs;
+    final controller = Get.put(OffersController());
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -55,7 +29,11 @@ class OffersScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: Obx(() {
-        if (offers.isEmpty) {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (controller.offers.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -81,10 +59,10 @@ class OffersScreen extends StatelessWidget {
 
         return ListView.separated(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-          itemCount: offers.length,
+          itemCount: controller.offers.length,
           separatorBuilder: (_, __) => SizedBoxWidget(height: 12.h),
           itemBuilder: (context, index) {
-            final offer = offers[index];
+            final offer = controller.offers[index];
             return Card(
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -101,7 +79,7 @@ class OffersScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         CustomText(
-                          text: '@${offer['buyer']}',
+                          text: '@${offer.buyerUsername ?? 'buyer'}',
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           fontColor: colorScheme.primary,
@@ -113,7 +91,7 @@ class OffersScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: CustomText(
-                            text: 'Pending',
+                            text: offer.status.capitalizeFirst ?? 'Pending',
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             fontColor: colorScheme.primary,
@@ -123,7 +101,7 @@ class OffersScreen extends StatelessWidget {
                     ),
                     SizedBoxWidget(height: 8.h),
                     CustomText(
-                      text: offer['item']!,
+                      text: offer.productTitle ?? 'Product',
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       fontColor: colorScheme.onSurface,
@@ -132,17 +110,8 @@ class OffersScreen extends StatelessWidget {
                     SizedBoxWidget(height: 12.h),
                     Row(
                       children: [
-                        Text(
-                          'List Price: \$${offer['listPrice']}',
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: colorScheme.onSurfaceVariant,
-                            decoration: TextDecoration.lineThrough,
-                          ),
-                        ),
-                        SizedBoxWidget(width: 10.w),
                         CustomText(
-                          text: 'Offer: \$${offer['offeredPrice']}',
+                          text: 'Offer: \$${offer.amount}',
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           fontColor: colorScheme.onSurface,
@@ -160,15 +129,7 @@ class OffersScreen extends StatelessWidget {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
                               padding: EdgeInsets.symmetric(vertical: 10.h),
                             ),
-                            onPressed: () {
-                              offers.removeAt(index);
-                              Get.snackbar(
-                                'Offer Declined',
-                                'Declined offer for ${offer['item']}',
-                                backgroundColor: colorScheme.errorContainer,
-                                colorText: colorScheme.onErrorContainer,
-                              );
-                            },
+                            onPressed: () => controller.updateOfferStatus(offer.id, 'declined'),
                             child: const Text('Decline'),
                           ),
                         ),
@@ -179,15 +140,7 @@ class OffersScreen extends StatelessWidget {
                             buttonHeight: 38.h,
                             textColor: Colors.white,
                             backgroundColor: colorScheme.primary,
-                            onPressed: () {
-                              offers.removeAt(index);
-                              Get.snackbar(
-                                'Offer Accepted!',
-                                'Accepted offer for ${offer['item']}',
-                                backgroundColor: colorScheme.primaryContainer,
-                                colorText: colorScheme.onPrimaryContainer,
-                              );
-                            },
+                            onPressed: () => controller.updateOfferStatus(offer.id, 'accepted'),
                           ),
                         ),
                       ],

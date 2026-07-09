@@ -39,6 +39,10 @@ class SocketService {
   final Rx<Map<String, dynamic>?> latestGiveawayJoined = Rx(null);
   final Rx<Map<String, dynamic>?> latestGiveawayWinner = Rx(null);
 
+  // DMs and Offers
+  final Rx<Map<String, dynamic>?> latestDmMessage = Rx(null);
+  final Rx<Map<String, dynamic>?> latestOfferUpdated = Rx(null);
+
   static Map<String, dynamic>? _asMap(dynamic data) {
     if (data is Map<String, dynamic>) return data;
     if (data is Map) return Map<String, dynamic>.from(data);
@@ -132,6 +136,9 @@ class SocketService {
     _socket!.on('giveaway-started', (data) => latestGiveawayStarted.value = _asMap(data));
     _socket!.on('giveaway-joined', (data) => latestGiveawayJoined.value = _asMap(data));
     _socket!.on('giveaway-winner', (data) => latestGiveawayWinner.value = _asMap(data));
+
+    _socket!.on('dm-message', (data) => latestDmMessage.value = _asMap(data));
+    _socket!.on('offer-updated', (data) => latestOfferUpdated.value = _asMap(data));
   }
 
   void banUser({required String streamId, required String userId, bool ban = true}) {
