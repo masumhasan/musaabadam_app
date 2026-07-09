@@ -1,4 +1,4 @@
-package com.nanosoft.musaab_adam;
+package com.musaabadam.bidsrush;
 
 import io.flutter.embedding.android.FlutterActivity;
 

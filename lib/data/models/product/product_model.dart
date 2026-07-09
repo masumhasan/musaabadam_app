@@ -21,10 +21,11 @@ class ProductModel {
   final bool acceptOffers;
   final double maxDiscount;
   final bool reserveForLive;
+  final String? shippingProfileId;
+  final num? shippingWeight;
   final bool hazardousMaterials;
   final String? sku;
   final double? costPerItem;
-  final double? shippingWeight;
   final List<String> tags;
   final int viewsCount;
   final int favoritesCount;
@@ -53,10 +54,11 @@ class ProductModel {
     required this.acceptOffers,
     required this.maxDiscount,
     required this.reserveForLive,
+    this.shippingProfileId,
+    this.shippingWeight,
     required this.hazardousMaterials,
     this.sku,
     this.costPerItem,
-    this.shippingWeight,
     required this.tags,
     required this.viewsCount,
     required this.favoritesCount,
@@ -110,10 +112,11 @@ class ProductModel {
       acceptOffers: json['acceptOffers'] as bool? ?? false,
       maxDiscount: _toDouble(json['maxDiscount']),
       reserveForLive: json['reserveForLive'] as bool? ?? false,
+      shippingProfileId: json['shippingProfileId'] as String?,
+      shippingWeight: json['shippingWeight'] as num?,
       hazardousMaterials: json['hazardousMaterials'] as bool? ?? false,
       sku: json['sku'] as String?,
       costPerItem: json['costPerItem'] != null ? _toDouble(json['costPerItem']) : null,
-      shippingWeight: json['shippingWeight'] != null ? _toDouble(json['shippingWeight']) : null,
       tags: List<String>.from(json['tags'] ?? []),
       viewsCount: json['viewsCount'] as int? ?? 0,
       favoritesCount: json['favoritesCount'] as int? ?? 0,

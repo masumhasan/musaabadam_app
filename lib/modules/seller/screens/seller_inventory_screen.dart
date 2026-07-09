@@ -223,6 +223,11 @@ class _ProductTile extends StatelessWidget {
           ),
 
           // Action button(s)
+          IconButton(
+            icon: Icon(Icons.edit, color: colorScheme.primary),
+            onPressed: () => Get.toNamed(AppRoutes.createQualityListingScreen, arguments: {'product': product}),
+            tooltip: 'Edit',
+          ),
           if (product.isDraft)
             IconButton(
               icon: Icon(Icons.publish_outlined, color: colorScheme.primary),

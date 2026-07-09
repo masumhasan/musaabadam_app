@@ -58,7 +58,7 @@ class ShippingScreen extends StatelessWidget {
               title: AppStrings.shippingProfiles,
               defaultIcon: Icons.local_shipping_outlined,
               onClick: () {
-                Get.toNamed(AppRoutes.createShippingProfileScreen);
+                Get.toNamed(AppRoutes.shippingProfilesScreen);
               },
             ),
           ],

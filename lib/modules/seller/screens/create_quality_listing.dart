@@ -25,12 +25,12 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
           icon: Icon(Icons.close, color: colorScheme.onSurface),
           onPressed: () => Get.back(),
         ),
-        title: CustomText(
-          text: AppStrings.createQualityListing,
+        title: Obx(() => CustomText(
+          text: controller.editProduct.value != null ? 'Update Listing' : AppStrings.createQualityListing,
           fontSize: 18,
           fontWeight: FontWeight.w700,
           fontColor: colorScheme.onSurface,
-        ),
+        )),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -43,7 +43,9 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
             SizedBoxWidget(height: 10.h),
             Obx(() {
               final images = controller.pickedImages;
-              if (images.isEmpty) {
+              final existingImages = controller.existingImages;
+              
+              if (images.isEmpty && existingImages.isEmpty) {
                 return GestureDetector(
                   onTap: controller.pickImages,
                   child: Container(
@@ -68,6 +70,36 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
+                    ...existingImages.asMap().entries.map((entry) => Padding(
+                      padding: EdgeInsets.only(right: 8.w),
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10.r),
+                            child: Image.network(
+                              entry.value,
+                              width: 90.w,
+                              height: 90.h,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          Positioned(
+                            top: 2,
+                            right: 2,
+                            child: GestureDetector(
+                              onTap: () => controller.removeExistingImage(entry.key),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius: BorderRadius.circular(20.r),
+                                ),
+                                child: Icon(Icons.close, color: Colors.white, size: 16.sp),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
                     ...images.asMap().entries.map((entry) => Padding(
                       padding: EdgeInsets.only(right: 8.w),
                       child: Stack(
@@ -98,7 +130,7 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
                         ],
                       ),
                     )),
-                    if (images.length < CreateProductController.maxImages)
+                    if (images.length + existingImages.length < CreateProductController.maxImages)
                       GestureDetector(
                         onTap: controller.pickImages,
                         child: Container(
@@ -136,15 +168,54 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
               buttonRadius: 8.r,
               onPressed: () => _showCategoryConditionSheet(context, colorScheme),
             )),
-            SizedBoxWidget(height: 15.h),
-
-            CustomTextField(hintText: AppStrings.title, controller: controller.titleController, label: AppStrings.title),
+            SizedBoxWidget(height: 15.h),            // Form
+            CustomTextField(
+              controller: controller.titleController,
+              hintText: 'e.g. Vintage leather jacket',
+              label: AppStrings.title,
+            ),
             SizedBoxWidget(height: 15.h),
             CustomTextField(
-              hintText: AppStrings.description,
               controller: controller.descController,
+              hintText: 'Describe your item...',
               label: AppStrings.description,
             ),
+            SizedBoxWidget(height: 20.h),
+            CustomText(text: 'Listing Type', fontWeight: FontWeight.w600),
+            SizedBoxWidget(height: 10.h),
+            Obx(() {
+              final isEditActive = controller.editProduct.value != null && controller.editProduct.value!.isActive;
+              return Row(
+                children: [
+                  Expanded(
+                    child: _buildTypeButton(
+                      'Buy it now',
+                      0,
+                      colorScheme,
+                      onTap: isEditActive ? null : () => controller.selectedListingType.value = 0,
+                    ),
+                  ),
+                  SizedBoxWidget(width: 10.w),
+                  Expanded(
+                    child: _buildTypeButton(
+                      'Auction',
+                      1,
+                      colorScheme,
+                      onTap: isEditActive ? null : () => controller.selectedListingType.value = 1,
+                    ),
+                  ),
+                  SizedBoxWidget(width: 10.w),
+                  Expanded(
+                    child: _buildTypeButton(
+                      'Giveaway',
+                      2,
+                      colorScheme,
+                      onTap: isEditActive ? null : () => controller.selectedListingType.value = 2,
+                    ),
+                  ),
+                ],
+              );
+            }),
             SizedBoxWidget(height: 20.h),
 
             // Quantity
@@ -172,18 +243,6 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
               onPressed: () {},
             ),
             const SizedBox(height: 10),
-
-            // Listing Type
-            Obx(() => Row(
-              children: [
-                _buildTypeButton(AppStrings.buyItNow, 0, colorScheme),
-                SizedBoxWidget(width: 10.w),
-                _buildTypeButton(AppStrings.auction, 1, colorScheme),
-                SizedBoxWidget(width: 10.w),
-                _buildTypeButton(AppStrings.giveaway, 2, colorScheme),
-              ],
-            )),
-            SizedBoxWidget(height: 20.h),
 
             // Price field — label and behaviour adapts to listing type
             Obx(() {
@@ -246,16 +305,18 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
             _buildSwitchTile(AppStrings.reserveForLive, controller.reserveForLive, colorScheme),
 
             SizedBoxWidget(height: 20.h),
-            CustomButton(
-              label: AppStrings.shippingProfile,
+            Obx(() => CustomButton(
+              label: controller.selectedShippingProfileId.value != null
+                  ? controller.shippingProfiles.firstWhere((p) => p.id == controller.selectedShippingProfileId.value).name
+                  : AppStrings.shippingProfile,
               textColor: Colors.white,
               backgroundColor: colorScheme.primary,
               icon: Icons.chevron_right,
               prefixIcon: Icons.local_shipping_outlined,
               buttonHeight: 50.h,
               buttonRadius: 8.r,
-              onPressed: () {},
-            ),
+              onPressed: () => _showShippingProfileSheet(context, colorScheme),
+            )),
 
             SizedBoxWidget(height: 15.h),
             _buildSwitchTile(AppStrings.hazardousMaterials, controller.isHazardous, colorScheme),
@@ -268,32 +329,33 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
             CustomTextField(hintText: AppStrings.sku, label: AppStrings.sku, controller: controller.skuController),
 
             SizedBoxWidget(height: 30.h),
-            Obx(() {
-              final busy = controller.isLoading.value;
-              final uploading = controller.isUploading.value;
-              final draftLabel = uploading ? 'Uploading…' : busy ? 'Saving…' : AppStrings.saveDraft;
-              final publishLabel = uploading ? 'Uploading…' : busy ? 'Publishing…' : AppStrings.publish;
-              return Row(
-                children: [
-                  Expanded(
-                    child: CustomButton(
-                      label: draftLabel,
-                      onPressed: busy ? null : () => controller.submitProduct(publishNow: false),
+            
+            Obx(() => controller.editProduct.value != null
+              ? CustomButton(
+                  label: controller.isLoading.value ? 'Updating...' : 'Update Product',
+                  onPressed: controller.isLoading.value ? null : () => controller.submitProduct(publishNow: false),
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: CustomButton(
+                        label: AppStrings.saveDraft,
+                        backgroundColor: colorScheme.surfaceContainerHighest,
+                        textColor: colorScheme.onSurface,
+                        onPressed: controller.isLoading.value ? null : () => controller.submitProduct(publishNow: false),
+                      ),
                     ),
-                  ),
-                  SizedBoxWidget(width: 15.w),
-                  Expanded(
-                    child: CustomButton(
-                      label: publishLabel,
-                      backgroundColor: AppColors.orange,
-                      textColor: Colors.white,
-                      onPressed: busy ? null : () => controller.submitProduct(publishNow: true),
+                    SizedBoxWidget(width: 15.w),
+                    Expanded(
+                      child: CustomButton(
+                        label: controller.isLoading.value ? 'Publishing...' : AppStrings.publish,
+                        onPressed: controller.isLoading.value ? null : () => controller.submitProduct(publishNow: true),
+                      ),
                     ),
-                  ),
-                ],
-              );
-            }),
-            SizedBoxWidget(height: 20.h),
+                  ],
+                ),
+            ),
+            SizedBoxWidget(height: 40.h),
           ],
         ),
       ),
@@ -390,11 +452,11 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
     );
   }
 
-  Widget _buildTypeButton(String label, int index, ColorScheme colorScheme) {
+  Widget _buildTypeButton(String label, int index, ColorScheme colorScheme, {VoidCallback? onTap}) {
     final isSelected = controller.selectedListingType.value == index;
     return Expanded(
       child: GestureDetector(
-        onTap: () => controller.selectedListingType.value = index,
+        onTap: onTap,
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 12.h),
           decoration: BoxDecoration(
@@ -411,18 +473,75 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
     );
   }
 
+  void _showShippingProfileSheet(BuildContext context, ColorScheme colorScheme) {
+    if (controller.shippingProfilesLoading.value) {
+      Get.snackbar('Loading', 'Fetching your shipping profiles...', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    if (controller.shippingProfiles.isEmpty) {
+      Get.snackbar('No profiles', 'You have no shipping profiles saved. Create one in your Shipping settings.', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      backgroundColor: colorScheme.surface,
+      builder: (ctx) {
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomText(text: 'Select Shipping Profile', fontWeight: FontWeight.w700, fontSize: 18),
+              SizedBoxWidget(height: 10.h),
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: controller.shippingProfiles.length + 1,
+                  itemBuilder: (ctx, index) {
+                    if (index == controller.shippingProfiles.length) {
+                      return ListTile(
+                        title: CustomText(text: 'None', fontColor: colorScheme.error),
+                        onTap: () {
+                          controller.selectedShippingProfileId.value = null;
+                          Navigator.pop(ctx);
+                        },
+                      );
+                    }
+                    final p = controller.shippingProfiles[index];
+                    return ListTile(
+                      title: CustomText(text: p.name, fontWeight: FontWeight.w600),
+                      subtitle: Text('${p.carrier} - \$${p.flatRate.toStringAsFixed(2)}'),
+                      onTap: () {
+                        controller.selectedShippingProfileId.value = p.id;
+                        Navigator.pop(ctx);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildSwitchTile(String title, RxBool state, ColorScheme colorScheme) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 10.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          CustomText(text: title, fontWeight: FontWeight.w600),
+          CustomText(text: title, fontWeight: FontWeight.w600, fontSize: 16),
           Obx(() => Switch(
-            value: state.value,
-            activeThumbColor: colorScheme.primary,
-            onChanged: (val) => state.value = val,
-          )),
+                value: state.value,
+                onChanged: (val) => state.value = val,
+                activeColor: colorScheme.primary,
+                activeTrackColor: colorScheme.primary.withValues(alpha: 0.3),
+              )),
         ],
       ),
     );

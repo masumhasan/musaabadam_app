@@ -7,6 +7,9 @@ import 'package:musaab_adam/core/services/api_upload_service.dart';
 import 'package:musaab_adam/core/services/category_service.dart';
 import 'package:musaab_adam/core/services/product_service.dart';
 import 'package:musaab_adam/data/models/category/category_model.dart';
+import 'package:musaab_adam/data/models/product/product_model.dart';
+import 'package:musaab_adam/data/models/shipping/shipping_profile_model.dart';
+import 'package:musaab_adam/core/services/api_shipping_service.dart';
 
 class CreateProductController extends GetxController {
   // ─── Form: Core ───────────────────────────────────────────────────────────
@@ -43,6 +46,11 @@ class CreateProductController extends GetxController {
   final TextEditingController costController = TextEditingController();
   final TextEditingController skuController = TextEditingController();
 
+  // ─── Form: Shipping Profile ───────────────────────────────────────────────
+  final RxList<ShippingProfileModel> shippingProfiles = <ShippingProfileModel>[].obs;
+  final RxBool shippingProfilesLoading = false.obs;
+  final Rx<String?> selectedShippingProfileId = Rx<String?>(null);
+
   // ─── Auction date ─────────────────────────────────────────────────────────
   final Rx<DateTime?> auctionEndDateTime = Rx<DateTime?>(null);
 
@@ -54,10 +62,59 @@ class CreateProductController extends GetxController {
   // ─── Loading ──────────────────────────────────────────────────────────────
   final RxBool isLoading = false.obs;
 
+  // ─── Edit Mode ────────────────────────────────────────────────────────────
+  final Rx<ProductModel?> editProduct = Rx<ProductModel?>(null);
+  final RxList<String> existingImages = <String>[].obs;
+
   @override
   void onInit() {
     super.onInit();
+    if (Get.arguments != null && Get.arguments['product'] != null) {
+      editProduct.value = Get.arguments['product'] as ProductModel;
+      _initEditMode(editProduct.value!);
+    }
     loadCategories();
+    loadShippingProfiles();
+  }
+
+  void _initEditMode(ProductModel product) {
+    titleController.text = product.title;
+    descController.text = product.description;
+    
+    // Set listing type
+    if (product.listingType == 'auction') {
+      selectedListingType.value = 1;
+      startingPriceController.text = product.startingPrice?.toString() ?? '';
+      if (product.auctionEndsAt != null) {
+        auctionEndDateTime.value = product.auctionEndsAt;
+        auctionEndDateController.text = product.auctionEndsAt.toString();
+      }
+    } else if (product.listingType == 'giveaway') {
+      selectedListingType.value = 2;
+    } else {
+      selectedListingType.value = 0;
+      priceController.text = product.price.toString();
+    }
+
+    quantity.value = product.quantity;
+    selectedCondition.value = product.condition;
+    isFlashSale.value = product.isFlashSaleActive;
+    acceptOffers.value = product.acceptOffers;
+    reserveForLive.value = product.reserveForLive;
+    isHazardous.value = product.hazardousMaterials;
+    skuController.text = product.sku ?? '';
+    costController.text = product.costPerItem?.toString() ?? '';
+    selectedShippingProfileId.value = product.shippingProfileId;
+    existingImages.assignAll(product.images);
+  }
+
+  // Called when categories are loaded to set the selected category if editing
+  void _setEditCategory() {
+    if (editProduct.value != null && categories.isNotEmpty) {
+      try {
+        selectedCategory.value = categories.firstWhere((c) => c.name.toLowerCase() == editProduct.value!.category.toLowerCase());
+      } catch (_) {}
+    }
   }
 
   @override
@@ -77,9 +134,21 @@ class CreateProductController extends GetxController {
     try {
       final result = await CategoryService.instance.getTopLevelCategories();
       categories.assignAll(result);
+      _setEditCategory();
     } catch (_) {}
     finally {
       categoriesLoading.value = false;
+    }
+  }
+
+  Future<void> loadShippingProfiles() async {
+    shippingProfilesLoading.value = true;
+    try {
+      final profiles = await ApiShippingService.instance.listProfiles();
+      shippingProfiles.assignAll(profiles);
+    } catch (_) {
+    } finally {
+      shippingProfilesLoading.value = false;
     }
   }
 
@@ -97,6 +166,12 @@ class CreateProductController extends GetxController {
   void removeImage(int index) {
     if (index >= 0 && index < pickedImages.length) {
       pickedImages.removeAt(index);
+    }
+  }
+
+  void removeExistingImage(int index) {
+    if (index >= 0 && index < existingImages.length) {
+      existingImages.removeAt(index);
     }
   }
 
@@ -149,7 +224,7 @@ class CreateProductController extends GetxController {
     isLoading.value = true;
     try {
       // Upload images to S3 first
-      final imageUrls = <String>[];
+      final imageUrls = [...existingImages];
       if (pickedImages.isNotEmpty) {
         isUploading.value = true;
         for (final file in pickedImages) {
@@ -163,36 +238,66 @@ class CreateProductController extends GetxController {
         isUploading.value = false;
       }
 
-      await ProductService.instance.createProduct(
-        title: titleController.text.trim(),
-        description: descController.text.trim(),
-        category: selectedCategory.value!.name,
-        condition: selectedCondition.value,
-        listingType: listingTypeString,
-        quantity: quantity.value,
-        price: listingTypeString == 'buy_it_now'
-            ? double.tryParse(priceController.text.trim())
-            : null,
-        startingPrice: listingTypeString == 'auction'
-            ? double.tryParse(startingPriceController.text.trim())
-            : null,
-        auctionEndsAt: auctionEndDateTime.value,
-        flashSale: isFlashSale.value,
-        acceptOffers: acceptOffers.value,
-        reserveForLive: reserveForLive.value,
-        hazardousMaterials: isHazardous.value,
-        sku: skuController.text.trim().isEmpty ? null : skuController.text.trim(),
-        costPerItem: costController.text.trim().isEmpty
-            ? null
-            : double.tryParse(costController.text.trim()),
-        images: imageUrls,
-        publishNow: publishNow,
-      );
+      if (editProduct.value != null) {
+        await ProductService.instance.updateProduct(
+          productId: editProduct.value!.id,
+          title: titleController.text.trim(),
+          description: descController.text.trim(),
+          category: selectedCategory.value!.name,
+          condition: selectedCondition.value,
+          listingType: listingTypeString,
+          quantity: quantity.value,
+          price: listingTypeString == 'buy_it_now'
+              ? double.tryParse(priceController.text.trim())
+              : null,
+          startingPrice: listingTypeString == 'auction'
+              ? double.tryParse(startingPriceController.text.trim())
+              : null,
+          auctionEndsAt: auctionEndDateTime.value,
+          flashSale: isFlashSale.value,
+          acceptOffers: acceptOffers.value,
+          reserveForLive: reserveForLive.value,
+          hazardousMaterials: isHazardous.value,
+          sku: skuController.text.trim().isEmpty ? null : skuController.text.trim(),
+          costPerItem: costController.text.trim().isEmpty
+              ? null
+              : double.tryParse(costController.text.trim()),
+          shippingProfileId: selectedShippingProfileId.value,
+          images: imageUrls,
+        );
+      } else {
+        await ProductService.instance.createProduct(
+          title: titleController.text.trim(),
+          description: descController.text.trim(),
+          category: selectedCategory.value!.name,
+          condition: selectedCondition.value,
+          listingType: listingTypeString,
+          quantity: quantity.value,
+          price: listingTypeString == 'buy_it_now'
+              ? double.tryParse(priceController.text.trim())
+              : null,
+          startingPrice: listingTypeString == 'auction'
+              ? double.tryParse(startingPriceController.text.trim())
+              : null,
+          auctionEndsAt: auctionEndDateTime.value,
+          flashSale: isFlashSale.value,
+          acceptOffers: acceptOffers.value,
+          reserveForLive: reserveForLive.value,
+          hazardousMaterials: isHazardous.value,
+          sku: skuController.text.trim().isEmpty ? null : skuController.text.trim(),
+          costPerItem: costController.text.trim().isEmpty
+              ? null
+              : double.tryParse(costController.text.trim()),
+          shippingProfileId: selectedShippingProfileId.value,
+          images: imageUrls,
+          publishNow: publishNow,
+        );
+      }
 
       Get.back();
       Get.snackbar(
-        publishNow ? 'Product Published!' : 'Draft Saved',
-        publishNow ? 'Your listing is now live.' : 'You can publish it from your inventory.',
+        editProduct.value != null ? 'Product Updated!' : (publishNow ? 'Product Published!' : 'Draft Saved'),
+        editProduct.value != null ? 'Your listing has been updated.' : (publishNow ? 'Your listing is now live.' : 'You can publish it from your inventory.'),
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 3),
       );

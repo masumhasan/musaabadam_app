@@ -97,6 +97,7 @@ class AppRoutes {
   static final promoteToolScreen = "/promote-tool-screen";
   static final createShippingProfileScreen = "/create-shipping-profile-screen";
   static final shippingScreen = "/shipping-screen";
+  static final shippingProfilesScreen = "/shipping-profiles-screen";
   static final permissionsScreen = "/permissions-screen";
   static final rehearsalScreen = "/rehearsal-screen";
   static final startAuctionScreen = "/start-auction-screen";

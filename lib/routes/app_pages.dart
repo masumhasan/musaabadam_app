@@ -30,6 +30,7 @@ import 'package:musaab_adam/modules/seller/screens/invite_seller_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/offers_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/permissions_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/promote_tools_screen.dart';
+import 'package:musaab_adam/modules/seller/screens/shipping_profiles_screen.dart';
 import 'package:musaab_adam/modules/seller/bindings/rehearsal_binding.dart';
 import 'package:musaab_adam/modules/seller/bindings/start_auction_binding.dart';
 import 'package:musaab_adam/modules/seller/screens/rehearsal_screen.dart';
@@ -237,6 +238,7 @@ class AppPages {
     GetPage(name: AppRoutes.shippingScreen, page: () => ShippingScreen()),
     GetPage(name: AppRoutes.permissionsScreen, page: () => PermissionsScreen()),
     GetPage(name: AppRoutes.rehearsalScreen, page: () => const RehearsalScreen(), binding: RehearsalBinding()),
+    GetPage(name: AppRoutes.shippingProfilesScreen, page: () => ShippingProfilesScreen()),
     GetPage(name: AppRoutes.startAuctionScreen, page: () => const StartAuctionScreen(), binding: StartAuctionBinding()),
     //===================SELLER VERIFICATION====================
     GetPage(name: AppRoutes.sellerFaqScreen, page: () => SellerFaqScreen()),
