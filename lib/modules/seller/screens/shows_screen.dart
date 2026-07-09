@@ -159,7 +159,9 @@ class _ShowTile extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: (show.status == 'ended' || hasReplay)
             ? () => Get.toNamed(AppRoutes.replayScreen, arguments: show)
-            : null,
+            : isScheduled
+                ? () => Get.toNamed(AppRoutes.startShowScreen, arguments: show)
+                : null,
         onLongPress: (show.status == 'draft' || isScheduled || show.status == 'cancelled')
             ? () => _showManageSheet(show)
             : null,

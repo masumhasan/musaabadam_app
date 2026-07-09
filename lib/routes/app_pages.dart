@@ -31,9 +31,9 @@ import 'package:musaab_adam/modules/seller/screens/offers_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/permissions_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/promote_tools_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/shipping_profiles_screen.dart';
-import 'package:musaab_adam/modules/seller/bindings/rehearsal_binding.dart';
+import 'package:musaab_adam/modules/seller/bindings/start_show_binding.dart';
 import 'package:musaab_adam/modules/seller/bindings/start_auction_binding.dart';
-import 'package:musaab_adam/modules/seller/screens/rehearsal_screen.dart';
+import 'package:musaab_adam/modules/seller/screens/start_show_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/start_auction_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/schedule_live_show.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_inventory_screen.dart';
@@ -237,7 +237,7 @@ class AppPages {
     GetPage(name: AppRoutes.createShippingProfileScreen, page: () => CreateShippingProfileScreen()),
     GetPage(name: AppRoutes.shippingScreen, page: () => ShippingScreen()),
     GetPage(name: AppRoutes.permissionsScreen, page: () => PermissionsScreen()),
-    GetPage(name: AppRoutes.rehearsalScreen, page: () => const RehearsalScreen(), binding: RehearsalBinding()),
+    GetPage(name: AppRoutes.startShowScreen, page: () => const StartShowScreen(), binding: StartShowBinding()),
     GetPage(name: AppRoutes.shippingProfilesScreen, page: () => ShippingProfilesScreen()),
     GetPage(name: AppRoutes.startAuctionScreen, page: () => const StartAuctionScreen(), binding: StartAuctionBinding()),
     //===================SELLER VERIFICATION====================

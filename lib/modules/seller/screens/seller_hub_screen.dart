@@ -121,7 +121,7 @@ class SellerHubScreen extends StatelessWidget {
                 ),
                 _buildBottomAction(AppStrings.rehearsalMode, Icons.videocam_outlined, colorScheme,
                     (){
-                  Get.toNamed(AppRoutes.livestreamScreen);
+                  Get.toNamed(AppRoutes.startShowScreen, arguments: {'isRehearsal': true});
                     }
                 ),
               ],
