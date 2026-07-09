@@ -34,4 +34,10 @@ class ApiUserService {
     final list = response.data['data'] as List<dynamic>;
     return list.map((a) => AddressModel.fromJson(a as Map<String, dynamic>)).toList();
   }
+
+  // ─── Preferences ──────────────────────────────────────────────────────────
+
+  Future<void> updateAppPreferences(Map<String, dynamic> body) async {
+    await _dio.put(ApiConstants.appPreferences, data: body);
+  }
 }

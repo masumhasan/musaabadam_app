@@ -1,5 +1,63 @@
 import '../address/address_model.dart';
 
+class AppPreferencesModel {
+  final bool directMessages;
+  final bool showSensitiveContent;
+  final bool enablePrivateEntry;
+  final bool contentCommunityBoost;
+  final bool showRealtimePromoteTool;
+  final bool displayRewardsClubStatus;
+  final bool yourPastShows;
+  final bool activityStatus;
+  final bool suggestAccountToOthers;
+  final bool syncContacts;
+  final String? country;
+
+  const AppPreferencesModel({
+    this.directMessages = true,
+    this.showSensitiveContent = false,
+    this.enablePrivateEntry = false,
+    this.contentCommunityBoost = true,
+    this.showRealtimePromoteTool = true,
+    this.displayRewardsClubStatus = true,
+    this.yourPastShows = true,
+    this.activityStatus = true,
+    this.suggestAccountToOthers = true,
+    this.syncContacts = false,
+    this.country,
+  });
+
+  factory AppPreferencesModel.fromJson(Map<String, dynamic> json) {
+    return AppPreferencesModel(
+      directMessages: json['directMessages'] as bool? ?? true,
+      showSensitiveContent: json['showSensitiveContent'] as bool? ?? false,
+      enablePrivateEntry: json['enablePrivateEntry'] as bool? ?? false,
+      contentCommunityBoost: json['contentCommunityBoost'] as bool? ?? true,
+      showRealtimePromoteTool: json['showRealtimePromoteTool'] as bool? ?? true,
+      displayRewardsClubStatus: json['displayRewardsClubStatus'] as bool? ?? true,
+      yourPastShows: json['yourPastShows'] as bool? ?? true,
+      activityStatus: json['activityStatus'] as bool? ?? true,
+      suggestAccountToOthers: json['suggestAccountToOthers'] as bool? ?? true,
+      syncContacts: json['syncContacts'] as bool? ?? false,
+      country: json['country'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'directMessages': directMessages,
+        'showSensitiveContent': showSensitiveContent,
+        'enablePrivateEntry': enablePrivateEntry,
+        'contentCommunityBoost': contentCommunityBoost,
+        'showRealtimePromoteTool': showRealtimePromoteTool,
+        'displayRewardsClubStatus': displayRewardsClubStatus,
+        'yourPastShows': yourPastShows,
+        'activityStatus': activityStatus,
+        'suggestAccountToOthers': suggestAccountToOthers,
+        'syncContacts': syncContacts,
+        'country': country,
+      };
+}
+
 class UserModel {
   final String id;
   final String email;
@@ -26,6 +84,7 @@ class UserModel {
   final DateTime createdAt;
   final DateTime? lastLoginAt;
   final List<AddressModel> addresses;
+  final AppPreferencesModel appPreferences;
 
   const UserModel({
     required this.id,
@@ -53,6 +112,7 @@ class UserModel {
     required this.createdAt,
     this.lastLoginAt,
     this.addresses = const [],
+    this.appPreferences = const AppPreferencesModel(),
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -87,6 +147,9 @@ class UserModel {
               ?.map((a) => AddressModel.fromJson(a as Map<String, dynamic>))
               .toList() ??
           [],
+      appPreferences: json['appPreferences'] != null
+          ? AppPreferencesModel.fromJson(json['appPreferences'] as Map<String, dynamic>)
+          : const AppPreferencesModel(),
     );
   }
 
@@ -116,6 +179,7 @@ class UserModel {
         'createdAt': createdAt.toIso8601String(),
         'lastLoginAt': lastLoginAt?.toIso8601String(),
         'addresses': addresses.map((a) => a.toJson()).toList(),
+        'appPreferences': appPreferences.toJson(),
       };
 
   bool get isSeller => role == 'seller';

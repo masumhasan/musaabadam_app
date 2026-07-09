@@ -36,6 +36,7 @@ class ApiConstants {
   static const String addresses = '/users/addresses';
   static String addressById(String id) => '/users/addresses/$id';
   static const String notificationPreferences = '/users/notification-preferences';
+  static const String appPreferences = '/users/app-preferences';
 
   // Social — follow / unfollow / block
   static String followUser(String userId) => '/users/$userId/follow';

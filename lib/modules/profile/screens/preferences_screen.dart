@@ -3,21 +3,12 @@ import 'package:get/get.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
+import 'package:musaab_adam/modules/profile/controllers/preferences_controller.dart';
 
 class PreferencesScreen extends StatelessWidget {
   PreferencesScreen({super.key});
 
-  final RxnString selectedCountry = RxnString();
-  final RxBool directMessages = false.obs;
-  final RxBool showSensitiveContent = false.obs;
-  final RxBool enablePrivateEntry = false.obs;
-  final RxBool contentBoost = false.obs;
-  final RxBool realtimeTool = false.obs;
-  final RxBool rewardsStatus = false.obs;
-  final RxBool pastShows = false.obs;
-  final RxBool activityStatus = false.obs;
-  final RxBool syncContacts = false.obs;
-  final RxBool suggestAccount = false.obs;
+  final PreferencesController controller = Get.put(PreferencesController());
 
   @override
   Widget build(BuildContext context) {
@@ -46,28 +37,28 @@ class PreferencesScreen extends StatelessWidget {
               ),
               child: DropdownButtonHideUnderline(
                 child: Obx(() => DropdownButton<String>(
-                  value: selectedCountry.value,
+                  value: controller.selectedCountry.value,
                   dropdownColor: colorScheme.surface,
                   isExpanded: true,
                   hint: CustomText(text: "Select Country", fontColor: colorScheme.outline),
                   items:["USA", "UK", "CANADA", "GERMANY", "FRANCE", "NETHERLANDS"]
                       .map((e) => DropdownMenuItem(value: e, child: CustomText(text: e)))
                       .toList(),
-                  onChanged: (value) => selectedCountry.value = value,
+                  onChanged: controller.onCountryChanged,
                 )),
               ),
             ),
             SizedBoxWidget(height: 20),
-            _switchTile(AppStrings.directMessages, directMessages),
-            _switchTile(AppStrings.showSensitiveContent, showSensitiveContent),
-            _switchTile(AppStrings.enablePrivateEntry, enablePrivateEntry),
-            _switchTile(AppStrings.contentCommunityBoost, contentBoost),
-            _switchTile(AppStrings.showRealtimePromoteTool, realtimeTool),
-            _switchTile(AppStrings.displayRewardsClubStatus, rewardsStatus),
-            _switchTile(AppStrings.yourPastShows, pastShows),
-            _switchTile(AppStrings.activityStatus, activityStatus),
-            _switchTile(AppStrings.syncContacts, syncContacts),
-            _switchTile(AppStrings.suggestAccountToOthers, suggestAccount),
+            _switchTile(AppStrings.directMessages, controller.directMessages, controller.onDirectMessagesChanged),
+            _switchTile(AppStrings.showSensitiveContent, controller.showSensitiveContent, controller.onShowSensitiveContentChanged),
+            _switchTile(AppStrings.enablePrivateEntry, controller.enablePrivateEntry, controller.onEnablePrivateEntryChanged),
+            _switchTile(AppStrings.contentCommunityBoost, controller.contentBoost, controller.onContentBoostChanged),
+            _switchTile(AppStrings.showRealtimePromoteTool, controller.realtimeTool, controller.onRealtimeToolChanged),
+            _switchTile(AppStrings.displayRewardsClubStatus, controller.rewardsStatus, controller.onRewardsStatusChanged),
+            _switchTile(AppStrings.yourPastShows, controller.pastShows, controller.onPastShowsChanged),
+            _switchTile(AppStrings.activityStatus, controller.activityStatus, controller.onActivityStatusChanged),
+            _switchTile(AppStrings.syncContacts, controller.syncContacts, controller.onSyncContactsChanged),
+            _switchTile(AppStrings.suggestAccountToOthers, controller.suggestAccount, controller.onSuggestAccountChanged),
             SizedBoxWidget(height: 40),
           ],
         ),
@@ -75,7 +66,7 @@ class PreferencesScreen extends StatelessWidget {
     );
   }
 
-  Widget _switchTile(String title, RxBool state) {
+  Widget _switchTile(String title, RxBool state, Function(bool) onChanged) {
     return Builder(builder: (context) {
       final colorScheme = Theme.of(context).colorScheme;
       return Padding(
@@ -89,7 +80,7 @@ class PreferencesScreen extends StatelessWidget {
               activeTrackColor: colorScheme.primary,
               activeThumbColor: colorScheme.surface,
               inactiveTrackColor: colorScheme.outline.withValues(alpha: 0.3),
-              onChanged: (v) => state.value = v,
+              onChanged: onChanged,
             )),
           ],
         ),
