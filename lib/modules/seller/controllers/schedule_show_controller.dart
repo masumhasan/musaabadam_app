@@ -157,7 +157,7 @@ class ScheduleShowController extends GetxController {
       final data = response.data['data']['settings'];
       if (data != null) {
         availableTags.assignAll(List<String>.from(data['allowedTags'] ?? []));
-        availableMutedWords.assignAll(List<String>.from(data['globalMutedWords'] ?? []));
+        availableMutedWords.assignAll(List<String>.from(data['selectiveMutedWords'] ?? []));
       }
     } catch (_) {}
   }
