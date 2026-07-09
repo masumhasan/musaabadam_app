@@ -33,7 +33,7 @@ class RehearsalController extends GetxController {
       // 1. Get current seller profile
       final profileRes = await ApiClient.instance.get(ApiConstants.myProfile);
       final user = UserModel.fromJson(
-        profileRes.data['data']['user'] as Map<String, dynamic>,
+        profileRes.data['data'] as Map<String, dynamic>,
       );
       sellerName.value = user.displayName ?? user.username;
       sellerAvatarUrl.value = user.avatarUrl ?? '';
