@@ -23,12 +23,12 @@ class ScheduleLiveShowScreen extends GetView<ScheduleShowController> {
         backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: BackButton(color: colorScheme.onSurface),
-        title: Obx(() => CustomText(
+        title: CustomText(
           text: controller.isEditMode ? 'Edit Show' : AppStrings.scheduleALiveShow,
           fontSize: 18,
           fontWeight: FontWeight.w700,
           fontColor: colorScheme.onSurface,
-        )),
+        ),
         centerTitle: true,
       ),
       body: SafeArea(

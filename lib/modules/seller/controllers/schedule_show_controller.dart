@@ -61,6 +61,7 @@ class ScheduleShowController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    fetchPlatformSettings();
     final arg = Get.arguments;
     if (arg is StreamModel) {
       _editStreamId = arg.id;
