@@ -165,6 +165,7 @@ class _CheckEmailScreenState extends State<CheckEmailScreen> {
                               color: colorScheme.onSurface,
                             ),
                             decoration: InputDecoration(
+                              contentPadding: EdgeInsets.zero,
                               counterText: '',
                               filled: true,
                               fillColor: colorScheme.onSurface.withValues(alpha: 0.05),

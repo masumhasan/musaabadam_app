@@ -163,6 +163,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                               color: colorScheme.onSurface,
                             ),
                             decoration: InputDecoration(
+                              contentPadding: EdgeInsets.zero,
                               counterText: '',
                               filled: true,
                               fillColor: colorScheme.onSurface.withValues(alpha: 0.05),
