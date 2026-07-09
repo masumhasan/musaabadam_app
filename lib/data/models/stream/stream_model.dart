@@ -24,6 +24,16 @@ class StreamModel {
   final String recordingStatus; // none | processing | ready | failed
   final int? recordingDurationSeconds;
 
+  final String? videoPreviewUrl;
+  final String primarySellingFormat;
+  final String repeatOption;
+  final String? shippingSettings;
+  final bool freePickup;
+  final bool explicitContent;
+  final List<String> mutedWords;
+  final String primaryLanguage;
+  final List<String> moderatorIds;
+
   const StreamModel({
     required this.id,
     required this.sellerId,
@@ -33,6 +43,15 @@ class StreamModel {
     this.description,
     this.categoryId,
     this.thumbnailUrl,
+    this.videoPreviewUrl,
+    this.primarySellingFormat = 'auction',
+    this.repeatOption = 'doesNotRepeat',
+    this.shippingSettings,
+    this.freePickup = false,
+    this.explicitContent = false,
+    this.mutedWords = const [],
+    this.primaryLanguage = 'English',
+    this.moderatorIds = const [],
     required this.tags,
     required this.pinnedProducts,
     required this.status,
@@ -70,6 +89,15 @@ class StreamModel {
       description: json['description'] as String?,
       categoryId: _extractIdOrNull(json['categoryId']),
       thumbnailUrl: json['thumbnailUrl'] as String?,
+      videoPreviewUrl: json['videoPreviewUrl'] as String?,
+      primarySellingFormat: json['primarySellingFormat'] as String? ?? 'auction',
+      repeatOption: json['repeatOption'] as String? ?? 'doesNotRepeat',
+      shippingSettings: json['shippingSettings'] as String?,
+      freePickup: json['freePickup'] as bool? ?? false,
+      explicitContent: json['explicitContent'] as bool? ?? false,
+      mutedWords: List<String>.from(json['mutedWords'] ?? []),
+      primaryLanguage: json['primaryLanguage'] as String? ?? 'English',
+      moderatorIds: (json['moderatorIds'] as List? ?? []).map((e) => _extractId(e)).where((e) => e.isNotEmpty).toList(),
       tags: List<String>.from(json['tags'] ?? []),
       pinnedProducts: (json['pinnedProducts'] as List? ?? [])
           .map((e) => e is String ? e : (e as Map)['_id'] as String? ?? '')
@@ -99,6 +127,15 @@ class StreamModel {
         'description': description,
         'categoryId': categoryId,
         'thumbnailUrl': thumbnailUrl,
+        'videoPreviewUrl': videoPreviewUrl,
+        'primarySellingFormat': primarySellingFormat,
+        'repeatOption': repeatOption,
+        'shippingSettings': shippingSettings,
+        'freePickup': freePickup,
+        'explicitContent': explicitContent,
+        'mutedWords': mutedWords,
+        'primaryLanguage': primaryLanguage,
+        'moderatorIds': moderatorIds,
         'tags': tags,
         'pinnedProducts': pinnedProducts,
         'status': status,

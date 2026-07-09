@@ -98,6 +98,7 @@ class ApiConstants {
   // Legal content (public)
   static const String legalPrivacyPolicy = '/settings/privacy-policy';
   static const String legalTerms = '/settings/terms';
+  static const String platformSettings = '/settings/platform';
 
   // Streams
   static const String streams = '/streams';

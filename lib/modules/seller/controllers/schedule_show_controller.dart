@@ -1,6 +1,11 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:musaab_adam/core/network/api_client.dart';
+import 'package:musaab_adam/core/network/api_constants.dart';
+import 'package:musaab_adam/core/services/api_upload_service.dart';
 import 'package:musaab_adam/core/services/category_service.dart';
 import 'package:musaab_adam/core/services/stream_service.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
@@ -33,9 +38,25 @@ class ScheduleShowController extends GetxController {
   // ─── Loading ─────────────────────────────────────────────────────────────
   final RxBool isLoading = false.obs;
 
+  // ─── Media Pickers ───────────────────────────────────────────────────────
+  final RxString thumbnailUrl = ''.obs;
+  final RxString videoPreviewUrl = ''.obs;
+
+  // ─── Format, Shipping, Language, Muted Words ────────────────────────────
+  final RxString primarySellingFormat = 'auction'.obs;
+  final RxString shippingSettings = ''.obs;
+  final RxBool freePickup = false.obs;
+  final RxString primaryLanguage = 'English'.obs;
+  final RxList<String> mutedWords = <String>[].obs;
+  final RxList<String> moderatorIds = <String>[].obs;
+
   // ─── Edit mode ───────────────────────────────────────────────────────────
   String? _editStreamId;
   bool get isEditMode => _editStreamId != null;
+
+  // ─── Platform Settings ───────────────────────────────────────────────────
+  final RxList<String> availableTags = <String>[].obs;
+  final RxList<String> availableMutedWords = <String>[].obs;
 
   @override
   void onInit() {
@@ -44,6 +65,18 @@ class ScheduleShowController extends GetxController {
     if (arg is StreamModel) {
       _editStreamId = arg.id;
       titleController.text = arg.title;
+      thumbnailUrl.value = arg.thumbnailUrl ?? '';
+      videoPreviewUrl.value = arg.videoPreviewUrl ?? '';
+      primarySellingFormat.value = arg.primarySellingFormat;
+      selectedRepeat.value = arg.repeatOption;
+      shippingSettings.value = arg.shippingSettings ?? '';
+      freePickup.value = arg.freePickup;
+      explicitContent.value = arg.explicitContent;
+      mutedWords.assignAll(arg.mutedWords);
+      primaryLanguage.value = arg.primaryLanguage;
+      moderatorIds.assignAll(arg.moderatorIds);
+      tags.assignAll(arg.tags);
+      
       if (arg.scheduledAt != null) {
         final local = arg.scheduledAt!.toLocal();
         _pickedDate = DateTime(local.year, local.month, local.day);
@@ -54,6 +87,7 @@ class ScheduleShowController extends GetxController {
       }
     }
     loadCategories();
+    loadPlatformSettings();
   }
 
   @override
@@ -62,6 +96,48 @@ class ScheduleShowController extends GetxController {
     dateController.dispose();
     timeController.dispose();
     super.onClose();
+  }
+
+  Future<void> pickThumbnail() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+    
+    isLoading.value = true;
+    try {
+      final url = await ApiUploadService.instance.uploadFile(
+        file: File(image.path),
+        folder: 'stream_thumbnail',
+        contentType: 'image/jpeg',
+      );
+      thumbnailUrl.value = url;
+      Get.snackbar('Image Uploaded', 'Thumbnail added successfully', snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Upload Failed', 'Failed to upload thumbnail', snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> pickVideo() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? video = await picker.pickVideo(source: ImageSource.gallery);
+    if (video == null) return;
+
+    isLoading.value = true;
+    try {
+      final url = await ApiUploadService.instance.uploadFile(
+        file: File(video.path),
+        folder: 'stream_video',
+        contentType: 'video/mp4',
+      );
+      videoPreviewUrl.value = url;
+      Get.snackbar('Video Uploaded', 'Preview video added successfully', snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Upload Failed', 'Failed to upload video', snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> loadCategories() async {
@@ -73,6 +149,17 @@ class ScheduleShowController extends GetxController {
     finally {
       categoriesLoading.value = false;
     }
+  }
+
+  Future<void> loadPlatformSettings() async {
+    try {
+      final response = await ApiClient.instance.get(ApiConstants.platformSettings);
+      final data = response.data['data']['settings'];
+      if (data != null) {
+        availableTags.assignAll(List<String>.from(data['allowedTags'] ?? []));
+        availableMutedWords.assignAll(List<String>.from(data['globalMutedWords'] ?? []));
+      }
+    } catch (_) {}
   }
 
   Future<void> pickDate(BuildContext context) async {
@@ -153,6 +240,16 @@ class ScheduleShowController extends GetxController {
           scheduledAt: scheduledAt.value,
           tags: tags.isEmpty ? null : tags.toList(),
           visibility: _visibility,
+          thumbnailUrl: thumbnailUrl.value.isEmpty ? null : thumbnailUrl.value,
+          videoPreviewUrl: videoPreviewUrl.value.isEmpty ? null : videoPreviewUrl.value,
+          primarySellingFormat: primarySellingFormat.value,
+          repeatOption: selectedRepeat.value,
+          shippingSettings: shippingSettings.value.isEmpty ? null : shippingSettings.value,
+          freePickup: freePickup.value,
+          explicitContent: explicitContent.value,
+          mutedWords: mutedWords.toList(),
+          primaryLanguage: primaryLanguage.value,
+          moderatorIds: moderatorIds.toList(),
         );
         Get.back();
         Get.snackbar(
@@ -170,6 +267,16 @@ class ScheduleShowController extends GetxController {
           chatEnabled: true,
           visibility: _visibility,
           asDraft: asDraft,
+          thumbnailUrl: thumbnailUrl.value.isEmpty ? null : thumbnailUrl.value,
+          videoPreviewUrl: videoPreviewUrl.value.isEmpty ? null : videoPreviewUrl.value,
+          primarySellingFormat: primarySellingFormat.value,
+          repeatOption: selectedRepeat.value,
+          shippingSettings: shippingSettings.value.isEmpty ? null : shippingSettings.value,
+          freePickup: freePickup.value,
+          explicitContent: explicitContent.value,
+          mutedWords: mutedWords.toList(),
+          primaryLanguage: primaryLanguage.value,
+          moderatorIds: moderatorIds.toList(),
         );
         Get.back();
         Get.snackbar(
