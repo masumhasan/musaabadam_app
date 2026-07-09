@@ -39,6 +39,7 @@ class SellerSubcategoryScreen extends GetView<SellerVerificationController> {
             // Title & Subtitle
             CustomText(
               text: AppStrings.whichSubcategory,
+              maxLines: 3,
               fontSize: 24,
               fontWeight: FontWeight.w700,
               textAlignment: TextAlign.start,
@@ -47,6 +48,7 @@ class SellerSubcategoryScreen extends GetView<SellerVerificationController> {
             SizedBoxWidget(height: 8.h),
             CustomText(
               text: AppStrings.canAddMoreLater,
+              maxLines: 3,
               fontSize: 16,
               textAlignment: TextAlign.start,
               fontColor: colorScheme.outline,

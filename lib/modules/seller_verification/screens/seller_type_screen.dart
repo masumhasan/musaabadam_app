@@ -39,6 +39,7 @@ class SellerTypeScreen extends GetView<SellerVerificationController> {
             // Title
             CustomText(
               text: AppStrings.whichDescribesYou,
+              maxLines: 3,
               fontSize: 24,
               fontWeight: FontWeight.w700,
               textAlignment: TextAlign.start,
@@ -49,6 +50,7 @@ class SellerTypeScreen extends GetView<SellerVerificationController> {
             // Subtitle
             CustomText(
               text: AppStrings.tailorExperience,
+              maxLines: 3,
               fontSize: 16,
               textAlignment: TextAlign.start,
               fontColor: colorScheme.outline,

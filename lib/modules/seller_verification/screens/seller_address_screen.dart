@@ -38,6 +38,7 @@ class SellerAddressScreen extends GetView<SellerVerificationController> {
             // Header Section
             CustomText(
               text: AppStrings.whereShouldWeSend,
+              maxLines: 3,
               fontSize: 24,
               fontWeight: FontWeight.w700,
               textAlignment: TextAlign.start,
@@ -46,6 +47,7 @@ class SellerAddressScreen extends GetView<SellerVerificationController> {
             SizedBoxWidget(height: 10.h),
             CustomText(
               text: AppStrings.toPreventDelays,
+              maxLines: 3,
               fontSize: 14,
               textAlignment: TextAlign.start,
               fontColor: colorScheme.outline,

@@ -40,6 +40,7 @@ class SellerCategoryScreen extends GetView<SellerVerificationController> {
             // Title & Subtitle
             CustomText(
               text: AppStrings.whichCategory.tr,
+              maxLines: 3,
               fontSize: 24,
               fontWeight: FontWeight.w700,
               textAlignment: TextAlign.start,
@@ -48,6 +49,7 @@ class SellerCategoryScreen extends GetView<SellerVerificationController> {
             SizedBoxWidget(height: 8.h),
             CustomText(
               text: AppStrings.pickAFew.tr,
+              maxLines: 3,
               fontSize: 16,
               fontWeight: FontWeight.w400,
               textAlignment: TextAlign.start,
