@@ -293,6 +293,22 @@ class _ShowTile extends StatelessWidget {
               ],
             ),
           ),
+          if (isScheduled)
+            Padding(
+              padding: EdgeInsets.only(left: 8.w),
+              child: ElevatedButton(
+                onPressed: () => Get.toNamed(AppRoutes.startShowScreen, arguments: show),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.orange,
+                  foregroundColor: Colors.black,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  minimumSize: Size(0, 32.h),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+                ),
+                child: const Text('Join', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              ),
+            ),
         ],
         ),
       ),

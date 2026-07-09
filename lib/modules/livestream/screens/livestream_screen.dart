@@ -9,6 +9,7 @@ import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
+import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/labeled_iconbutton.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/core/widgets/svg_icon.dart';
@@ -313,6 +314,28 @@ class LiveStreamScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (msgs.isEmpty) ...[
+                        Row(
+                          children: [
+                            CircleAvatar(radius: 12.r, backgroundColor: AppColors.orange),
+                            SizedBoxWidget(width: 6.w),
+                            CustomText(
+                              text: 'magicalmotleymadeandfound',
+                              fontWeight: FontWeight.w700,
+                              fontColor: Colors.white,
+                              fontSize: 12,
+                            ),
+                            SizedBoxWidget(width: 4.w),
+                            CustomText(
+                              text: 'joined 👋',
+                              fontColor: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ],
+                        ),
+                        SizedBoxWidget(height: 8.h),
+                      ],
                       for (final m in msgs)
                         GestureDetector(
                           onTap: () => lsCtrl.startReply(m),
@@ -438,38 +461,50 @@ class LiveStreamScreen extends StatelessWidget {
               ),
             ),
           Expanded(
-            child: TextField(
-              controller: _commentController,
-              onChanged: (val) {
-                final query = _getMentionQuery(val, _commentController.selection.start);
-                _mentionQuery.value = query ?? '';
-              },
-              style: const TextStyle(color: Colors.white),
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => send(),
-              decoration: InputDecoration(
-                hintText: 'Type comment........',
-                hintStyle: const TextStyle(color: Colors.white60),
-                fillColor: Colors.white.withValues(alpha: 0.2),
-                filled: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: const BorderSide(color: Colors.cyan, width: 1.5),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: const BorderSide(color: Colors.cyan, width: 1.5),
-                ),
+            child: Container(
+              height: 45.h,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(24.r),
+                border: Border.all(color: Colors.white38),
+              ),
+              child: Row(
+                children: [
+                  SizedBoxWidget(width: 12.w),
+                  Icon(Icons.notes, color: Colors.white, size: 18.sp),
+                  SizedBoxWidget(width: 8.w),
+                  Container(width: 1.w, height: 20.h, color: Colors.white38),
+                  SizedBoxWidget(width: 8.w),
+                  Expanded(
+                    child: TextField(
+                      controller: _commentController,
+                      onChanged: (val) {
+                        final query = _getMentionQuery(val, _commentController.selection.start);
+                        _mentionQuery.value = query ?? '';
+                      },
+                      style: const TextStyle(color: Colors.white),
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => send(),
+                      decoration: InputDecoration(
+                        hintText: 'Say something...',
+                        hintStyle: const TextStyle(color: Colors.white70),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
+          SizedBoxWidget(width: 8.w),
           GestureDetector(
             onTap: send,
             child: Transform.rotate(
               angle: -pi / 4,
               child: const CircleAvatar(
-                backgroundColor: Colors.cyan,
+                backgroundColor: AppColors.orange,
                 child: Icon(Icons.send, color: Colors.white),
               ),
             ),
@@ -890,6 +925,7 @@ class _VideoBackground extends StatelessWidget {
             videoFit: VideoFit.cover,
             showSpeakerBorder: false,
             showConnectionQualityIndicator: false,
+            showParticipantLabel: false,
           );
         },
       );
@@ -924,6 +960,7 @@ class _VideoBackground extends StatelessWidget {
           videoFit: VideoFit.cover,
           showSpeakerBorder: false,
           showConnectionQualityIndicator: false,
+          showParticipantLabel: false,
         );
       },
     );

@@ -35,6 +35,8 @@ import 'package:musaab_adam/modules/seller/bindings/start_show_binding.dart';
 import 'package:musaab_adam/modules/seller/bindings/start_auction_binding.dart';
 import 'package:musaab_adam/modules/seller/screens/start_show_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/start_auction_screen.dart';
+import 'package:musaab_adam/modules/seller/screens/end_show_insights_screen.dart';
+import 'package:musaab_adam/modules/seller/bindings/end_show_insights_binding.dart';
 import 'package:musaab_adam/modules/seller/screens/schedule_live_show.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_inventory_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_order_screen.dart';
@@ -240,6 +242,7 @@ class AppPages {
     GetPage(name: AppRoutes.startShowScreen, page: () => const StartShowScreen(), binding: StartShowBinding()),
     GetPage(name: AppRoutes.shippingProfilesScreen, page: () => ShippingProfilesScreen()),
     GetPage(name: AppRoutes.startAuctionScreen, page: () => const StartAuctionScreen(), binding: StartAuctionBinding()),
+    GetPage(name: AppRoutes.endShowInsightsScreen, page: () => const EndShowInsightsScreen(), binding: EndShowInsightsBinding()),
     //===================SELLER VERIFICATION====================
     GetPage(name: AppRoutes.sellerFaqScreen, page: () => SellerFaqScreen()),
     GetPage(name: AppRoutes.readyToEarnScreen, page: () => ReadyToEarnScreen()),

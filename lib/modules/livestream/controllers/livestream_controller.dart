@@ -122,7 +122,7 @@ class LivestreamController extends GetxController {
     try {
       await StreamService.instance.endStream(_streamId!);
     } catch (_) {}
-    Get.back();
+    Get.offNamed(AppRoutes.endShowInsightsScreen, arguments: _streamId);
   }
 
   Future<void> _load(String streamId) async {

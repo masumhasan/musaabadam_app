@@ -96,15 +96,6 @@ class StartShowScreen extends GetView<StartShowController> {
                         ],
                         
                         const Spacer(flex: 2),
-                        
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Expanded(child: _buildChatInput(colorScheme)),
-                            SizedBoxWidget(width: 16.w),
-                            _buildShopButton(colorScheme),
-                          ],
-                        ),
                         SizedBoxWidget(height: 16.h),
                         CustomButton(
                           label: 'Start Show',
@@ -118,12 +109,6 @@ class StartShowScreen extends GetView<StartShowController> {
                   ),
                 ),
                 
-                // Overlay sidebar
-                Positioned(
-                  right: 16.w,
-                  top: 100.h,
-                  child: _buildSidebar(colorScheme),
-                ),
               ],
             );
           },
@@ -217,7 +202,7 @@ class StartShowScreen extends GetView<StartShowController> {
             text: 'Go live within 3 days and we\'ll match your first \$150 in sales.',
             fontSize: 12,
             fontColor: Colors.white70,
-            textAlign: TextAlign.center,
+            textAlignment: TextAlign.center,
           ),
           SizedBoxWidget(height: 24.h),
           
@@ -308,7 +293,7 @@ class StartShowScreen extends GetView<StartShowController> {
                     final product = list[index];
                     return ListTile(
                       leading: product.images.isNotEmpty
-                          ? Image.network(product.images.first.url, width: 40.w, height: 40.w, fit: BoxFit.cover)
+                          ? Image.network(product.images.first, width: 40.w, height: 40.w, fit: BoxFit.cover)
                           : const Icon(Icons.image),
                       title: Text(product.title),
                       subtitle: Text('\$${product.price}'),

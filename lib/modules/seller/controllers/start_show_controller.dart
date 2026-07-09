@@ -8,7 +8,7 @@ import 'package:musaab_adam/data/models/auth/user_model.dart';
 import 'package:musaab_adam/data/models/product/product_model.dart';
 import 'package:musaab_adam/data/models/stream/stream_model.dart';
 import 'package:musaab_adam/core/services/api_auth_service.dart';
-
+import 'package:musaab_adam/routes/app_pages.dart';
 class StartShowController extends GetxController {
   final RxBool isLoading = true.obs;
   final RxBool hasError = false.obs;
@@ -117,8 +117,7 @@ class StartShowController extends GetxController {
       return;
     }
     
-    Get.snackbar('Go Live!', 'Starting the live show...');
-    // In a real flow we would transition to livestream screen and API start
+    Get.offNamed(AppRoutes.livestreamScreen, arguments: _streamId);
   }
 
   Future<void> endShow() async {

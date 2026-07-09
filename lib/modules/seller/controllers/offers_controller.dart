@@ -29,7 +29,21 @@ class OffersController extends GetxController {
       offers.removeWhere((o) => o.id == offerId);
       Get.snackbar('Success', 'Offer $status successfully');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update offer');
+      String errorMessage = 'Failed to update offer';
+      if (e is FormatException) {
+        errorMessage = e.message;
+      } else {
+        // Try to parse DioError if applicable (or just use toString)
+        final errorStr = e.toString();
+        if (errorStr.contains("Buyer's payment failed")) {
+           errorMessage = "Buyer's payment failed. They have been notified to update it.";
+           // Even if failed, the backend might have marked it accepted, so let's reload
+           loadOffers();
+        } else {
+           errorMessage = errorStr.length < 100 ? errorStr : 'Failed to update offer';
+        }
+      }
+      Get.snackbar('Error', errorMessage);
     }
   }
 }

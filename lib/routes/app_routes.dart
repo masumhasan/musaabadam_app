@@ -101,6 +101,7 @@ class AppRoutes {
   static final permissionsScreen = "/permissions-screen";
   static final startShowScreen = "/start-show-screen";
   static final startAuctionScreen = "/start-auction-screen";
+  static final endShowInsightsScreen = "/end-show-insights-screen";
   //===================SELLER VERIFICATION====================
   static final sellerFaqScreen = "/seller-faq-screen";
   static final readyToEarnScreen = "/ready-to-earn-screen";
