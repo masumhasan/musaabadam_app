@@ -83,7 +83,7 @@ class SellerCategoryScreen extends GetView<SellerVerificationController> {
                     return Obx(() {
                       final isSelected = controller.selectedCategoryIds.contains(cat.id);
                       return CategoryItem(
-                        image: cat.iconUrl ?? '',
+                        image: cat.imageUrl ?? '',
                         itemName: cat.name,
                         onSelectionChanged: (selected) {
                           controller.toggleCategory(cat.id, selected);

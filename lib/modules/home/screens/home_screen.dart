@@ -260,7 +260,7 @@ class HomeScreen extends GetView<MainNavController> {
             onTap: () => homeCtrl.selectCategory('followed'),
           ),
           ...homeCtrl.categories.map((cat) => CategoryItem(
-                image: cat.iconUrl ?? Dummy.product1,
+                image: cat.imageUrl ?? Dummy.product1,
                 itemName: cat.name,
                 isSelected: homeCtrl.selectedCategoryType.value == 'category' &&
                     homeCtrl.selectedCategory.value?.id == cat.id,

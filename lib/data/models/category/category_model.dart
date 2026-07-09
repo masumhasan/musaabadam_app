@@ -3,7 +3,7 @@ class CategoryModel {
   final String name;
   final String slug;
   final String? parentId;
-  final String? iconUrl;
+  final String? imageUrl;
   final bool isActive;
   final int sortOrder;
 
@@ -12,7 +12,7 @@ class CategoryModel {
     required this.name,
     required this.slug,
     this.parentId,
-    this.iconUrl,
+    this.imageUrl,
     required this.isActive,
     required this.sortOrder,
   });
@@ -23,7 +23,7 @@ class CategoryModel {
       name: json['name'] as String,
       slug: json['slug'] as String,
       parentId: _extractParentId(json['parentId']),
-      iconUrl: json['iconUrl'] as String?,
+      imageUrl: json['imageUrl'] as String?,
       isActive: (json['isActive'] as bool?) ?? true,
       sortOrder: (json['sortOrder'] as int?) ?? 0,
     );

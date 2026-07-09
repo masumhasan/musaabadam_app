@@ -63,7 +63,7 @@ class CategoriesScreen extends GetView<CategoriesController> {
                   itemBuilder: (context, i) {
                     final cat = controller.categories[i];
                     return CategoryItem(
-                      image: cat.iconUrl ?? '',
+                      image: cat.imageUrl ?? '',
                       itemName: cat.name,
                     );
                   },
