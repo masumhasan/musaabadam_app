@@ -30,6 +30,17 @@ class SellerService {
     return UserModel.fromJson(response.data['data'] as Map<String, dynamic>);
   }
 
+  Future<UserModel> updateKyc({
+    String? identityDocUrl,
+    String? businessLicenseUrl,
+  }) async {
+    final response = await _dio.patch(ApiConstants.updateKyc, data: {
+      if (identityDocUrl != null) 'identityDocUrl': identityDocUrl,
+      if (businessLicenseUrl != null) 'businessLicenseUrl': businessLicenseUrl,
+    });
+    return UserModel.fromJson(response.data['data'] as Map<String, dynamic>);
+  }
+
   static String extractError(DioException e) {
     try {
       final data = e.response?.data;

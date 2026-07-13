@@ -85,6 +85,7 @@ class UserModel {
   final DateTime? lastLoginAt;
   final List<AddressModel> addresses;
   final AppPreferencesModel appPreferences;
+  final Map<String, dynamic>? sellerProfile;
 
   const UserModel({
     required this.id,
@@ -113,6 +114,7 @@ class UserModel {
     this.lastLoginAt,
     this.addresses = const [],
     this.appPreferences = const AppPreferencesModel(),
+    this.sellerProfile,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -140,6 +142,7 @@ class UserModel {
       isSuspended: json['isSuspended'] as bool? ?? false,
       accountHealth: json['accountHealth'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      sellerProfile: json['sellerProfile'] as Map<String, dynamic>?,
       lastLoginAt: json['lastLoginAt'] != null
           ? DateTime.parse(json['lastLoginAt'] as String)
           : null,
@@ -177,6 +180,7 @@ class UserModel {
         'isSuspended': isSuspended,
         'accountHealth': accountHealth,
         'createdAt': createdAt.toIso8601String(),
+        'sellerProfile': sellerProfile,
         'lastLoginAt': lastLoginAt?.toIso8601String(),
         'addresses': addresses.map((a) => a.toJson()).toList(),
         'appPreferences': appPreferences.toJson(),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
@@ -61,7 +60,7 @@ class ProfileScreen extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(50),
                   child: CachedImageWidget(
-                    imageUrl: user?.avatarUrl ?? Dummy.user1,
+                    imageUrl: user?.avatarUrl ?? '',
                     height: 60.h,
                     width: 60.w,
                   ),
@@ -84,7 +83,7 @@ class ProfileScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children:[
                       _buildStatColumn(
-                        (user?.buyerRating ?? 0).toStringAsFixed(1),
+                        ((user?.sellerProfile?['averageRating'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(1),
                         "Ratings",
                         colorScheme,
                         icon: Icons.star,

@@ -89,6 +89,7 @@ class ApiConstants {
 
   // Seller application
   static const String sellerApplication = '/users/seller-application';
+  static const String updateKyc = '/users/kyc';
 
   // Change email / password (authenticated)
   static const String changeEmailInitiate = '/auth/change-email/initiate';
