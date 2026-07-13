@@ -3,24 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
+import '../controllers/faq_controller.dart';
 
-class SellerFaqScreen extends StatelessWidget {
-  SellerFaqScreen({super.key});
-
-  final List<Map<String, String>> faqData =[
-    {
-      'question': AppStrings.howDoIUnlockMySellerAccess,
-      'answer': AppStrings.howDoIUnlockMySellerAccessAnswer
-    },
-    {
-      'question': AppStrings.canHaveSecondSellingAccount,
-      'answer': AppStrings.canHaveSecondSellingAccountAnswer
-    },
-    {
-      'question': AppStrings.whenCanIScheduleAShow,
-      'answer': AppStrings.whenCanIScheduleAShowAnswer
-    },
-  ];
+class SellerFaqScreen<T extends FaqController> extends GetView<T> {
+  const SellerFaqScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,17 +25,26 @@ class SellerFaqScreen extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-        child: Column(
-          children: faqData.map((item) {
-            return Padding(
-              padding: EdgeInsets.only(bottom: 12.h),
-              child: _buildExpansionTile(item['question']!, item['answer']!, colorScheme),
-            );
-          }).toList(),
-        ),
-      ),
+      body: Obx(() {
+        if (controller.isLoading.value && controller.faqs.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return RefreshIndicator(
+          onRefresh: controller.loadFaqs,
+          child: ListView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+            itemCount: controller.faqs.length,
+            itemBuilder: (context, index) {
+              final item = controller.faqs[index];
+              return Padding(
+                padding: EdgeInsets.only(bottom: 12.h),
+                child: _buildExpansionTile(item['question']!, item['answer']!, colorScheme),
+              );
+            },
+          ),
+        );
+      }),
     );
   }
 
@@ -73,6 +68,7 @@ class SellerFaqScreen extends StatelessWidget {
             fontWeight: FontWeight.w600,
             fontColor: Colors.white,
             textAlignment: TextAlign.start,
+            overflow: TextOverflow.visible,
           ),
           children:[
             Container(
@@ -84,6 +80,7 @@ class SellerFaqScreen extends StatelessWidget {
                 fontWeight: FontWeight.w400,
                 fontColor: colorScheme.onSurface,
                 textAlignment: TextAlign.start,
+                overflow: TextOverflow.visible,
               ),
             ),
           ],

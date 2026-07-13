@@ -111,7 +111,6 @@ class PaymentMethodsScreen extends GetView<PaymentMethodsController> {
   Widget _buildCardItem(BuildContext context, PaymentMethodModel m, ColorScheme cs) {
     final expMonthStr = m.expMonth?.toString().padLeft(2, '0') ?? '??';
     final expYearStr = m.expYear?.toString().substring(m.expYear.toString().length - 2) ?? '??';
-    final isStripe = m.id.startsWith('pm_');
 
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),

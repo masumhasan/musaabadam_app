@@ -62,6 +62,8 @@ import 'package:musaab_adam/modules/seller/bindings/schedule_show_binding.dart';
 import 'package:musaab_adam/modules/seller/bindings/seller_inventory_binding.dart';
 import 'package:musaab_adam/modules/seller/bindings/shows_binding.dart';
 import 'package:musaab_adam/modules/seller_verification/bindings/seller_verification_binding.dart';
+import 'package:musaab_adam/modules/seller_verification/bindings/faq_binding.dart';
+import 'package:musaab_adam/modules/seller_verification/controllers/faq_controller.dart';
 import 'package:musaab_adam/modules/seller_verification/screens/ready_to_earn_screen.dart';
 import 'package:musaab_adam/modules/seller_verification/screens/seller_address_screen.dart';
 import 'package:musaab_adam/modules/seller_verification/screens/seller_average_earning.dart';
@@ -251,7 +253,8 @@ class AppPages {
     GetPage(name: AppRoutes.startAuctionScreen, page: () => const StartAuctionScreen(), binding: StartAuctionBinding()),
     GetPage(name: AppRoutes.endShowInsightsScreen, page: () => const EndShowInsightsScreen(), binding: EndShowInsightsBinding()),
     //===================SELLER VERIFICATION====================
-    GetPage(name: AppRoutes.sellerFaqScreen, page: () => SellerFaqScreen()),
+    GetPage(name: AppRoutes.sellerFaqScreen, page: () => const SellerFaqScreen<SellerFaqController>(), binding: FaqBinding()),
+    GetPage(name: AppRoutes.globalFaqScreen, page: () => const SellerFaqScreen<GlobalFaqController>(), binding: FaqBinding()),
     GetPage(name: AppRoutes.readyToEarnScreen, page: () => ReadyToEarnScreen()),
     // SellerVerificationBinding registered here — all subsequent screens share the same controller
     GetPage(name: AppRoutes.sellerCategoryScreen, page: () => SellerCategoryScreen(), binding: SellerVerificationBinding()),

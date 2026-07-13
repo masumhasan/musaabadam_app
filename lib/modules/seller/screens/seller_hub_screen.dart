@@ -7,13 +7,14 @@ import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
-import '../../../core/assets_gen/assets.gen.dart';
+import '../controllers/seller_hub_controller.dart';
 
 class SellerHubScreen extends StatelessWidget {
   const SellerHubScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(SellerHubController());
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -60,9 +61,13 @@ class SellerHubScreen extends StatelessWidget {
                 }
             ),
             SizedBoxWidget(height: 10.h),
-            _buildFulfillmentTile(AppStrings.noUpcomingShows, colorScheme,
-                (){}
-            ),
+            Obx(() {
+              final count = controller.upcomingShowsCount.value;
+              final label = count > 0 ? '$count Upcoming Shows' : 'No Upcoming Shows';
+              return _buildFulfillmentTile(label, colorScheme, () {
+                Get.toNamed(AppRoutes.showsScreen);
+              });
+            }),
             SizedBoxWidget(height: 20.h),
 
             // 4. Boost Card

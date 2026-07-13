@@ -186,6 +186,7 @@ class _CardInputDialogState extends State<_CardInputDialog> {
           'brand': brand,
           'expMonth': month,
           'expYear': year,
+          'holderName': holder,
         },
         makeDefault: true,
       );

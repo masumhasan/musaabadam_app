@@ -17,4 +17,13 @@ class ApiSettingsService {
     final response = await _dio.get(ApiConstants.legalTerms);
     return (response.data['data']['content'] as String?) ?? '';
   }
+
+  Future<List<Map<String, String>>> getFaqs(String type) async {
+    final response = await _dio.get(ApiConstants.faqs, queryParameters: {'type': type});
+    final list = response.data['data']['faqs'] as List;
+    return list.map((e) => {
+      'question': (e['question'] as String?) ?? '',
+      'answer': (e['answer'] as String?) ?? '',
+    }).toList();
+  }
 }

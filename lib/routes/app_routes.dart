@@ -104,6 +104,7 @@ class AppRoutes {
   static final endShowInsightsScreen = "/end-show-insights-screen";
   //===================SELLER VERIFICATION====================
   static final sellerFaqScreen = "/seller-faq-screen";
+  static final globalFaqScreen = "/global-faq-screen";
   static final readyToEarnScreen = "/ready-to-earn-screen";
   static final sellerCategoryScreen = "/seller-category-screen";
   static final sellerSubCategoryScreen = "/seller-sub-category-screen";

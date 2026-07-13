@@ -223,7 +223,7 @@ class _ShowTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (isScheduled)
+                    if (isScheduled || show.status == 'draft')
                       GestureDetector(
                         onTap: () => Get.toNamed(
                           AppRoutes.scheduleLiveShowScreen,
@@ -258,6 +258,17 @@ class _ShowTile extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: CustomText(text: 'Scheduled', fontSize: 11, fontColor: AppColors.orange),
+                      ),
+                    ],
+                    if (show.status == 'draft') ...[
+                      SizedBoxWidget(width: 12.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: colorScheme.outline.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: CustomText(text: 'Draft', fontSize: 11, fontColor: colorScheme.outline),
                       ),
                     ],
                     if (hasReplay) ...[

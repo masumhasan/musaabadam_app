@@ -50,7 +50,7 @@ class BecomeASellerScreen extends StatelessWidget {
                       label: AppStrings.faqs,
                       buttonHeight: 38.h,
                       onPressed: () {
-                        Get.toNamed(AppRoutes.sellerFaqScreen);
+                        Get.toNamed(AppRoutes.sellerFaqScreen, arguments: 'seller');
                       },
                     ),
                   ),

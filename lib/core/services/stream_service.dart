@@ -250,7 +250,7 @@ class StreamService {
     final response = await _dio.get(ApiConstants.myStreams, queryParameters: {
       'page': page,
       'limit': 20,
-      'status': ?status,
+      'status': status,
     });
     final list = response.data['data']['streams'] as List;
     return list.map((e) => StreamModel.fromJson(e as Map<String, dynamic>)).toList();

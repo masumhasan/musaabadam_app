@@ -141,7 +141,7 @@ class AccountScreen extends StatelessWidget {
                 _buildTile(AppStrings.salesTaxExemption, Icons.percent, () => Get.toNamed(AppRoutes.salesTaxExemptionScreen)),
                 _buildTile(AppStrings.privacyPolicy, Icons.privacy_tip_outlined, () => Get.toNamed(AppRoutes.privacyPolicy, arguments: AppStrings.privacyPolicy)),
                 _buildTile(AppStrings.termsConditions, Icons.bookmark_add_outlined, () => Get.toNamed(AppRoutes.privacyPolicy, arguments: AppStrings.termsConditions)),
-                _buildTile(AppStrings.faqs, Icons.question_mark, () => Get.toNamed(AppRoutes.privacyPolicy, arguments: AppStrings.faqs)),
+                _buildTile(AppStrings.faqs, Icons.question_mark, () => Get.toNamed(AppRoutes.globalFaqScreen, arguments: 'global')),
 
                 SizedBoxWidget(height: 20),
                 CustomButton(

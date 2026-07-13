@@ -21,7 +21,7 @@ class ShowsController extends GetxController {
     try {
       // Load all seller streams (no status filter) then split client-side
       final all = await StreamService.instance.getMyStreams(page: 1);
-      upcomingShows.assignAll(all.where((s) => s.status == 'scheduled' || s.status == 'live').toList());
+      upcomingShows.assignAll(all.where((s) => s.status == 'scheduled' || s.status == 'live' || s.status == 'draft').toList());
       draftShows.assignAll(all.where((s) => s.status == 'draft').toList());
       pastShows.assignAll(all.where((s) => s.status == 'ended' || s.status == 'cancelled').toList());
     } on DioException catch (e) {
