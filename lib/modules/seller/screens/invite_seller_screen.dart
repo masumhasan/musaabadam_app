@@ -40,7 +40,7 @@ class InviteSellerScreen extends StatelessWidget {
             SizedBoxWidget(height: 30),
 
             // Info Tiles
-            _buildInfoTile(context, AppStrings.shareYourInviteLink),
+            _buildInfoTile(context, AppStrings.shareYourInviteCode),
             SizedBoxWidget(height: 12),
             _buildInfoTile(context, AppStrings.youEarn100),
             SizedBoxWidget(height: 12),
@@ -60,10 +60,11 @@ class InviteSellerScreen extends StatelessWidget {
                 children:[
                   Expanded(
                     child: CustomText(
-                      text: "bidsrush.com/invite/${Get.find<AuthController>().currentUser.value?.username ?? 'user'}",
+                      text: Get.find<AuthController>().currentUser.value?.referralCode ?? '—',
                       textAlignment: TextAlign.start,
                       fontColor: colorScheme.onSurface,
-                      fontSize: 12,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   CustomButton(
@@ -73,9 +74,11 @@ class InviteSellerScreen extends StatelessWidget {
                     textColor: Colors.white,
                     backgroundColor: colorScheme.primary,
                     onPressed: () {
-                      final link = "https://bidsrush.com/invite/${Get.find<AuthController>().currentUser.value?.username ?? 'user'}";
-                      Clipboard.setData(ClipboardData(text: link));
-                      Get.snackbar("Copied 📋", "Invite link copied to clipboard");
+                      final code = Get.find<AuthController>().currentUser.value?.referralCode ?? '';
+                      if (code.isNotEmpty) {
+                        Clipboard.setData(ClipboardData(text: code));
+                        Get.snackbar("Copied 📋", "Invite code copied to clipboard");
+                      }
                     },
                   ),
                 ],
@@ -93,15 +96,17 @@ class InviteSellerScreen extends StatelessWidget {
                 textColor: Colors.white,
                 backgroundColor: AppColors.orange,
                 onPressed: () {
-                  final link = "https://bidsrush.com/invite/${Get.find<AuthController>().currentUser.value?.username ?? 'user'}";
-                  Clipboard.setData(ClipboardData(text: "Join me on BidsRush! Use my invite link to register: $link"));
-                  Get.snackbar(
-                    "Share Copied 🚀", 
-                    "Share text copied to clipboard! Paste it anywhere to invite sellers.",
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: Colors.green,
-                    colorText: Colors.white,
-                  );
+                  final code = Get.find<AuthController>().currentUser.value?.referralCode ?? '';
+                  if (code.isNotEmpty) {
+                    Clipboard.setData(ClipboardData(text: "Join me on BidsRush! Use my referral code $code when you sign up."));
+                    Get.snackbar(
+                      "Share Copied 🚀", 
+                      "Share text copied to clipboard! Paste it anywhere to invite sellers.",
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.green,
+                      colorText: Colors.white,
+                    );
+                  }
                 },
               ),
             ),

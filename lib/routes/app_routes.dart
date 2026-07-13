@@ -103,6 +103,7 @@ class AppRoutes {
   static final startShowScreen = "/start-show-screen";
   static final startAuctionScreen = "/start-auction-screen";
   static final endShowInsightsScreen = "/end-show-insights-screen";
+  static final rehearsalScreen = "/rehearsal-screen";
   //===================SELLER VERIFICATION====================
   static final sellerFaqScreen = "/seller-faq-screen";
   static final globalFaqScreen = "/global-faq-screen";

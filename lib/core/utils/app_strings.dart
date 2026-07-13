@@ -409,7 +409,7 @@ class AppStrings {
   static const String delivered = "Delivered";
   static const String pickup = "Pickup";
   static const String reset = "Reset";
-  static const String shareYourInviteLink = "Share your invite link";
+  static const String shareYourInviteCode = "Share your invite code";
   static const String youEarn100 = "You earn \$100";
   static const String theyEarnToo = "They earn too";
   static const String overview = "Overview";

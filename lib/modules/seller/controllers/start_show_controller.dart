@@ -113,7 +113,7 @@ class StartShowController extends GetxController {
 
   Future<void> goLive() async {
     if (isRehearsal) {
-      Get.snackbar('Rehearsal', 'You cannot go live in rehearsal mode.');
+      Get.offNamed(AppRoutes.rehearsalScreen);
       return;
     }
     
