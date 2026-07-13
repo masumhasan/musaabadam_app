@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:musaab_adam/routes/app_pages.dart';
 
 class PaymentShippingDialog extends StatelessWidget {
   const PaymentShippingDialog({super.key});
@@ -27,7 +29,10 @@ class PaymentShippingDialog extends StatelessWidget {
             _buildSelectionTile(
               icon: Icons.local_shipping_rounded,
               label: 'Delivery Method',
-              onTap: () => print("Edit Delivery"),
+              onTap: () {
+                Get.back();
+                Get.toNamed(AppRoutes.addressesScreen);
+              },
             ),
 
             const SizedBox(height: 8),
@@ -36,7 +41,10 @@ class PaymentShippingDialog extends StatelessWidget {
             _buildSelectionTile(
               icon: Icons.credit_card_rounded,
               label: 'Payment Method',
-              onTap: () => print("Edit Payment"),
+              onTap: () {
+                Get.back();
+                Get.toNamed(AppRoutes.paymentMethodsScreen);
+              },
             ),
 
             const SizedBox(height: 16),

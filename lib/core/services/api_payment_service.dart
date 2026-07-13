@@ -34,6 +34,11 @@ class ApiPaymentService {
     await _dio.delete(ApiConstants.paymentMethod(methodId));
   }
 
+  Future<PaymentMethodModel> setDefaultMethod(String methodId) async {
+    final response = await _dio.patch(ApiConstants.setDefaultPaymentMethod(methodId));
+    return PaymentMethodModel.fromJson(response.data['data']['method'] as Map<String, dynamic>);
+  }
+
   // ── Checkout / escrow ───────────────────────────────────────────────────────
   /// Starts checkout for an order, returning the provider client secret.
   Future<String?> startCheckout(String orderId, {String? paymentMethodId, String? couponId}) async {

@@ -43,6 +43,8 @@ import 'package:musaab_adam/modules/seller/screens/seller_order_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_payout_screen.dart';
 import 'package:musaab_adam/modules/payments/bindings/checkout_binding.dart';
 import 'package:musaab_adam/modules/payments/bindings/wallet_binding.dart';
+import 'package:musaab_adam/modules/payments/bindings/payment_methods_binding.dart';
+import 'package:musaab_adam/modules/payments/screens/payment_methods_screen.dart';
 import 'package:musaab_adam/modules/payments/screens/checkout_screen.dart';
 import 'package:musaab_adam/modules/payments/screens/wallet_screen.dart';
 import 'package:musaab_adam/modules/shipping/bindings/order_tracking_binding.dart';
@@ -172,6 +174,11 @@ class AppPages {
     GetPage(name: AppRoutes.tipInfoScreen, page: () => TipInfoScreen()),
     GetPage(name: AppRoutes.tipAmountScreen, page: () => TipAmountScreen()),
     GetPage(name: AppRoutes.addPaymentMethodScreen, page: () => AddPaymentMethodScreen()),
+    GetPage(
+      name: AppRoutes.paymentMethodsScreen,
+      page: () => const PaymentMethodsScreen(),
+      binding: PaymentMethodsBinding(),
+    ),
     GetPage(name: AppRoutes.payoutScreen, page: () => PayoutScreen()),
     GetPage(name: AppRoutes.myRewardsScreen, page: () => MyRewardsScreen()),
     GetPage(

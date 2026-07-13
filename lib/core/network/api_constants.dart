@@ -170,6 +170,7 @@ class ApiConstants {
   // Payments / escrow / wallet
   static const String paymentMethods = '/payments/methods';
   static String paymentMethod(String id) => '/payments/methods/$id';
+  static String setDefaultPaymentMethod(String id) => '/payments/methods/$id/default';
   static String checkoutOrder(String orderId) => '/payments/orders/$orderId/checkout';
   static String confirmOrderPayment(String orderId) => '/payments/orders/$orderId/confirm';
   static String refundOrder(String orderId) => '/payments/orders/$orderId/refund';

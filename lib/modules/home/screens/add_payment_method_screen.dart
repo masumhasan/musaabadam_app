@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:dio/dio.dart';
+import 'package:get/get.dart';
+import 'package:musaab_adam/core/services/api_payment_service.dart';
 import '../../../core/assets_gen/assets.gen.dart';
 
 class AddPaymentMethodScreen extends StatelessWidget {
@@ -31,35 +33,44 @@ class AddPaymentMethodScreen extends StatelessWidget {
                 _buildPaymentOption(
                   iconPath: Assets.images.creditCard.keyName,
                   label: 'Credit/Debit Card',
-                  onTap: () {
-                    showMethodDialog(context);
+                  onTap: () async {
+                    final success = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => const _CardInputDialog(),
+                    );
+                    if (success == true) {
+                      Navigator.pop(context); // Go back to payment methods list
+                    }
                   },
                 ),
                 _buildPaymentOption(
                   iconPath: Assets.images.googleApplePay.keyName,
                   label: 'Google/Apple Pay',
                   onTap: () {
-                    showMethodDialog(context);
+                    Get.snackbar('Info', 'Google/Apple Pay is currently unavailable. Please use a credit or debit card.',
+                        snackPosition: SnackPosition.BOTTOM);
                   },
                 ),
                 _buildPaymentOption(
                   iconPath: Assets.images.paypal.keyName,
                   label: 'Paypal',
                   onTap: () {
-                    showMethodDialog(context);
+                    Get.snackbar('Info', 'PayPal is currently unavailable. Please use a credit or debit card.',
+                        snackPosition: SnackPosition.BOTTOM);
                   },
                 ),
                 _buildPaymentOption(
                   iconPath: Assets.images.klarna.keyName,
                   label: 'Klarna',
                   onTap: () {
-                    showMethodDialog(context);
+                    Get.snackbar('Info', 'Klarna is currently unavailable. Please use a credit or debit card.',
+                        snackPosition: SnackPosition.BOTTOM);
                   },
                 ),
               ],
             ),
           ),
-          _buildBottomButtons(),
+          _buildBottomButtons(context),
           const SizedBox(height: 30,)
         ],
       ),
@@ -82,14 +93,14 @@ class AddPaymentMethodScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomButtons() {
+  Widget _buildBottomButtons(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Row(
         children: [
           Expanded(
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[400],
                 foregroundColor: Colors.black,
@@ -99,91 +110,173 @@ class AddPaymentMethodScreen extends StatelessWidget {
               child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD9E9F2), // Light blue color
-                foregroundColor: const Color(0xFF007BFF), // Text color
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                elevation: 0,
-              ),
-              child: const Text('Save', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ),
         ],
       ),
     );
   }
+}
 
-  void showMethodDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-          backgroundColor: const Color(0xFFE0EBEF), // Light blue-grey background
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Add your payment information',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+class _CardInputDialog extends StatefulWidget {
+  const _CardInputDialog();
+
+  @override
+  State<_CardInputDialog> createState() => _CardInputDialogState();
+}
+
+class _CardInputDialogState extends State<_CardInputDialog> {
+  final _holderCtrl = TextEditingController();
+  final _numberCtrl = TextEditingController();
+  final _expiryCtrl = TextEditingController();
+  final _cvvCtrl = TextEditingController();
+  bool _isSaving = false;
+
+  @override
+  void dispose() {
+    _holderCtrl.dispose();
+    _numberCtrl.dispose();
+    _expiryCtrl.dispose();
+    _cvvCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final number = _numberCtrl.text.replaceAll(' ', '').trim();
+    final holder = _holderCtrl.text.trim();
+    final expiry = _expiryCtrl.text.trim();
+    final cvv = _cvvCtrl.text.trim();
+
+    if (number.isEmpty || expiry.isEmpty || cvv.isEmpty) {
+      Get.snackbar('Input Error', 'Please fill in all card details.',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    // Parse expiry MM/YY
+    final parts = expiry.split('/');
+    int month = 12;
+    int year = 2030;
+    if (parts.length == 2) {
+      month = int.tryParse(parts[0]) ?? 12;
+      final shortYear = int.tryParse(parts[1]) ?? 30;
+      year = 2000 + shortYear;
+    } else {
+      Get.snackbar('Input Error', 'Expiry date must be in MM/YY format.',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    // Auto detect brand
+    String brand = 'visa';
+    if (number.startsWith('5')) {
+      brand = 'mastercard';
+    } else if (number.startsWith('3')) {
+      brand = 'amex';
+    } else if (number.startsWith('6')) {
+      brand = 'discover';
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      await ApiPaymentService.instance.addMethod(
+        card: {
+          'number': number,
+          'brand': brand,
+          'expMonth': month,
+          'expYear': year,
+        },
+        makeDefault: true,
+      );
+      Get.snackbar('Success', 'Card added successfully.',
+          snackPosition: SnackPosition.BOTTOM);
+      Navigator.of(context).pop(true); // Return true on success
+    } on DioException catch (e) {
+      Get.snackbar('Error', ApiPaymentService.extractError(e),
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Error', 'An unexpected error occurred.',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      backgroundColor: const Color(0xFFE0EBEF), // Light blue-grey background
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Add your payment information',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              _buildInputField('Card Holder Name', 'Kathryn Murphy', _holderCtrl, false),
+              const SizedBox(height: 16),
+
+              _buildInputField('Card Number', '4242 4242 4242 4242', _numberCtrl, true),
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  Expanded(child: _buildInputField('Expiry Date', '12/29', _expiryCtrl, true)),
+                  const SizedBox(width: 16),
+                  Expanded(child: _buildInputField('CVV', '123', _cvvCtrl, true)),
+                ],
+              ),
+              const SizedBox(height: 32),
+
+              ElevatedButton(
+                onPressed: _isSaving ? null : _save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0089A7), // Teal color
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                const SizedBox(height: 24),
-
-                _buildInputField('Card Holder Name', 'Kathryn Murphy'),
-                const SizedBox(height: 16),
-
-                _buildInputField('Card Number', '000 000 000 67'),
-                const SizedBox(height: 16),
-
-                Row(
-                  children: [
-                    Expanded(child: _buildInputField('Expiry Date', '04/28')),
-                    const SizedBox(width: 16),
-                    Expanded(child: _buildInputField('CVV', '0000')),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0089A7), // Teal color
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Save',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+                child: _isSaving
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : const Text(
+                        'Save',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  Widget _buildInputField(String label, String hint) {
+  Widget _buildInputField(String label, String hint, TextEditingController controller, bool isNumber) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -197,6 +290,9 @@ class AddPaymentMethodScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextField(
+          controller: controller,
+          keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+          style: const TextStyle(color: Colors.black),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(color: Colors.grey),
