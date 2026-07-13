@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:musaab_adam/core/utils/app_constants.dart';
+
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/modules/home/controllers/message_controller.dart';
 import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
@@ -29,7 +29,7 @@ class MessageScreen extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: CachedImageWidget(
-                imageUrl: _controller.partnerAvatar ?? Dummy.user1,
+                imageUrl: _controller.partnerAvatar ?? '',
                 height: 35.h,
                 width: 35.w,
               ),
@@ -62,7 +62,7 @@ class MessageScreen extends StatelessWidget {
                       return MessageTile(
                         message: msg.text,
                         isMe: msg.isMe,
-                        imageUrl: msg.isMe ? (myAvatar ?? Dummy.user2) : (_controller.partnerAvatar ?? Dummy.user1),
+                        imageUrl: msg.isMe ? (myAvatar ?? '') : (_controller.partnerAvatar ?? ''),
                       );
                     },
                   );

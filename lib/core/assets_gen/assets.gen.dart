@@ -70,8 +70,8 @@ class $AssetsIconsGen {
   /// File path: assets/icons/circle_cross.svg
   String get circleCross => 'assets/icons/circle_cross.svg';
 
-  /// File path: assets/icons/clip.svg
-  String get clip => 'assets/icons/clip.svg';
+  /// File path: assets/icons/snap.svg
+  String get snap => 'assets/icons/snap.svg';
 
   /// File path: assets/icons/community_boost.svg
   String get communityBoost => 'assets/icons/community_boost.svg';
@@ -246,7 +246,7 @@ class $AssetsIconsGen {
     boost,
     camera,
     circleCross,
-    clip,
+    snap,
     communityBoost,
     createProduct,
     diamond,

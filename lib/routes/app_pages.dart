@@ -7,7 +7,7 @@ import 'package:musaab_adam/modules/activity/screens/request_received_screen.dar
 import 'package:musaab_adam/modules/activity/screens/rewards_perks_screen.dart';
 import 'package:musaab_adam/modules/activity/screens/video_reciept_screen.dart';
 import 'package:musaab_adam/modules/livestream/screens/boost_info_screen.dart';
-import 'package:musaab_adam/modules/livestream/screens/edit_clip_screen.dart';
+import 'package:musaab_adam/modules/livestream/screens/edit_snap_screen.dart';
 import 'package:musaab_adam/modules/home/screens/message_screen.dart';
 import 'package:musaab_adam/modules/home/screens/search_screen.dart';
 import 'package:musaab_adam/modules/home/bindings/search_binding.dart';
@@ -60,6 +60,8 @@ import 'package:musaab_adam/modules/profile/bindings/update_profile_binding.dart
 import 'package:musaab_adam/modules/seller/bindings/create_product_binding.dart';
 import 'package:musaab_adam/modules/seller/bindings/schedule_show_binding.dart';
 import 'package:musaab_adam/modules/seller/bindings/seller_inventory_binding.dart';
+import 'package:musaab_adam/modules/seller/bindings/seller_analytics_binding.dart';
+import 'package:musaab_adam/modules/seller/screens/seller_analytics_screen.dart';
 import 'package:musaab_adam/modules/seller/bindings/shows_binding.dart';
 import 'package:musaab_adam/modules/seller_verification/bindings/seller_verification_binding.dart';
 import 'package:musaab_adam/modules/seller_verification/bindings/faq_binding.dart';
@@ -168,7 +170,7 @@ class AppPages {
     GetPage(name: AppRoutes.pastShowsScreen, page: () => const PastShowsScreen(), binding: PastShowsBinding()),
     GetPage(name: AppRoutes.boostScreen, page: () => BoostScreen()),
     GetPage(name: AppRoutes.boostInfoScreen, page: () => BoostInfoScreen()),
-    GetPage(name: AppRoutes.clipEditScreen, page: () => EditClipScreen()),
+    GetPage(name: AppRoutes.snapEditScreen, page: () => const EditSnapScreen()),
     GetPage(name: AppRoutes.storyScreen, page: () => StoryScreen()),
 
     //===================PAYMENTS & REWARDS====================
@@ -240,6 +242,11 @@ class AppPages {
     ),
     GetPage(name: AppRoutes.sellerInventoryScreen, page: () => SellerInventoryScreen(), binding: SellerInventoryBinding()),
     GetPage(name: AppRoutes.sellerToolsScreen, page: () => SellerToolScreen()),
+    GetPage(
+      name: AppRoutes.sellerAnalyticsScreen,
+      page: () => const SellerAnalyticsScreen(),
+      binding: SellerAnalyticsBinding(),
+    ),
     GetPage(name: AppRoutes.showsScreen, page: () => ShowsScreen(), binding: ShowsBinding()),
     GetPage(name: AppRoutes.offersScreen, page: () => OffersScreen()),
     GetPage(name: AppRoutes.tipsScreen, page: () => TipsScreen()),

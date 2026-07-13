@@ -5,7 +5,7 @@ import 'package:musaab_adam/core/widgets/custom_choice_chip.dart';
 import 'package:musaab_adam/modules/home/components/inbox_item.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
-import '../../../core/utils/app_constants.dart';
+
 
 import 'package:intl/intl.dart';
 import 'package:musaab_adam/modules/home/controllers/inbox_controller.dart';
@@ -52,7 +52,7 @@ class InboxScreen extends StatelessWidget {
                   itemBuilder: (c, i) {
                     final conv = _controller.conversations[i];
                     return InboxItem(
-                      imageUrl: conv.partnerAvatar ?? Dummy.user1,
+                      imageUrl: conv.partnerAvatar ?? '',
                       name: conv.partnerName,
                       lastMessage: conv.lastMessage,
                       time: _formatTime(conv.lastMessageTime),

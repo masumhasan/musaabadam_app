@@ -16,10 +16,59 @@ import 'package:musaab_adam/data/models/stream/stream_model.dart';
 import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/services/social_service.dart';
+import 'dart:convert';
+import 'dart:ui' as ui;
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:get_storage/get_storage.dart';
 
 // ignore_for_file: unawaited_futures
 
 class LivestreamController extends GetxController {
+  final GlobalKey repaintBoundaryKey = GlobalKey();
+
+  Future<void> takeSnap() async {
+    try {
+      final boundary = repaintBoundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) {
+        Get.snackbar(
+          'Error',
+          'Stream preview not ready',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFFE57373),
+          colorText: const Color(0xFFFFFFFF),
+        );
+        return;
+      }
+      final image = await boundary.toImage(pixelRatio: 2.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return;
+      final bytes = byteData.buffer.asUint8List();
+      
+      final base64String = base64Encode(bytes);
+      final box = GetStorage();
+      final snaps = List<String>.from(box.read<List<dynamic>>('snaps') ?? []);
+      snaps.add(base64String);
+      await box.write('snaps', snaps);
+      
+      Get.snackbar(
+        'Success',
+        'Snap saved successfully!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF4CAF50),
+        colorText: const Color(0xFFFFFFFF),
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to capture snap: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFE57373),
+        colorText: const Color(0xFFFFFFFF),
+      );
+    }
+  }
+
   final Rx<JoinStreamResult?> joinResult = Rx(null);
   final Rx<ProductModel?> pinnedProduct = Rx(null);
   final Rx<Call?> call = Rx(null);

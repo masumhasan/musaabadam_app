@@ -91,7 +91,7 @@ class AppStrings {
   static const String follow = "Follow";
   static const String more = "More";
   static const String boost = "Boost";
-  static const String clip = "Clip";
+  static const String snap = "Snap";
   static const String snapShot = "Snapshot";
   static const String share = "Share";
   static const String wallet = "Wallet";
@@ -240,7 +240,7 @@ class AppStrings {
   static const String message = "Message";
   static const String editProfile = "Edit Profile";
   static const String shows = "Shows";
-  static const String clips = "Clips";
+  static const String snaps = "Snaps";
   static const String active = "Active";
   static const String inactive = "Inactive";
   static const String items = "items";

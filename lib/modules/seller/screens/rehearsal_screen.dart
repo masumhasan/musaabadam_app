@@ -176,8 +176,8 @@ class RehearsalScreen extends GetView<RehearsalController> {
           'onTap': () {},
         },
         {
-          'icon': Assets.icons.clip,
-          'label': AppStrings.clip,
+          'icon': Assets.icons.snap,
+          'label': AppStrings.snap,
           'onTap': () {},
         },
         {

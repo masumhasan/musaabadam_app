@@ -68,7 +68,7 @@ class SellerToolScreen extends StatelessWidget {
             CustomText(text: AppStrings.performance, fontSize: 18, fontWeight: FontWeight.w700),
             SizedBoxWidget(height: 10.h),
             _buildTile(AppStrings.premierShop, Icons.storefront_outlined, () => Get.toNamed(AppRoutes.mainScreen)),
-            _buildTile(AppStrings.sellerAnalytics, Icons.shopping_bag_outlined, () => Get.toNamed(AppRoutes.mainScreen)),
+            _buildTile(AppStrings.sellerAnalytics, Icons.shopping_bag_outlined, () => Get.toNamed(AppRoutes.sellerAnalyticsScreen)),
             SizedBoxWidget(height: 20.h),
 
 // Settings Section

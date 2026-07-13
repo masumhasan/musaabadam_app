@@ -7,7 +7,7 @@ import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/text_button_widget.dart';
-import 'package:musaab_adam/modules/profile/components/clips_tab.dart';
+import 'package:musaab_adam/modules/profile/components/snaps_tab.dart';
 import 'package:musaab_adam/modules/profile/components/review_tab.dart';
 import 'package:musaab_adam/core/services/api_report_service.dart';
 import 'package:musaab_adam/modules/profile/components/shop_tab.dart';
@@ -163,13 +163,13 @@ class OtherUserProfileScreen extends StatelessWidget {
                     _buildTab(AppStrings.shop.tr, 0, colorScheme),
                     _buildTab(AppStrings.shows.tr, 1, colorScheme),
                     _buildTab(AppStrings.reviews.tr, 2, colorScheme),
-                    _buildTab(AppStrings.clips.tr, 3, colorScheme),
+                    _buildTab(AppStrings.snaps.tr, 3, colorScheme),
                   ],
                 ),
 
                 Obx(() => IndexedStack(
                   index: _tabIndex.value,
-                  children: [ShopTab(sellerId: userId), _buildShowsSection(colorScheme), ReviewTab(sellerId: userId), ClipsTab()],
+                  children: [ShopTab(sellerId: userId), _buildShowsSection(colorScheme), ReviewTab(sellerId: userId), const SnapsTab()],
                 )),
 
                 SizedBoxWidget(height: 20),

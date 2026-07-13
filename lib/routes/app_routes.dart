@@ -79,7 +79,7 @@ class AppRoutes {
   static final pastShowsScreen = "/past-shows-screen";
   static final boostScreen = "/boost-screen";
   static final boostInfoScreen = "/boost-info-screen";
-  static final clipEditScreen = "/clip-edit-screen";
+  static final snapEditScreen = "/snap-edit-screen";
   static final storyScreen = "/story-screen";
 
   //===================SELLER====================
@@ -90,6 +90,7 @@ class AppRoutes {
   static final sellerOrderScreen = "/seller-order-screen";
   static final sellerInventoryScreen = "/seller-inventory-screen";
   static final sellerToolsScreen = "/seller-tools-screen";
+  static final sellerAnalyticsScreen = "/seller-analytics-screen";
   static final showsScreen = "/shows-screen";
   static final offersScreen = "/offers-screen";
   static final tipsScreen = "/tips-screen";

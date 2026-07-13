@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 
 class CommentItem extends StatelessWidget {
@@ -24,7 +23,7 @@ class CommentItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CachedImageWidget(
-            imageUrl: avatarUrl ?? Dummy.user1,
+            imageUrl: avatarUrl ?? '',
             height: 30,
             width: 30,
             borderRadius: 50,

@@ -4,8 +4,8 @@ import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 
-class EditClipScreen extends StatelessWidget {
-  const EditClipScreen({super.key});
+class EditSnapScreen extends StatelessWidget {
+  const EditSnapScreen({super.key});
 
   // Replace these with your actual Network Image URLs
   final List<String> imageUrls = const [

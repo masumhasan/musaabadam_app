@@ -87,7 +87,10 @@ class LiveStreamScreen extends StatelessWidget {
               children: [
                 // Live video feed fills the background
                 Positioned.fill(
-                  child: _VideoBackground(call: call, isHost: lsCtrl.isHost),
+                  child: RepaintBoundary(
+                    key: lsCtrl.repaintBoundaryKey,
+                    child: _VideoBackground(call: call, isHost: lsCtrl.isHost),
+                  ),
                 ),
 
                 // Floating emoji reactions (above video, below controls)
@@ -826,10 +829,10 @@ class LiveStreamScreen extends StatelessWidget {
               },
             ),
             LabeledIconButton(
-              iconPath: Assets.icons.clip,
-              text: AppStrings.clip,
+              iconPath: Assets.icons.snap,
+              text: AppStrings.snap,
               fontColor: Colors.white,
-              onClick: () => showClipEditDialog(context: context),
+              onClick: lsCtrl.takeSnap,
             ),
             LabeledIconButton(
               iconPath: Assets.icons.share,

@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
-import 'package:musaab_adam/modules/profile/components/clips_tab.dart';
+import 'package:musaab_adam/modules/profile/components/snaps_tab.dart';
 import 'package:musaab_adam/modules/profile/components/review_tab.dart';
 import 'package:musaab_adam/modules/profile/components/shop_tab.dart';
 import 'package:musaab_adam/modules/profile/components/shows_tab.dart';
@@ -128,14 +128,14 @@ class ProfileScreen extends StatelessWidget {
                     _buildTab(AppStrings.shop.tr, 0, colorScheme),
                     _buildTab(AppStrings.shows.tr, 1, colorScheme),
                     _buildTab(AppStrings.reviews.tr, 2, colorScheme),
-                    _buildTab(AppStrings.clips.tr, 3, colorScheme),
+                    _buildTab(AppStrings.snaps.tr, 3, colorScheme),
                   ],
                 ),
 
                 // Tab Content
                 Obx(() => IndexedStack(
                   index: mainTabCurrentIndex.value,
-                  children: [ShopTab(sellerId: _authController.currentUser.value?.id), ShowsTab(), ReviewTab(sellerId: _authController.currentUser.value?.id), ClipsTab()],
+                  children: [ShopTab(sellerId: _authController.currentUser.value?.id), ShowsTab(), ReviewTab(sellerId: _authController.currentUser.value?.id), const SnapsTab()],
                 )),
               ],
             );

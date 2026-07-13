@@ -345,7 +345,7 @@ Widget maxBidToggle({required bool value, required ValueChanged<bool> onChanged}
   );
 }
 
-void showClipEditDialog({required BuildContext context}) {
+void showSnapEditDialog({required BuildContext context}) {
   showDialog(
     context: context,
     builder: (context) => Dialog(
@@ -376,7 +376,7 @@ void showClipEditDialog({required BuildContext context}) {
                 buttonHeight: 30,
                 onPressed: () {
                   Get.back();
-                  Get.toNamed(AppRoutes.clipEditScreen);
+                  Get.toNamed(AppRoutes.snapEditScreen);
                 },
               ),
             ),
