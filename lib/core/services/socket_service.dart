@@ -222,6 +222,9 @@ class SocketService {
     latestGiveawayStarted.value = null;
     latestGiveawayJoined.value = null;
     latestGiveawayWinner.value = null;
+    latestNotification.value = null;
+    latestDmMessage.value = null;
+    latestOfferUpdated.value = null;
   }
 
   void disconnect() {

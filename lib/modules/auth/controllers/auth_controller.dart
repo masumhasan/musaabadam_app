@@ -8,6 +8,8 @@ import 'package:musaab_adam/core/services/token_storage_service.dart';
 import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/data/models/auth/user_model.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
+import 'package:musaab_adam/core/services/socket_service.dart';
+import 'package:musaab_adam/modules/notifications/controllers/notification_controller.dart';
 
 class AuthController extends GetxController {
   final storage = GetStorage();
@@ -278,6 +280,21 @@ class AuthController extends GetxController {
     isSeller.value = false;
     errorMessage.value = '';
     Get.find<RoleService>().updateRole(Role.buyer);
+
+    // Clear notifications controller state to prevent stale data leaks
+    try {
+      if (Get.isRegistered<NotificationController>()) {
+        Get.delete<NotificationController>(force: true);
+      }
+    } catch (_) {}
+
+    // Clean up local cached storages
+    storage.remove(ApiConstants.userKey);
+    storage.remove('snaps');
+
+    // Force disconnect and reset socket connection
+    SocketService.instance.disconnect();
+    SocketService.instance.resetStreamState();
   }
 
   void _clearError() => errorMessage.value = '';
