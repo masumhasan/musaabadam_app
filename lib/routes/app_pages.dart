@@ -65,6 +65,7 @@ import 'package:musaab_adam/modules/seller/bindings/seller_inventory_binding.dar
 import 'package:musaab_adam/modules/seller/bindings/seller_analytics_binding.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_analytics_screen.dart';
 import 'package:musaab_adam/modules/seller/bindings/shows_binding.dart';
+import 'package:musaab_adam/modules/seller/bindings/seller_tips_binding.dart';
 import 'package:musaab_adam/modules/seller_verification/bindings/seller_verification_binding.dart';
 import 'package:musaab_adam/modules/seller_verification/bindings/faq_binding.dart';
 import 'package:musaab_adam/modules/seller_verification/controllers/faq_controller.dart';
@@ -251,7 +252,11 @@ class AppPages {
     ),
     GetPage(name: AppRoutes.showsScreen, page: () => ShowsScreen(), binding: ShowsBinding()),
     GetPage(name: AppRoutes.offersScreen, page: () => OffersScreen()),
-    GetPage(name: AppRoutes.tipsScreen, page: () => TipsScreen()),
+    GetPage(
+      name: AppRoutes.tipsScreen,
+      page: () => TipsScreen(),
+      binding: SellerTipsBinding(),
+    ),
     GetPage(name: AppRoutes.inviteSellerScreen, page: () => InviteSellerScreen()),
     GetPage(name: AppRoutes.promoteToolScreen, page: () => PromoteToolsScreen()),
     GetPage(name: AppRoutes.createShippingProfileScreen, page: () => CreateShippingProfileScreen()),
