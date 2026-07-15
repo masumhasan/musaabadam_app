@@ -87,6 +87,7 @@ class AppRoutes {
   static final scheduleLiveShowScreen = "/schedule-live-show-screen";
   static final fulfillmentScreen = "/fulfillment-screen";
   static final sellerPayoutScreen = "/seller-payout-screen";
+  static final payoutHistoryScreen = "/payout-history-screen";
   static final sellerOrderScreen = "/seller-order-screen";
   static final sellerInventoryScreen = "/seller-inventory-screen";
   static final sellerToolsScreen = "/seller-tools-screen";

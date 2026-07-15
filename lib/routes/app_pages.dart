@@ -43,6 +43,7 @@ import 'package:musaab_adam/modules/seller/screens/schedule_live_show.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_inventory_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_order_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_payout_screen.dart';
+import 'package:musaab_adam/modules/seller/screens/payout_history_screen.dart';
 import 'package:musaab_adam/modules/payments/bindings/checkout_binding.dart';
 import 'package:musaab_adam/modules/payments/bindings/wallet_binding.dart';
 import 'package:musaab_adam/modules/payments/bindings/payment_methods_binding.dart';
@@ -54,6 +55,7 @@ import 'package:musaab_adam/modules/shipping/screens/order_tracking_screen.dart'
 import 'package:musaab_adam/modules/seller/bindings/seller_orders_binding.dart';
 import 'package:musaab_adam/modules/seller/bindings/fulfillment_binding.dart';
 import 'package:musaab_adam/modules/seller/bindings/seller_payout_binding.dart';
+import 'package:musaab_adam/modules/seller/bindings/payout_history_binding.dart';
 import 'package:musaab_adam/modules/seller/screens/seller_tool_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/shipping_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/shows_screen.dart';
@@ -237,6 +239,11 @@ class AppPages {
       name: AppRoutes.sellerPayoutScreen,
       page: () => SellerPayoutScreen(),
       binding: SellerPayoutBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.payoutHistoryScreen,
+      page: () => PayoutHistoryScreen(),
+      binding: PayoutHistoryBinding(),
     ),
     GetPage(
       name: AppRoutes.sellerOrderScreen,

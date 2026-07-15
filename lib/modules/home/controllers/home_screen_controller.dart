@@ -119,6 +119,14 @@ class HomeScreenController extends GetxController {
     }
   }
 
+  Future<void> refreshFeed() async {
+    await Future.wait([
+      loadCategories(),
+      loadLiveStreams(),
+      loadPastShows(),
+    ]);
+  }
+
   String get liveShowCountText {
     final count = liveStreams.length;
     if (count == 0) return 'Live Shows';

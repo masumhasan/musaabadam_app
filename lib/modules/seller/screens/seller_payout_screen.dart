@@ -7,6 +7,7 @@ import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/core/widgets/text_button_widget.dart';
 import 'package:musaab_adam/modules/seller/controllers/seller_payout_controller.dart';
+import 'package:musaab_adam/routes/app_pages.dart';
 
 class SellerPayoutScreen extends GetView<SellerPayoutController> {
   const SellerPayoutScreen({super.key});
@@ -73,7 +74,10 @@ class SellerPayoutScreen extends GetView<SellerPayoutController> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children:[
                 CustomText(text: AppStrings.payoutsHistory, fontWeight: FontWeight.w700),
-                CustomText(text: AppStrings.viewAll, fontColor: colorScheme.primary, fontWeight: FontWeight.w600),
+                GestureDetector(
+                  onTap: () => Get.toNamed(AppRoutes.payoutHistoryScreen),
+                  child: CustomText(text: AppStrings.viewAll, fontColor: colorScheme.primary, fontWeight: FontWeight.w600),
+                ),
               ],
             ),
             SizedBoxWidget(height: 20.h),
@@ -148,7 +152,13 @@ class SellerPayoutScreen extends GetView<SellerPayoutController> {
       fontSize: 14,
       textColor: currentTab.value == index ? colorScheme.onSurface : colorScheme.outline,
       decoration: currentTab.value == index ? TextDecoration.underline : null,
-      onPressed: () => currentTab.value = index,
+      onPressed: () {
+        if (index == 1) {
+          Get.toNamed(AppRoutes.payoutHistoryScreen);
+        } else {
+          currentTab.value = index;
+        }
+      },
     ));
   }
 

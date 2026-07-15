@@ -31,15 +31,18 @@ class HomeScreen extends GetView<MainNavController> {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: _appBar(theme, context),
-      body: Obx(() => NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          if (notification.metrics.pixels >= notification.metrics.maxScrollExtent - 300) {
-            homeCtrl.loadMoreStreams();
-          }
-          return false;
-        },
-        child: CustomScrollView(
-        slivers: [
+      body: Obx(() => RefreshIndicator(
+        onRefresh: () => homeCtrl.refreshFeed(),
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification.metrics.pixels >= notification.metrics.maxScrollExtent - 300) {
+              homeCtrl.loadMoreStreams();
+            }
+            return false;
+          },
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
           SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,8 +100,8 @@ class HomeScreen extends GetView<MainNavController> {
           SliverToBoxAdapter(child: SizedBox(height: 20.h)),
         ],
       ),
-      )),
-    );
+    ))),
+  );
   }
 
   // Feed selector: Live · Trending · Following · Recommended.
