@@ -26,4 +26,9 @@ class ApiSettingsService {
       'answer': (e['answer'] as String?) ?? '',
     }).toList();
   }
+
+  Future<Map<String, dynamic>> getSellerPremierShopStatus() async {
+    final response = await _dio.get(ApiConstants.sellerPremierShopStatus);
+    return (response.data['data'] as Map<String, dynamic>?) ?? {};
+  }
 }

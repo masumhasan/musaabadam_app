@@ -97,11 +97,14 @@ class ApiConstants {
   static const String changePasswordInitiate = '/auth/change-password/initiate';
   static const String changePasswordVerify = '/auth/change-password/verify';
 
-  // Legal content (public)
+  // Legal content & settings (public / authenticated)
   static const String legalPrivacyPolicy = '/settings/privacy-policy';
   static const String legalTerms = '/settings/terms';
   static const String platformSettings = '/settings/platform';
   static const String faqs = '/settings/faqs';
+  static const String premierShopConfig = '/settings/premier-shop';
+  static const String sellerPremierShopStatus = '/settings/seller-premier-shop-status';
+
 
   // Streams
   static const String streams = '/streams';

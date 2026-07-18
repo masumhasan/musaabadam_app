@@ -634,4 +634,22 @@ class AppStrings {
   static const String switchText = 'Switch';
   static const String veryNice = 'Very nice';
 
+  // Premier Shop
+  static const String premierShopProgram = "Premier Shop Program";
+  static const String premierShopStatus = "Premier Shop Status";
+  static const String premierShopActive = "Premier Shop Active";
+  static const String perksAndBenefits = "Perks & Benefits";
+
+  static const String eligibilityRequirements = "Eligibility Requirements";
+  static const String salesAndActivityVolume = "Sales & Activity Volume";
+  static const String fulfillmentAndServiceExcellence = "Fulfillment & Service Excellence";
+  static const String daysActive = "Days Active";
+  static const String showsHosted = "Shows Hosted";
+  static const String completedOrders = "Completed Orders";
+  static const String gmvSales = "GMV Sales";
+  static const String timelyShipping = "Timely Shipping";
+  static const String orderReliability = "Order Reliability";
+  static const String policyAdherence = "Policy Adherence";
+
 }
+

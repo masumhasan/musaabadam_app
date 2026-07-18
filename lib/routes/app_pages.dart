@@ -68,7 +68,10 @@ import 'package:musaab_adam/modules/seller/bindings/seller_analytics_binding.dar
 import 'package:musaab_adam/modules/seller/screens/seller_analytics_screen.dart';
 import 'package:musaab_adam/modules/seller/bindings/shows_binding.dart';
 import 'package:musaab_adam/modules/seller/bindings/seller_tips_binding.dart';
+import 'package:musaab_adam/modules/seller/bindings/premier_shop_binding.dart';
+import 'package:musaab_adam/modules/seller/screens/premier_shop_screen.dart';
 import 'package:musaab_adam/modules/seller_verification/bindings/seller_verification_binding.dart';
+
 import 'package:musaab_adam/modules/seller_verification/bindings/faq_binding.dart';
 import 'package:musaab_adam/modules/seller_verification/controllers/faq_controller.dart';
 import 'package:musaab_adam/modules/seller_verification/screens/ready_to_earn_screen.dart';
@@ -274,6 +277,8 @@ class AppPages {
     GetPage(name: AppRoutes.shippingProfilesScreen, page: () => ShippingProfilesScreen()),
     GetPage(name: AppRoutes.startAuctionScreen, page: () => const StartAuctionScreen(), binding: StartAuctionBinding()),
     GetPage(name: AppRoutes.endShowInsightsScreen, page: () => const EndShowInsightsScreen(), binding: EndShowInsightsBinding()),
+    GetPage(name: AppRoutes.premierShopScreen, page: () => const PremierShopScreen(), binding: PremierShopBinding()),
+
     //===================SELLER VERIFICATION====================
     GetPage(name: AppRoutes.sellerFaqScreen, page: () => const SellerFaqScreen<SellerFaqController>(), binding: FaqBinding()),
     GetPage(name: AppRoutes.globalFaqScreen, page: () => const SellerFaqScreen<GlobalFaqController>(), binding: FaqBinding()),

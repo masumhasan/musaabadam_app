@@ -42,7 +42,7 @@ class ReferralTab extends StatelessWidget {
 
           const SizedBox(height: 20),
           const Text(
-            "Bring a friend, earn up to £200",
+            "Bring a friend, earn up to £100",
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(height: 16),
