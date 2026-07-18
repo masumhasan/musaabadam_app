@@ -7,6 +7,8 @@ import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/data/models/product/product_model.dart';
 import 'package:musaab_adam/modules/home/controllers/wishlist_controller.dart';
 
+import 'package:musaab_adam/routes/app_pages.dart';
+
 class WishlistScreen extends GetView<WishlistController> {
   const WishlistScreen({super.key});
 
@@ -45,37 +47,44 @@ class WishlistScreen extends GetView<WishlistController> {
     final price = p.isAuction
         ? (p.currentHighBid > 0 ? p.currentHighBid : (p.startingPrice ?? 0))
         : p.effectivePrice;
-    return Row(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12.r),
-          child: CachedImageWidget(
-            imageUrl: p.images.isNotEmpty ? p.images.first : Dummy.product1,
-            height: 64.h,
-            width: 64.w,
-          ),
-        ),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CustomText(text: p.title, fontWeight: FontWeight.w600, textAlignment: TextAlign.start, maxLines: 1),
-              CustomText(
-                text: '£${price.toStringAsFixed(2)}  ·  ${p.listingType.replaceAll('_', ' ')}',
-                fontSize: 13,
-                fontColor: cs.outline,
-                textAlignment: TextAlign.start,
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.singleProductScreen, arguments: p),
+      child: Container(
+        color: Colors.transparent,
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
+              child: CachedImageWidget(
+                imageUrl: p.images.isNotEmpty ? p.images.first : Dummy.product1,
+                height: 64.h,
+                width: 64.w,
               ),
-            ],
-          ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomText(text: p.title, fontWeight: FontWeight.w600, textAlignment: TextAlign.start, maxLines: 1),
+                  CustomText(
+                    text: '£${price.toStringAsFixed(2)}  ·  ${p.listingType.replaceAll('_', ' ')}',
+                    fontSize: 13,
+                    fontColor: cs.outline,
+                    textAlignment: TextAlign.start,
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.favorite, color: Colors.red),
+              onPressed: () => controller.remove(p),
+              tooltip: 'Remove',
+            ),
+          ],
         ),
-        IconButton(
-          icon: const Icon(Icons.favorite, color: Colors.red),
-          onPressed: () => controller.remove(p),
-          tooltip: 'Remove',
-        ),
-      ],
+      ),
     );
   }
 }
+

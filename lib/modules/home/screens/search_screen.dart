@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:musaab_adam/data/models/product/product_model.dart';
 import 'package:musaab_adam/modules/home/controllers/search_controller.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
+
 
 class SearchScreen extends GetView<SearchScreenController> {
   const SearchScreen({super.key});
@@ -144,12 +146,15 @@ class SearchScreen extends GetView<SearchScreenController> {
   }
 
   Widget _productTile(Map<String, dynamic> p) {
+    final id = (p['_id'] ?? p['id'])?.toString();
     final flash = p['flashSale'] == true && p['flashSalePrice'] != null;
     final price = flash ? p['flashSalePrice'] : p['price'];
     return ListTile(
       leading: const Icon(Icons.shopping_bag_outlined),
       title: Text(p['title']?.toString() ?? 'Product'),
       subtitle: Text('${p['listingType']} · £$price${flash ? '  ⚡' : ''}'),
+      onTap: id == null ? null : () => Get.toNamed(AppRoutes.singleProductScreen, arguments: {'productId': id, 'product': ProductModel.fromJson(p)}),
     );
   }
+
 }

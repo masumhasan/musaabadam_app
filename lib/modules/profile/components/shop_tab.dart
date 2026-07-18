@@ -8,6 +8,8 @@ import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/data/models/product/product_model.dart';
 import 'package:musaab_adam/core/services/api_offer_service.dart';
 import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
+import 'package:musaab_adam/modules/product/bindings/single_product_binding.dart';
+import 'package:musaab_adam/modules/product/screens/single_product_screen.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import '../../../core/utils/app_strings.dart';
 import '../../../core/widgets/custom_choice_chip.dart';
@@ -215,74 +217,85 @@ class _ShopTabState extends State<ShopTab> {
 
   Widget shopProduct(BuildContext context, ProductModel product, bool isOwner) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(20.r),
-          child: CachedImageWidget(
-            imageUrl: product.images.isNotEmpty ? product.images.first : '',
-            borderRadius: 20,
-            height: 100.h,
-            width: 100.w,
-          ),
-        ),
-        SizedBox(width: 10.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CustomText(
-                text: product.title,
-                translate: false,
-                fontColor: colorScheme.onSurface,
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                textAlignment: TextAlign.start,
-                maxLines: 2,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => Get.to(
+        () => const SingleProductScreen(),
+        binding: SingleProductBinding(),
+        arguments: product,
+      ),
+      child: Container(
+        color: Colors.transparent,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20.r),
+              child: CachedImageWidget(
+                imageUrl: product.images.isNotEmpty ? product.images.first : '',
+                borderRadius: 20,
+                height: 100.h,
+                width: 100.w,
               ),
-              const SizedBox(height: 4),
-              CustomText(
-                text: "£${product.price.toStringAsFixed(2)} · ${product.condition.replaceAll('_', ' ').toUpperCase()}",
-                translate: false,
-                fontColor: colorScheme.onSurface.withValues(alpha: 0.7),
-                fontSize: 14,
-                textAlignment: TextAlign.start,
-              ),
-              const SizedBox(height: 4),
-              CustomText(
-                text: "${product.quantity} left",
-                translate: false,
-                fontColor: colorScheme.primary,
-                fontSize: 12,
-                textAlignment: TextAlign.start,
-              ),
-              const SizedBox(height: 8),
-              if (product.status == 'active' && !isOwner)
-                OutlinedButton(
-                  onPressed: () => _showMakeOfferDialog(context, product, colorScheme),
-                  style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                    minimumSize: Size.zero,
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CustomText(
+                    text: product.title,
+                    translate: false,
+                    fontColor: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    textAlignment: TextAlign.start,
+                    maxLines: 2,
                   ),
-                  child: const Text('Make Offer', style: TextStyle(fontSize: 12)),
-                ),
+                  const SizedBox(height: 4),
+                  CustomText(
+                    text: "£${product.price.toStringAsFixed(2)} · ${product.condition.replaceAll('_', ' ').toUpperCase()}",
+                    translate: false,
+                    fontColor: colorScheme.onSurface.withValues(alpha: 0.7),
+                    fontSize: 14,
+                    textAlignment: TextAlign.start,
+                  ),
+                  const SizedBox(height: 4),
+                  CustomText(
+                    text: "${product.quantity} left",
+                    translate: false,
+                    fontColor: colorScheme.primary,
+                    fontSize: 12,
+                    textAlignment: TextAlign.start,
+                  ),
+                  const SizedBox(height: 8),
+                  if (product.status == 'active' && !isOwner)
+                    OutlinedButton(
+                      onPressed: () => _showMakeOfferDialog(context, product, colorScheme),
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                        minimumSize: Size.zero,
+                      ),
+                      child: const Text('Make Offer', style: TextStyle(fontSize: 12)),
+                    ),
+                ],
+              ),
+            ),
+            if (isOwner) ...[
+              SizedBox(width: 8.w),
+              IconButton(
+                icon: Icon(Icons.edit, color: colorScheme.primary, size: 24.sp),
+                tooltip: 'Edit Listing',
+                onPressed: () async {
+                  await Get.toNamed(AppRoutes.createQualityListingScreen, arguments: {'product': product});
+                  _loadProducts();
+                },
+              ),
             ],
-          ),
+          ],
         ),
-        if (isOwner) ...[
-          SizedBox(width: 8.w),
-          IconButton(
-            icon: Icon(Icons.edit, color: colorScheme.primary, size: 24.sp),
-            tooltip: 'Edit Listing',
-            onPressed: () async {
-              await Get.toNamed(AppRoutes.createQualityListingScreen, arguments: {'product': product});
-              _loadProducts();
-            },
-          ),
-        ],
-      ],
+      ),
     );
   }
 

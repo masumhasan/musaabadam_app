@@ -13,6 +13,7 @@ class PublicProfileModel {
   final bool isSellerApproved;
   final bool isFollowing;
   final bool isBlockedByMe;
+  final Map<String, dynamic>? sellerProfile;
   final DateTime createdAt;
 
   const PublicProfileModel({
@@ -30,6 +31,7 @@ class PublicProfileModel {
     required this.isSellerApproved,
     required this.isFollowing,
     required this.isBlockedByMe,
+    this.sellerProfile,
     required this.createdAt,
   });
 
@@ -49,6 +51,9 @@ class PublicProfileModel {
       isSellerApproved: json['isSellerApproved'] as bool? ?? false,
       isFollowing: json['isFollowing'] as bool? ?? false,
       isBlockedByMe: json['isBlockedByMe'] as bool? ?? false,
+      sellerProfile: json['sellerProfile'] is Map<String, dynamic>
+          ? json['sellerProfile'] as Map<String, dynamic>
+          : null,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }

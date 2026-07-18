@@ -12,7 +12,10 @@ import 'package:musaab_adam/modules/home/screens/message_screen.dart';
 import 'package:musaab_adam/modules/home/screens/search_screen.dart';
 import 'package:musaab_adam/modules/home/bindings/search_binding.dart';
 import 'package:musaab_adam/modules/home/bindings/message_binding.dart';
+import 'package:musaab_adam/modules/product/bindings/single_product_binding.dart';
+import 'package:musaab_adam/modules/product/screens/single_product_screen.dart';
 import 'package:musaab_adam/modules/livestream/screens/story_screen.dart';
+
 import 'package:musaab_adam/modules/livestream/screens/tip_amount_screen.dart';
 import 'package:musaab_adam/modules/livestream/screens/tip_info_screen.dart';
 import 'package:musaab_adam/modules/main_nav/bindings/main_nav_binding.dart';
@@ -278,6 +281,8 @@ class AppPages {
     GetPage(name: AppRoutes.startAuctionScreen, page: () => const StartAuctionScreen(), binding: StartAuctionBinding()),
     GetPage(name: AppRoutes.endShowInsightsScreen, page: () => const EndShowInsightsScreen(), binding: EndShowInsightsBinding()),
     GetPage(name: AppRoutes.premierShopScreen, page: () => const PremierShopScreen(), binding: PremierShopBinding()),
+    GetPage(name: AppRoutes.singleProductScreen, page: () => const SingleProductScreen(), binding: SingleProductBinding()),
+
 
     //===================SELLER VERIFICATION====================
     GetPage(name: AppRoutes.sellerFaqScreen, page: () => const SellerFaqScreen<SellerFaqController>(), binding: FaqBinding()),
