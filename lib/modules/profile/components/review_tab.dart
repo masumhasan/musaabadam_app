@@ -58,35 +58,20 @@ class _ReviewTabState extends State<ReviewTab> {
     }
     final data = _data;
     final reviews = data?.reviews ?? [];
-    final double displayRating = (data != null && data.averageRating > 0)
-        ? data.averageRating
-        : (reviews.isNotEmpty
-            ? reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviews.length
-            : 5.0);
-    final int count = data?.ratingCount ?? reviews.length;
 
     if (reviews.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 30.h),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.star, color: AppColors.orange, size: 20.sp),
-                SizedBox(width: 4.w),
-                CustomText(
-                  text: '${displayRating.toStringAsFixed(1)}  ·  0 reviews',
-                  fontWeight: FontWeight.w700,
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            CustomText(text: 'No reviews yet', fontColor: colorScheme.outline),
-          ],
+        child: Center(
+          child: CustomText(text: 'No reviews yet', fontColor: colorScheme.outline),
         ),
       );
     }
+
+    final int count = (data != null && data.ratingCount > 0) ? data.ratingCount : reviews.length;
+    final double displayRating = (data != null && data.averageRating > 0)
+        ? data.averageRating
+        : (reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviews.length);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

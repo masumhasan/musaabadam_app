@@ -21,9 +21,9 @@ class ReviewModel {
     final buyer = json['buyer'] is Map ? Map<String, dynamic>.from(json['buyer'] as Map) : const {};
     return ReviewModel(
       id: json['id']?.toString() ?? '',
-      rating: (json['rating'] as num?)?.toInt() ?? 0,
+      rating: (json['rating'] as num?)?.toInt() ?? 5,
       comment: json['comment']?.toString(),
-      buyerName: buyer['displayName']?.toString() ?? 'Buyer',
+      buyerName: buyer['displayName']?.toString() ?? buyer['username']?.toString() ?? 'Buyer',
       buyerAvatarUrl: buyer['avatarUrl']?.toString(),
       sellerReply: json['sellerReply']?.toString(),
       createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
@@ -42,7 +42,7 @@ class SellerReviews {
         reviews: (json['reviews'] as List? ?? [])
             .map((e) => ReviewModel.fromJson(e as Map<String, dynamic>))
             .toList(),
-        averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0,
-        ratingCount: (json['ratingCount'] as num?)?.toInt() ?? 0,
+        averageRating: (json['averageRating'] as num?)?.toDouble() ?? (json['rating'] as num?)?.toDouble() ?? 0,
+        ratingCount: (json['ratingCount'] as num?)?.toInt() ?? (json['total'] as num?)?.toInt() ?? (json['count'] as num?)?.toInt() ?? 0,
       );
 }
