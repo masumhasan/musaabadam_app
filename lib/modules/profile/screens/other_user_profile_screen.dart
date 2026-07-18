@@ -118,12 +118,13 @@ class OtherUserProfileScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatColumn(
-                        profile.buyerRating.toStringAsFixed(1),
+                      Obx(() => _buildStatColumn(
+                        _controller.sellerRating.value.toStringAsFixed(1),
                         'Ratings',
                         colorScheme,
                         icon: Icons.star,
-                      ),
+                      )),
+
                       _buildVerticalDivider(colorScheme),
                       Obx(() => _buildStatColumn(
                         OtherUserProfileController.formatCount(_controller.followersCount.value),

@@ -26,11 +26,20 @@ class _ReviewTabState extends State<ReviewTab> {
     _load();
   }
 
+  @override
+  void didUpdateWidget(covariant ReviewTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.sellerId != widget.sellerId) {
+      _load();
+    }
+  }
+
   Future<void> _load() async {
     if (widget.sellerId == null) {
       setState(() => _loading = false);
       return;
     }
+    setState(() => _loading = true);
     try {
       final data = await ApiReviewService.instance.getSellerReviews(widget.sellerId!);
       if (mounted) setState(() => _data = data);
@@ -48,10 +57,34 @@ class _ReviewTabState extends State<ReviewTab> {
       return const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()));
     }
     final data = _data;
-    if (data == null || data.reviews.isEmpty) {
+    final reviews = data?.reviews ?? [];
+    final double displayRating = (data != null && data.averageRating > 0)
+        ? data.averageRating
+        : (reviews.isNotEmpty
+            ? reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviews.length
+            : 5.0);
+    final int count = data?.ratingCount ?? reviews.length;
+
+    if (reviews.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 30.h),
-        child: Center(child: CustomText(text: 'No reviews yet', fontColor: colorScheme.outline)),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.star, color: AppColors.orange, size: 20.sp),
+                SizedBox(width: 4.w),
+                CustomText(
+                  text: '${displayRating.toStringAsFixed(1)}  ·  0 reviews',
+                  fontWeight: FontWeight.w700,
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+            CustomText(text: 'No reviews yet', fontColor: colorScheme.outline),
+          ],
+        ),
       );
     }
 
@@ -64,16 +97,17 @@ class _ReviewTabState extends State<ReviewTab> {
             Icon(Icons.star, color: AppColors.orange, size: 20.sp),
             SizedBox(width: 4.w),
             CustomText(
-              text: '${data.averageRating.toStringAsFixed(1)}  ·  ${data.ratingCount} review${data.ratingCount == 1 ? '' : 's'}',
+              text: '${displayRating.toStringAsFixed(1)}  ·  $count review${count == 1 ? '' : 's'}',
               fontWeight: FontWeight.w700,
             ),
           ],
         ),
+        SizedBox(height: 12.h),
         ListView.builder(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
-          itemCount: data.reviews.length,
-          itemBuilder: (context, index) => _reviewItem(context, data.reviews[index]),
+          itemCount: reviews.length,
+          itemBuilder: (context, index) => _reviewItem(context, reviews[index]),
         ),
       ],
     );
@@ -122,7 +156,8 @@ class _ReviewTabState extends State<ReviewTab> {
                     ),
                   ],
                 ),
-                if ((r.comment ?? '').isNotEmpty)
+                if ((r.comment ?? '').isNotEmpty) ...[
+                  SizedBox(height: 4.h),
                   CustomText(
                     text: r.comment!,
                     fontSize: 14.sp,
@@ -130,6 +165,7 @@ class _ReviewTabState extends State<ReviewTab> {
                     textAlignment: TextAlign.start,
                     maxLines: 4,
                   ),
+                ],
               ],
             ),
           ),

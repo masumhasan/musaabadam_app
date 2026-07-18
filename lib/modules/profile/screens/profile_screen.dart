@@ -100,11 +100,15 @@ class ProfileScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildStatColumn(
-                        ((user?.sellerProfile?['averageRating'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(1),
+                        (((user?.sellerProfile?['averageRating'] as num?)?.toDouble() ?? 0.0) > 0
+                                ? (user?.sellerProfile?['averageRating'] as num).toDouble()
+                                : 5.0)
+                            .toStringAsFixed(1),
                         "Ratings",
                         colorScheme,
                         icon: Icons.star,
                       ),
+
                       _buildVerticalDivider(colorScheme),
                       _buildStatColumn(
                         _formatCount(user?.followersCount ?? 0),

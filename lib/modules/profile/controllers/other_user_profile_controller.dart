@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
+import 'package:musaab_adam/core/services/api_review_service.dart';
 import 'package:musaab_adam/core/services/social_service.dart';
 import 'package:musaab_adam/core/services/stream_service.dart';
 import 'package:musaab_adam/data/models/social/public_profile_model.dart';
@@ -15,6 +16,7 @@ class OtherUserProfileController extends GetxController {
   final RxBool isFollowing = false.obs;
   final RxBool isBlockedByMe = false.obs;
   final RxInt followersCount = 0.obs;
+  final RxDouble sellerRating = 5.0.obs;
 
   // Seller's shows for the profile tabs.
   final RxList<StreamModel> upcomingShows = <StreamModel>[].obs;
@@ -36,6 +38,21 @@ class OtherUserProfileController extends GetxController {
       isFollowing.value = data.isFollowing;
       isBlockedByMe.value = data.isBlockedByMe;
       followersCount.value = data.followersCount;
+
+      final sp = data.sellerProfile;
+      if (sp != null && sp['averageRating'] != null && (sp['averageRating'] as num) > 0) {
+        sellerRating.value = (sp['averageRating'] as num).toDouble();
+      } else {
+        try {
+          final reviewData = await ApiReviewService.instance.getSellerReviews(userId);
+          if (reviewData.averageRating > 0) {
+            sellerRating.value = reviewData.averageRating;
+          } else if (reviewData.reviews.isNotEmpty) {
+            final avg = reviewData.reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviewData.reviews.length;
+            sellerRating.value = avg;
+          }
+        } catch (_) {}
+      }
     } on DioException catch (e) {
       Get.snackbar('Error', SocialService.extractError(e), snackPosition: SnackPosition.BOTTOM);
     } finally {
