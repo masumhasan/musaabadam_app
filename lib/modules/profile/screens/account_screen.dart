@@ -4,7 +4,10 @@ import 'package:get/get.dart';
 import 'package:musaab_adam/core/services/role_service.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
+import 'package:musaab_adam/modules/profile/bindings/change_credential_binding.dart';
 import 'package:musaab_adam/modules/profile/components/payment_shipping_dialog.dart';
+import 'package:musaab_adam/modules/profile/screens/change_credentials_screen.dart';
+
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
@@ -122,8 +125,17 @@ class AccountScreen extends StatelessWidget {
                 _buildTile(AppStrings.wallet, Icons.account_balance_wallet_outlined, () => Get.toNamed(AppRoutes.walletScreen)),
                 _buildTile(AppStrings.addresses, Icons.location_pin, () => Get.toNamed(AppRoutes.addressesScreen)),
                 _buildTile(AppStrings.notificationSettings, Icons.notifications_none_rounded, () => Get.toNamed(AppRoutes.notificationSettingsScreen)),
-                _buildTile(AppStrings.changeEmail, Icons.mail_outline_rounded, () => Get.toNamed(AppRoutes.changeCredential, arguments: {'isPasswordChange': false})),
-                _buildTile(AppStrings.changePassword, Icons.key, () => Get.toNamed(AppRoutes.changeCredential, arguments: {'isPasswordChange': true})),
+                _buildTile(AppStrings.changeEmail, Icons.mail_outline_rounded, () => Get.to(
+                  () => const ChangeCredentialScreen(),
+                  binding: ChangeCredentialBinding(),
+                  arguments: {'isPasswordChange': false},
+                )),
+                _buildTile(AppStrings.changePassword, Icons.key, () => Get.to(
+                  () => const ChangeCredentialScreen(),
+                  binding: ChangeCredentialBinding(),
+                  arguments: {'isPasswordChange': true},
+                )),
+
 
                 TileButton(
                   title: AppStrings.preferences,

@@ -8,7 +8,10 @@ import 'package:musaab_adam/core/widgets/photo_edit_widget.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
+import 'package:musaab_adam/modules/profile/bindings/change_credential_binding.dart';
 import 'package:musaab_adam/modules/profile/controllers/update_profile_controller.dart';
+import 'package:musaab_adam/modules/profile/screens/change_credentials_screen.dart';
+
 
 class UpdateProfileScreen extends GetView<UpdateProfileController> {
   const UpdateProfileScreen({super.key});
@@ -83,8 +86,13 @@ class UpdateProfileScreen extends GetView<UpdateProfileController> {
                   value: user?.email ?? '',
                   colorScheme: colorScheme,
                   trailingLabel: 'Change',
-                  onTrailingTap: () => Get.toNamed('/changeCredential', arguments: {'isPasswordChange': false}),
+                  onTrailingTap: () => Get.to(
+                    () => const ChangeCredentialScreen(),
+                    binding: ChangeCredentialBinding(),
+                    arguments: {'isPasswordChange': false},
+                  ),
                 ),
+
 
                 SizedBoxWidget(height: 15),
 
