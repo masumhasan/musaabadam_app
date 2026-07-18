@@ -15,6 +15,8 @@ import 'package:musaab_adam/modules/profile/controllers/other_user_profile_contr
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 
+import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
+
 class OtherUserProfileScreen extends StatelessWidget {
   final String userId;
   OtherUserProfileScreen({super.key, required this.userId});
@@ -59,7 +61,23 @@ class OtherUserProfileScreen extends StatelessWidget {
           }),
         ],
       ),
+      floatingActionButton: Obx(() {
+        final isShopTab = _tabIndex.value == 0;
+        final currentUser = Get.find<AuthController>().currentUser.value;
+        final isOwner = currentUser != null && currentUser.id == userId;
+        if (isOwner && isShopTab) {
+          return FloatingActionButton(
+            onPressed: () => Get.toNamed(AppRoutes.createQualityListingScreen),
+            backgroundColor: colorScheme.primary,
+            elevation: 4,
+            shape: const CircleBorder(),
+            child: Icon(Icons.add, color: Colors.white, size: 28.sp),
+          );
+        }
+        return const SizedBox.shrink();
+      }),
       body: Obx(() {
+
         if (_controller.isLoading.value) {
           return Center(child: CircularProgressIndicator(color: colorScheme.primary));
         }
@@ -71,7 +89,7 @@ class OtherUserProfileScreen extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Column(
-              spacing: 20.h,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(50),
@@ -81,12 +99,14 @@ class OtherUserProfileScreen extends StatelessWidget {
                     width: 60.w,
                   ),
                 ),
+                SizedBox(height: 12.h),
                 CustomText(
                   text: profile.displayNameOrUsername,
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   fontColor: colorScheme.onSurface,
                 ),
+                SizedBox(height: 20.h),
 
                 // Stats
                 Container(
@@ -119,10 +139,10 @@ class OtherUserProfileScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+                SizedBox(height: 20.h),
 
                 // Action buttons
                 Obx(() => Row(
-                  spacing: 20.w,
                   children: [
                     Expanded(
                       child: CustomButton(
@@ -138,6 +158,7 @@ class OtherUserProfileScreen extends StatelessWidget {
                         }),
                       ),
                     ),
+                    SizedBox(width: 20.w),
                     Expanded(
                       child: CustomButton(
                         label: _controller.isBlockedByMe.value
@@ -155,10 +176,11 @@ class OtherUserProfileScreen extends StatelessWidget {
                     ),
                   ],
                 )),
+                SizedBox(height: 20.h),
 
                 // Tabs
                 Row(
-                  spacing: 15.w,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildTab(AppStrings.shop.tr, 0, colorScheme),
                     _buildTab(AppStrings.shows.tr, 1, colorScheme),
@@ -166,6 +188,7 @@ class OtherUserProfileScreen extends StatelessWidget {
                     _buildTab(AppStrings.snaps.tr, 3, colorScheme),
                   ],
                 ),
+                SizedBox(height: 20.h),
 
                 Obx(() => IndexedStack(
                   index: _tabIndex.value,

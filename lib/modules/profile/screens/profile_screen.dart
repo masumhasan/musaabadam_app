@@ -49,14 +49,29 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
+      floatingActionButton: Obx(() {
+        final isShopTab = mainTabCurrentIndex.value == 0;
+        final currentUser = _authController.currentUser.value;
+        if (currentUser != null && isShopTab) {
+          return FloatingActionButton(
+            onPressed: () => Get.toNamed(AppRoutes.createQualityListingScreen),
+            backgroundColor: colorScheme.primary,
+            elevation: 4,
+            shape: const CircleBorder(),
+            child: Icon(Icons.add, color: Colors.white, size: 28.sp),
+          );
+        }
+        return const SizedBox.shrink();
+      }),
       body: SingleChildScrollView(
+
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Obx(() {
             final user = _authController.currentUser.value;
             return Column(
-              spacing: 20.h,
-              children:[
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(50),
                   child: CachedImageWidget(
@@ -65,12 +80,14 @@ class ProfileScreen extends StatelessWidget {
                     width: 60.w,
                   ),
                 ),
+                SizedBox(height: 12.h),
                 CustomText(
                   text: user?.displayNameOrUsername ?? '',
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   fontColor: colorScheme.onSurface,
                 ),
+                SizedBox(height: 20.h),
 
                 // Stats Container
                 Container(
@@ -81,7 +98,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children:[
+                    children: [
                       _buildStatColumn(
                         ((user?.sellerProfile?['averageRating'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(1),
                         "Ratings",
@@ -103,11 +120,11 @@ class ProfileScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+                SizedBox(height: 20.h),
 
                 // Action Buttons
                 Row(
-                  spacing: 20.w,
-                  children:[
+                  children: [
                     Expanded(
                       child: CustomButton(
                         label: AppStrings.editProfile,
@@ -120,17 +137,20 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+                SizedBox(height: 20.h),
 
                 // Tabs Row
                 Row(
-                  spacing: 15.w,
-                  children:[
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
                     _buildTab(AppStrings.shop.tr, 0, colorScheme),
                     _buildTab(AppStrings.shows.tr, 1, colorScheme),
                     _buildTab(AppStrings.reviews.tr, 2, colorScheme),
                     _buildTab(AppStrings.snaps.tr, 3, colorScheme),
                   ],
                 ),
+                SizedBox(height: 20.h),
+
 
                 // Tab Content
                 Obx(() => IndexedStack(

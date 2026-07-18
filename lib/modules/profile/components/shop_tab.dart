@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:musaab_adam/core/assets_gen/assets.gen.dart';
 import 'package:musaab_adam/core/services/product_service.dart';
-import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/data/models/product/product_model.dart';
 import 'package:musaab_adam/core/services/api_offer_service.dart';
+import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
+import 'package:musaab_adam/routes/app_pages.dart';
 import '../../../core/utils/app_strings.dart';
 import '../../../core/widgets/custom_choice_chip.dart';
 
@@ -83,6 +85,8 @@ class _ShopTabState extends State<ShopTab> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final currentUser = Get.find<AuthController>().currentUser.value;
+    final isOwner = widget.sellerId == null || widget.sellerId == currentUser?.id;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,22 +103,27 @@ class _ShopTabState extends State<ShopTab> {
           trailing: [Icon(Icons.search, color: colorScheme.primary)],
         ),
         const SizedBox(height: 20),
-        Row(
-          spacing: 10.w,
-          children: [
-            _buildTab(AppStrings.all, 0),
-            _buildTab(AppStrings.active, 1),
-            _buildTab(AppStrings.inactive, 2),
-            _buildTab(AppStrings.sold, 3),
-          ],
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildTab(AppStrings.all, 0),
+              SizedBox(width: 10.w),
+              _buildTab(AppStrings.active, 1),
+              SizedBox(width: 10.w),
+              _buildTab(AppStrings.inactive, 2),
+              SizedBox(width: 10.w),
+              _buildTab(AppStrings.sold, 3),
+            ],
+          ),
         ),
         const SizedBox(height: 20),
-        _buildContent(colorScheme),
+        _buildContent(colorScheme, isOwner),
       ],
     );
   }
 
-  Widget _buildContent(ColorScheme colorScheme) {
+  Widget _buildContent(ColorScheme colorScheme, bool isOwner) {
     if (_loading) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 40.h),
@@ -126,17 +135,62 @@ class _ShopTabState extends State<ShopTab> {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 40.h),
         child: Center(
-          child: CustomText(
-            text: 'No products found',
-            fontColor: colorScheme.outline,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Assets.images.appLogo.image(
+                height: 70.h,
+                fit: BoxFit.contain,
+              ),
+              SizedBox(height: 16.h),
+              CustomText(
+                text: 'No Active Products',
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                fontColor: colorScheme.onSurface,
+              ),
+              if (isOwner) ...[
+                SizedBox(height: 20.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      await Get.toNamed(AppRoutes.createQualityListingScreen);
+                      _loadProducts();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                    ),
+                    icon: Icon(Icons.add, color: Colors.white, size: 20.sp),
+                    label: Text(
+                      'Create Listing',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       );
     }
 
     return Column(
-      spacing: 15.h,
-      children: _products.map((p) => shopProduct(context, p)).toList(),
+      children: _products
+          .map((p) => Padding(
+                padding: EdgeInsets.only(bottom: 15.h),
+                child: shopProduct(context, p, isOwner),
+              ))
+          .toList(),
     );
   }
 
@@ -159,11 +213,10 @@ class _ShopTabState extends State<ShopTab> {
     );
   }
 
-  Widget shopProduct(BuildContext context, ProductModel product) {
+  Widget shopProduct(BuildContext context, ProductModel product, bool isOwner) {
     final colorScheme = Theme.of(context).colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 10.w,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(20.r),
@@ -174,6 +227,7 @@ class _ShopTabState extends State<ShopTab> {
             width: 100.w,
           ),
         ),
+        SizedBox(width: 10.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,7 +259,7 @@ class _ShopTabState extends State<ShopTab> {
                 textAlignment: TextAlign.start,
               ),
               const SizedBox(height: 8),
-              if (product.status == 'active')
+              if (product.status == 'active' && !isOwner)
                 OutlinedButton(
                   onPressed: () => _showMakeOfferDialog(context, product, colorScheme),
                   style: OutlinedButton.styleFrom(
@@ -216,7 +270,18 @@ class _ShopTabState extends State<ShopTab> {
                 ),
             ],
           ),
-        )
+        ),
+        if (isOwner) ...[
+          SizedBox(width: 8.w),
+          IconButton(
+            icon: Icon(Icons.edit, color: colorScheme.primary, size: 24.sp),
+            tooltip: 'Edit Listing',
+            onPressed: () async {
+              await Get.toNamed(AppRoutes.createQualityListingScreen, arguments: {'product': product});
+              _loadProducts();
+            },
+          ),
+        ],
       ],
     );
   }
