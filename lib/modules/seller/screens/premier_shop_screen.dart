@@ -153,6 +153,7 @@ class PremierShopScreen extends GetView<PremierShopController> {
                     CustomText(
                       text: isPremier ? AppStrings.premierShopActive : AppStrings.premierShopStatus,
                       fontSize: 18.sp,
+
                       fontWeight: FontWeight.w700,
                       fontColor: isPremier ? const Color(0xFF5C4033) : colorScheme.onSurface,
                     ),
@@ -312,7 +313,8 @@ class PremierShopScreen extends GetView<PremierShopController> {
             progress: (controller.orderReliabilityPercent / controller.targetOrderReliabilityPercent).clamp(0.0, 1.0),
             icon: Icons.verified_user_outlined,
           ),
-          Divider(height: 24.h, color: colorScheme.outlineVariant.withOpacity(0.4)),
+          Divider(height: 24.h, color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+
           Row(
             children: [
               Icon(Icons.gavel_outlined, size: 20.r, color: colorScheme.primary),

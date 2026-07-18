@@ -5,7 +5,10 @@ import 'package:musaab_adam/core/utils/app_strings.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/core/widgets/tile_button.dart';
+import 'package:musaab_adam/modules/seller/bindings/premier_shop_binding.dart';
+import 'package:musaab_adam/modules/seller/screens/premier_shop_screen.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
+
 
 class SellerToolScreen extends StatelessWidget {
   const SellerToolScreen({super.key});
@@ -67,7 +70,8 @@ class SellerToolScreen extends StatelessWidget {
 // Performance Section
             CustomText(text: AppStrings.performance, fontSize: 18, fontWeight: FontWeight.w700),
             SizedBoxWidget(height: 10.h),
-            _buildTile(AppStrings.premierShop, Icons.storefront_outlined, () => Get.toNamed(AppRoutes.premierShopScreen)),
+            _buildTile(AppStrings.premierShop, Icons.storefront_outlined, () => Get.to(() => const PremierShopScreen(), binding: PremierShopBinding())),
+
 
             _buildTile(AppStrings.sellerAnalytics, Icons.shopping_bag_outlined, () => Get.toNamed(AppRoutes.sellerAnalyticsScreen)),
             SizedBoxWidget(height: 20.h),
