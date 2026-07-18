@@ -607,9 +607,9 @@ class AppStrings {
   static const String from = 'From: ';
   static const String zeroProducts = '0 Products';
   static const String promotions = 'Promotions';
-  static const String inviteASellerEarn = 'Invite a seller, Earn \$100';
+  static const String inviteASellerEarn = 'Invite a seller, Earn \$10';
   static const String notes = 'Notes';
-  static const String inviteASellerEarn100 = 'Invite a seller,Earn \$100';
+  static const String inviteASellerEarn100 = 'Invite a seller,Earn \$10';
   static const String referBuyersGainFollowers = 'Refer Buyers Gain Followers';
   static const String performance = 'Performance';
   static const String premierShop = 'Premier Shop';
