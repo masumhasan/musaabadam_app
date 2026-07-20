@@ -5,16 +5,17 @@ class ApiConstants {
   // Android emulator → 10.0.2.2 maps to host machine localhost
   // iOS simulator    → 127.0.0.1
   // Physical device  → use your machine's LAN IP
-  static const String _devBaseUrl = 'http://98.90.22.230:5000/api/v1';
-  static const String _prodBaseUrl = 'http://98.90.22.230:5000/api/v1';
+  static const String _devBaseUrl = 'https://backend.bidsrush.com/api/v1';
+  static const String _prodBaseUrl = 'https://backend.bidsrush.com/api/v1';
 
   static const bool _isProduction = bool.fromEnvironment('dart.vm.product');
   static const String baseUrl = _isProduction ? _prodBaseUrl : _devBaseUrl;
 
   // Socket.io server (same host, no /api/v1 path prefix)
-  static const String _devSocketUrl = 'http://98.90.22.230:5000';
-  static const String _prodSocketUrl = 'http://98.90.22.230:5000';
+  static const String _devSocketUrl = 'https://backend.bidsrush.com';
+  static const String _prodSocketUrl = 'https://backend.bidsrush.com';
   static const String socketUrl = _isProduction ? _prodSocketUrl : _devSocketUrl;
+
 
   static const Duration connectTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 30);

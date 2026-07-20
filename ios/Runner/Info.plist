@@ -80,14 +80,12 @@
           <key>NSIncludesSubdomains</key>
           <true/>
         </dict>
-        <key>98.90.22.230</key>
+        <key>bidsrush.com</key>
         <dict>
-          <key>NSExceptionAllowsInsecureHTTPLoads</key>
-          <true/>
           <key>NSIncludesSubdomains</key>
           <true/>
         </dict>
       </dict>
     </dict>
   </dict>
-</plist>
+</plist>
