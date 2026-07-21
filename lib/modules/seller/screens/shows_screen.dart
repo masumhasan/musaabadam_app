@@ -81,7 +81,7 @@ class ShowsScreen extends GetView<ShowsController> {
                 return ListView.separated(
                   padding: EdgeInsets.only(top: 12.h, bottom: 80.h),
                   itemCount: items.length,
-                  separatorBuilder: (_, __) => Divider(color: colorScheme.outline.withValues(alpha: 0.15), height: 1),
+                  separatorBuilder: (_, index) => Divider(color: colorScheme.outline.withValues(alpha: 0.15), height: 1),
                   itemBuilder: (context, index) => _ShowTile(show: items[index], colorScheme: colorScheme),
                 );
               }),
@@ -179,8 +179,9 @@ class _ShowTile extends StatelessWidget {
                         width: 72.w,
                         height: 72.w,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder(),
+                        errorBuilder: (context, error, stackTrace) => _placeholder(),
                       )
+
                     : _placeholder(),
               ),
               if (hasReplay)

@@ -29,11 +29,9 @@ class PastShowsController extends GetxController {
       list.sort((a, b) {
         final dateA = a.endedAt ?? a.createdAt;
         final dateB = b.endedAt ?? b.createdAt;
-        if (dateA == null && dateB == null) return 0;
-        if (dateA == null) return 1;
-        if (dateB == null) return -1;
         return dateB.compareTo(dateA); // Descending: newest first
       });
+
       replays.value = list;
     } on DioException {
       hasError.value = true;
