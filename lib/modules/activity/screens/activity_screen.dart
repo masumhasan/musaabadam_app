@@ -19,6 +19,8 @@ import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import '../../main_nav/components/app_bar.dart';
 import '../../../core/widgets/custom_choice_chip.dart';
+import 'package:musaab_adam/core/services/api_tip_service.dart';
+import 'package:intl/intl.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
@@ -40,42 +42,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
   List<OfferModel> _offers = [];
   List<ProductModel> _favorites = [];
   List<dynamic> _followingSellers = [];
-
-  // Mock Dataset for Tips (Seller only)
-  final List<MockTipItem> _mockSellerTips = [
-    const MockTipItem(
-      senderName: 'john_doe',
-      imageUrl: Dummy.user1,
-      amount: 10.0,
-      streamTitle: 'Monday Live Auction',
-      date: 'Today',
-      isThisMonth: true,
-    ),
-    const MockTipItem(
-      senderName: 'mary_jane',
-      imageUrl: Dummy.user2,
-      amount: 25.0,
-      streamTitle: 'Vintage Bag Unboxing',
-      date: 'Yesterday',
-      isThisMonth: true,
-    ),
-    const MockTipItem(
-      senderName: 'dave_k',
-      imageUrl: Dummy.user1,
-      amount: 5.0,
-      streamTitle: 'Collectibles Showcase',
-      date: '2 weeks ago',
-      isThisMonth: true,
-    ),
-    const MockTipItem(
-      senderName: 'alice_w',
-      imageUrl: Dummy.user2,
-      amount: 15.0,
-      streamTitle: 'Sneaker Drop Special',
-      date: 'Last Month',
-      isThisMonth: false,
-    ),
-  ];
+  List<Map<String, dynamic>> _realSellerTips = [];
 
   @override
   void initState() {
@@ -105,14 +72,18 @@ class _ActivityScreenState extends State<ActivityScreen> {
         } else {
           _offers = await ApiOfferService.instance.getBuyerOffers();
         }
-      } else if (_selectedTabIndex == 3 && !isSeller) {
-        if (_selectedChipIndex == 0 || _selectedChipIndex == 3) {
-          _favorites = await ApiFavoriteService.instance.list();
-        } else if (_selectedChipIndex == 2) {
-          final currentUser = Get.find<AuthController>().currentUser.value;
-          if (currentUser != null) {
-            final res = await SocialService.instance.getFollowing(currentUser.id);
-            _followingSellers = res['users'] as List? ?? [];
+      } else if (_selectedTabIndex == 3) {
+        if (isSeller) {
+          _realSellerTips = await ApiTipService.instance.getReceivedTips();
+        } else {
+          if (_selectedChipIndex == 0 || _selectedChipIndex == 3) {
+            _favorites = await ApiFavoriteService.instance.list();
+          } else if (_selectedChipIndex == 2) {
+            final currentUser = Get.find<AuthController>().currentUser.value;
+            if (currentUser != null) {
+              final res = await SocialService.instance.getFollowing(currentUser.id);
+              _followingSellers = res['users'] as List? ?? [];
+            }
           }
         }
       }
@@ -350,11 +321,21 @@ class _ActivityScreenState extends State<ActivityScreen> {
       );
     } else if (_selectedTabIndex == 3) {
       if (isSeller) {
-        // Tips (Mock)
-        final list = _mockSellerTips.where((t) {
+        // Tips (Real DB data, filtered locally)
+        final list = _realSellerTips.where((t) {
           if (_selectedChipIndex == 0) return true;
-          if (_selectedChipIndex == 1) return t.isThisMonth;
-          if (_selectedChipIndex == 2) return !t.isThisMonth;
+
+          DateTime? createdAt;
+          try {
+            createdAt = DateTime.parse(t['createdAt'].toString());
+          } catch (_) {}
+          if (createdAt == null) return false;
+
+          final now = DateTime.now();
+          final isThisMonth = createdAt.year == now.year && createdAt.month == now.month;
+
+          if (_selectedChipIndex == 1) return isThisMonth;
+          if (_selectedChipIndex == 2) return !isThisMonth;
           return true;
         }).toList();
 
@@ -363,16 +344,105 @@ class _ActivityScreenState extends State<ActivityScreen> {
         }
 
         return ListView.builder(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
           itemCount: list.length,
           itemBuilder: (context, index) {
-            final t = list[index];
-            return ProductTile(
-              imageUrl: t.imageUrl,
-              title: 'Tip from @${t.senderName}',
-              subtitle: 'Amount: £${t.amount.toStringAsFixed(2)}',
-              badgeText: 'Tip',
-              badgeColor: Colors.green,
-              nameLabel: '${t.streamTitle} (${t.date})',
+            final tip = list[index];
+            final buyer = tip['buyerId'] as Map<String, dynamic>? ?? {};
+            final buyerName = buyer['displayName']?.toString() ??
+                buyer['username']?.toString() ??
+                'Anonymous';
+            final avatarUrl = buyer['avatarUrl']?.toString() ?? '';
+            final message = tip['message']?.toString();
+            final amount = tip['amount'] is num
+                ? (tip['amount'] as num).toDouble()
+                : 0.0;
+
+            DateTime? createdAt;
+            try {
+              createdAt = DateTime.parse(tip['createdAt'].toString());
+            } catch (_) {}
+            final dateStr = createdAt != null
+                ? DateFormat('yMMMd').add_jm().format(createdAt)
+                : '';
+
+            return Card(
+              elevation: 0,
+              margin: EdgeInsets.only(bottom: 12.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                side: BorderSide(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                ),
+              ),
+              color: colorScheme.surfaceContainerLow,
+              child: Padding(
+                padding: EdgeInsets.all(12.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: CachedImageWidget(
+                            imageUrl: avatarUrl,
+                            height: 36.h,
+                            width: 36.w,
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CustomText(
+                                text: buyerName.toUpperCase(),
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w700,
+                                fontColor: colorScheme.onSurface,
+                              ),
+                              if (dateStr.isNotEmpty)
+                                CustomText(
+                                  text: dateStr,
+                                  fontSize: 11.sp,
+                                  fontColor: colorScheme.onSurfaceVariant,
+                                ),
+                            ],
+                          ),
+                        ),
+                        CustomText(
+                          text: '£${amount.toStringAsFixed(2)}',
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700,
+                          fontColor: colorScheme.primary,
+                        ),
+                      ],
+                    ),
+                    if (message != null && message.trim().isNotEmpty) ...[
+                      SizedBox(height: 10.h),
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(10.w),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(
+                            color: colorScheme.primary.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        child: CustomText(
+                          text: '"$message"',
+                          fontSize: 13.sp,
+                          fontStyle: FontStyle.italic,
+                          fontColor: colorScheme.onSurface,
+                          textAlignment: TextAlign.start,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             );
           },
         );
@@ -557,20 +627,4 @@ class ProductTile extends StatelessWidget {
   }
 }
 
-class MockTipItem {
-  final String senderName;
-  final String imageUrl;
-  final double amount;
-  final String streamTitle;
-  final String date;
-  final bool isThisMonth;
-
-  const MockTipItem({
-    required this.senderName,
-    required this.imageUrl,
-    required this.amount,
-    required this.streamTitle,
-    required this.date,
-    required this.isThisMonth,
-  });
-}
+// MockTipItem removed
