@@ -26,6 +26,7 @@ class _ShopTabState extends State<ShopTab> {
   int _currentIndex = 0;
   List<ProductModel> _products = [];
   bool _loading = true;
+  String? _updatingProductId;
 
   @override
   void initState() {
@@ -284,13 +285,39 @@ class _ShopTabState extends State<ShopTab> {
             ),
             if (isOwner) ...[
               SizedBox(width: 8.w),
-              IconButton(
-                icon: Icon(Icons.edit, color: colorScheme.primary, size: 24.sp),
-                tooltip: 'Edit Listing',
-                onPressed: () async {
-                  await Get.toNamed(AppRoutes.createQualityListingScreen, arguments: {'product': product});
-                  _loadProducts();
-                },
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit, color: colorScheme.primary, size: 24.sp),
+                    tooltip: 'Edit Listing',
+                    onPressed: () async {
+                      await Get.toNamed(AppRoutes.createQualityListingScreen, arguments: {'product': product});
+                      _loadProducts();
+                    },
+                  ),
+                  if (product.status == 'active' || product.status == 'inactive' || product.status == 'draft')
+                    _updatingProductId == product.id
+                        ? const SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : IconButton(
+                            icon: Icon(
+                              product.status == 'active'
+                                  ? Icons.pause_circle_outline
+                                  : Icons.play_circle_outline,
+                              color: product.status == 'active' ? Colors.amber[800] : Colors.green[700],
+                              size: 24.sp,
+                            ),
+                            tooltip: product.status == 'active' ? 'Deactivate Listing' : 'Activate Listing',
+                            onPressed: () => _toggleProductStatus(product),
+                          ),
+                ],
               ),
             ],
           ],
@@ -347,5 +374,44 @@ class _ShopTabState extends State<ShopTab> {
         ],
       ),
     );
+  }
+
+  Future<void> _toggleProductStatus(ProductModel product) async {
+    if (_updatingProductId != null) return;
+    setState(() => _updatingProductId = product.id);
+    try {
+      if (product.status == 'active') {
+        await ProductService.instance.deactivateProduct(product.id);
+        Get.snackbar(
+          'Deactivated',
+          '${product.title} has been deactivated.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+      } else {
+        await ProductService.instance.publishProduct(product.id);
+        Get.snackbar(
+          'Activated',
+          '${product.title} is now active.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      }
+      await _loadProducts();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to update product status.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _updatingProductId = null);
+      }
+    }
   }
 }
