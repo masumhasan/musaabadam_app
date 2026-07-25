@@ -5,9 +5,11 @@ import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_button.dart';
 import 'package:musaab_adam/modules/auth/controllers/auth_controller.dart';
 import 'package:musaab_adam/modules/profile/components/snaps_tab.dart';
+import 'package:musaab_adam/modules/profile/components/saved_products_tab.dart';
 import 'package:musaab_adam/modules/profile/components/review_tab.dart';
 import 'package:musaab_adam/modules/profile/components/shop_tab.dart';
 import 'package:musaab_adam/modules/profile/components/shows_tab.dart';
+import 'package:musaab_adam/modules/profile/controllers/profile_shows_controller.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
 import 'package:musaab_adam/core/widgets/text_button_widget.dart';
 import '../../../core/utils/app_strings.dart';
@@ -17,6 +19,7 @@ class ProfileScreen extends StatelessWidget {
   ProfileScreen({super.key});
 
   final RxInt mainTabCurrentIndex = 0.obs;
+  final RxInt refreshTrigger = 0.obs;
   final AuthController _authController = Get.find<AuthController>();
 
   static String _formatCount(int count) {
@@ -63,23 +66,31 @@ class ProfileScreen extends StatelessWidget {
         }
         return const SizedBox.shrink();
       }),
-      body: SingleChildScrollView(
-
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Obx(() {
-            final user = _authController.currentUser.value;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: CachedImageWidget(
-                    imageUrl: user?.avatarUrl ?? '',
-                    height: 60.h,
-                    width: 60.w,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await _authController.reloadUser();
+          if (Get.isRegistered<ProfileShowsController>()) {
+            await Get.find<ProfileShowsController>().loadShows();
+          }
+          refreshTrigger.value++;
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Obx(() {
+              final user = _authController.currentUser.value;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: CachedImageWidget(
+                      imageUrl: user?.avatarUrl ?? '',
+                      height: 60.h,
+                      width: 60.w,
+                    ),
                   ),
-                ),
                 SizedBox(height: 12.h),
                 CustomText(
                   text: user?.displayNameOrUsername ?? '',
@@ -144,14 +155,22 @@ class ProfileScreen extends StatelessWidget {
                 SizedBox(height: 20.h),
 
                 // Tabs Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildTab(AppStrings.shop.tr, 0, colorScheme),
-                    _buildTab(AppStrings.shows.tr, 1, colorScheme),
-                    _buildTab(AppStrings.reviews.tr, 2, colorScheme),
-                    _buildTab(AppStrings.snaps.tr, 3, colorScheme),
-                  ],
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    children: [
+                      _buildTab(AppStrings.shop.tr, 0, colorScheme),
+                      SizedBox(width: 20.w),
+                      _buildTab(AppStrings.shows.tr, 1, colorScheme),
+                      SizedBox(width: 20.w),
+                      _buildTab(AppStrings.reviews.tr, 2, colorScheme),
+                      SizedBox(width: 20.w),
+                      _buildTab(AppStrings.snaps.tr, 3, colorScheme),
+                      SizedBox(width: 20.w),
+                      _buildTab('Saved Products', 4, colorScheme),
+                    ],
+                  ),
                 ),
                 SizedBox(height: 20.h),
 
@@ -159,15 +178,34 @@ class ProfileScreen extends StatelessWidget {
                 // Tab Content
                 Obx(() => IndexedStack(
                   index: mainTabCurrentIndex.value,
-                  children: [ShopTab(sellerId: _authController.currentUser.value?.id), ShowsTab(), ReviewTab(sellerId: _authController.currentUser.value?.id), const SnapsTab()],
+                  children: [
+                    ShopTab(
+                      key: ValueKey('shop_${refreshTrigger.value}'),
+                      sellerId: _authController.currentUser.value?.id,
+                    ),
+                    ShowsTab(
+                      key: ValueKey('shows_${refreshTrigger.value}'),
+                    ),
+                    ReviewTab(
+                      key: ValueKey('reviews_${refreshTrigger.value}'),
+                      sellerId: _authController.currentUser.value?.id,
+                    ),
+                    SnapsTab(
+                      key: ValueKey('snaps_${refreshTrigger.value}'),
+                    ),
+                    SavedProductsTab(
+                      key: ValueKey('saved_${refreshTrigger.value}'),
+                    ),
+                  ],
                 )),
               ],
             );
           }),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildStatColumn(String value, String label, ColorScheme colorScheme, {IconData? icon}) {
     return Column(
@@ -208,7 +246,10 @@ class ProfileScreen extends StatelessWidget {
         decoration: isSelected ? TextDecoration.underline : null,
         decorationColor: colorScheme.primary,
         fontWeight: FontWeight.w600,
-        onPressed: () => mainTabCurrentIndex.value = index,
+        onPressed: () {
+          mainTabCurrentIndex.value = index;
+          refreshTrigger.value++;
+        },
       );
     });
   }

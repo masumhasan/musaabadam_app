@@ -30,6 +30,8 @@ class ProductModel {
   final int viewsCount;
   final int favoritesCount;
   final DateTime createdAt;
+  final String? sellerName;
+  final String? sellerAvatarUrl;
 
   const ProductModel({
     required this.id,
@@ -63,6 +65,8 @@ class ProductModel {
     required this.viewsCount,
     required this.favoritesCount,
     required this.createdAt,
+    this.sellerName,
+    this.sellerAvatarUrl,
   });
 
   bool get isAuction => listingType == 'auction';
@@ -87,21 +91,25 @@ class ProductModel {
   }
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    final sellerRaw = json['sellerId'];
+    final sellerMap = sellerRaw is Map ? sellerRaw : null;
     return ProductModel(
       id: json['_id'] as String? ?? json['id'] as String,
-      sellerId: _extractId(json['sellerId']),
-      title: json['title'] as String,
-      description: json['description'] as String,
-      category: json['category'] as String,
-      condition: json['condition'] as String,
-      listingType: json['listingType'] as String,
-      status: json['status'] as String,
+      sellerId: _extractId(sellerRaw),
+      sellerName: sellerMap?['displayName'] as String? ?? sellerMap?['username'] as String?,
+      sellerAvatarUrl: sellerMap?['avatarUrl'] as String?,
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      category: json['category'] as String? ?? '',
+      condition: json['condition'] as String? ?? '',
+      listingType: json['listingType'] as String? ?? '',
+      status: json['status'] as String? ?? '',
       price: _toDouble(json['price']),
       startingPrice: json['startingPrice'] != null ? _toDouble(json['startingPrice']) : null,
       reservePrice: json['reservePrice'] != null ? _toDouble(json['reservePrice']) : null,
       currentHighBid: _toDouble(json['currentHighBid']),
       auctionEndsAt: json['auctionEndsAt'] != null
-          ? DateTime.parse(json['auctionEndsAt'] as String)
+          ? DateTime.tryParse(json['auctionEndsAt'] as String)
           : null,
       quantity: json['quantity'] as int? ?? 1,
       quantitySold: json['quantitySold'] as int? ?? 0,
@@ -120,7 +128,9 @@ class ProductModel {
       tags: List<String>.from(json['tags'] ?? []),
       viewsCount: json['viewsCount'] as int? ?? 0,
       favoritesCount: json['favoritesCount'] as int? ?? 0,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: json['createdAt'] != null
+          ? (DateTime.tryParse(json['createdAt'] as String) ?? DateTime.now())
+          : DateTime.now(),
     );
   }
 

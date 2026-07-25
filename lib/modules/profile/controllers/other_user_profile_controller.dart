@@ -30,6 +30,13 @@ class OtherUserProfileController extends GetxController {
     _loadShows();
   }
 
+  Future<void> refreshData() async {
+    await Future.wait([
+      _loadProfile(),
+      _loadShows(),
+    ]);
+  }
+
   Future<void> _loadProfile() async {
     isLoading.value = true;
     try {

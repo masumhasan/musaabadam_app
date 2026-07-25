@@ -110,7 +110,7 @@ class _ShowItem extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: CachedImageWidget(
-                imageUrl: show.sellerAvatarUrl ?? Dummy.user1,
+                imageUrl: show.sellerAvatarUrl ?? '',
                 height: 24,
                 width: 24,
               ),

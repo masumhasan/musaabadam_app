@@ -266,6 +266,13 @@ class AuthController extends GetxController {
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
 
+  Future<void> reloadUser() async {
+    try {
+      final user = await ApiAuthService.instance.getMyProfile();
+      _applyUser(user);
+    } catch (_) {}
+  }
+
   void _applyUser(UserModel user) {
     currentUser.value = user;
     final role = Role.fromString(user.role);

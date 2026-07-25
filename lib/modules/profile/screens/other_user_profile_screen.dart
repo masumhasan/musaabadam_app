@@ -25,6 +25,7 @@ class OtherUserProfileScreen extends StatelessWidget {
       Get.find<OtherUserProfileController>(tag: userId);
 
   final RxInt _tabIndex = 0.obs;
+  final RxInt refreshTrigger = 0.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -85,10 +86,16 @@ class OtherUserProfileScreen extends StatelessWidget {
         final profile = _controller.profile.value;
         if (profile == null) return const SizedBox.shrink();
 
-        return SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(
+        return RefreshIndicator(
+          onRefresh: () async {
+            await _controller.refreshData();
+            refreshTrigger.value++;
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 ClipRRect(
@@ -193,17 +200,31 @@ class OtherUserProfileScreen extends StatelessWidget {
 
                 Obx(() => IndexedStack(
                   index: _tabIndex.value,
-                  children: [ShopTab(sellerId: userId), _buildShowsSection(colorScheme), ReviewTab(sellerId: userId), const SnapsTab()],
+                  children: [
+                    ShopTab(
+                      key: ValueKey('other_shop_${refreshTrigger.value}'),
+                      sellerId: userId,
+                    ),
+                    _buildShowsSection(colorScheme),
+                    ReviewTab(
+                      key: ValueKey('other_reviews_${refreshTrigger.value}'),
+                      sellerId: userId,
+                    ),
+                    SnapsTab(
+                      key: ValueKey('other_snaps_${refreshTrigger.value}'),
+                    ),
+                  ],
                 )),
 
                 SizedBoxWidget(height: 20),
               ],
             ),
           ),
-        );
-      }),
-    );
-  }
+        ),
+      );
+    }),
+  );
+}
 
   // Shows tab for the VIEWED seller (upcoming + previous), from the profile controller.
   Widget _buildShowsSection(ColorScheme colorScheme) {
@@ -317,7 +338,10 @@ class OtherUserProfileScreen extends StatelessWidget {
         decoration: isSelected ? TextDecoration.underline : null,
         decorationColor: colorScheme.primary,
         fontWeight: FontWeight.w600,
-        onPressed: () => _tabIndex.value = index,
+        onPressed: () {
+          _tabIndex.value = index;
+          refreshTrigger.value++;
+        },
       );
     });
   }

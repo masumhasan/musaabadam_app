@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:musaab_adam/core/services/api_favorite_service.dart';
 import 'package:musaab_adam/core/services/api_offer_service.dart';
 import 'package:musaab_adam/core/services/api_review_service.dart';
 import 'package:musaab_adam/core/services/product_service.dart';
@@ -65,12 +66,22 @@ class SingleProductController extends GetxController {
           _loadSellerProfile(p.sellerId),
           _loadSellerProducts(p.sellerId),
           _loadSellerReviews(p.sellerId),
+          _checkIfFavorited(productId),
         ]);
       }
     } catch (e) {
       debugPrint('Error loading single product details: $e');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> _checkIfFavorited(String productId) async {
+    try {
+      final list = await ApiFavoriteService.instance.list(page: 1);
+      isSaved.value = list.any((p) => p.id == productId);
+    } catch (_) {
+      isSaved.value = false;
     }
   }
 
@@ -136,16 +147,26 @@ class SingleProductController extends GetxController {
     return count.toString();
   }
 
-  void toggleSaveUI() {
-    isSaved.value = !isSaved.value;
-    Get.snackbar(
-      isSaved.value ? 'Saved' : 'Removed',
-      isSaved.value ? 'Product saved to your favorites (UI preview)' : 'Product removed from saved items',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.black.withValues(alpha: 0.8),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-    );
+  Future<void> toggleSaveUI() async {
+    final p = product.value;
+    if (p == null) return;
+    actionLoading.value = true;
+    try {
+      final favorited = await ApiFavoriteService.instance.toggle(p.id);
+      isSaved.value = favorited;
+      Get.snackbar(
+        isSaved.value ? 'Saved' : 'Removed',
+        isSaved.value ? 'Product saved to your favorites' : 'Product removed from saved items',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.black.withValues(alpha: 0.8),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to update save status', snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      actionLoading.value = false;
+    }
   }
 
   void shareProduct() {
