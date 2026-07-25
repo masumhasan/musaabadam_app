@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:musaab_adam/core/utils/app_constants.dart';
 import 'package:musaab_adam/core/widgets/cached_image_widget.dart';
 import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/data/models/notification/notification_model.dart';
@@ -68,7 +67,7 @@ class NotificationScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CachedImageWidget(
-              imageUrl: (n.actorAvatarUrl?.isNotEmpty ?? false) ? n.actorAvatarUrl! : Dummy.user2,
+              imageUrl: (n.actorAvatarUrl?.isNotEmpty ?? false) ? n.actorAvatarUrl! : "",
               borderRadius: 50,
               height: 38,
               width: 38,
