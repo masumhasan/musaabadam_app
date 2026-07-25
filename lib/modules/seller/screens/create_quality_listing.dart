@@ -454,20 +454,19 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
 
   Widget _buildTypeButton(String label, int index, ColorScheme colorScheme, {VoidCallback? onTap}) {
     final isSelected = controller.selectedListingType.value == index;
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12.h),
-          decoration: BoxDecoration(
-            color: isSelected ? colorScheme.primary : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(20.r),
-          ),
-          child: CustomText(
-            text: label,
-            fontColor: isSelected ? Colors.white : colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isSelected ? colorScheme.primary : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        child: CustomText(
+          text: label,
+          fontColor: isSelected ? Colors.white : colorScheme.onSurface,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
