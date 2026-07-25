@@ -93,18 +93,32 @@ class ApiAuthService {
   }
 
   Future<UserModel> updateProfile({
+    String? username,
     String? displayName,
     String? bio,
     String? location,
     String? avatarUrl,
   }) async {
     final response = await _dio.put(ApiConstants.myProfile, data: {
+      'username': ?username,
       'displayName': ?displayName,
       'bio': ?bio,
       'location': ?location,
       'avatarUrl': ?avatarUrl,
     });
     return UserModel.fromJson(response.data['data'] as Map<String, dynamic>);
+  }
+
+  Future<bool> checkUsernameAvailability(String username) async {
+    try {
+      final response = await _dio.get(
+        '/users/check-username',
+        queryParameters: {'username': username},
+      );
+      return response.data['data']['available'] == true;
+    } catch (_) {
+      return false;
+    }
   }
 
   // ─── Change Email (authenticated) ─────────────────────────────────────────

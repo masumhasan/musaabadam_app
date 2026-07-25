@@ -62,11 +62,107 @@ class UpdateProfileScreen extends GetView<UpdateProfileController> {
 
                 SizedBoxWidget(height: 20),
 
-                // Username — read-only label
-                _buildReadOnlyField(
-                  label: 'Username',
-                  value: '@${user?.username ?? ''}',
-                  colorScheme: colorScheme,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomText(
+                      text: 'Username',
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      fontColor: colorScheme.onSurface,
+                    ),
+                    SizedBoxWidget(height: 8),
+                    Obx(() {
+                      final isChecking = controller.isCheckingUsername.value;
+                      final isAvailable = controller.isUsernameAvailable.value;
+                      final errorStr = controller.usernameError.value;
+
+                      Widget? suffix;
+                      if (isChecking) {
+                        suffix = SizedBox(
+                          width: 16.w,
+                          height: 16.h,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: colorScheme.primary,
+                          ),
+                        );
+                      } else if (errorStr.isNotEmpty) {
+                        suffix = Icon(
+                          isAvailable ? Icons.check_circle_outline : Icons.error_outline,
+                          color: isAvailable ? Colors.green : Colors.red,
+                          size: 20.r,
+                        );
+                      }
+
+                      Color? borderColor;
+                      if (errorStr.isNotEmpty && !isChecking) {
+                        borderColor = isAvailable ? Colors.green.withValues(alpha: 0.5) : Colors.red.withValues(alpha: 0.5);
+                      }
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextField(
+                            controller: controller.usernameController,
+                            style: TextStyle(
+                              color: colorScheme.onSurface,
+                              fontSize: 14.sp,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Enter username',
+                              hintStyle: TextStyle(
+                                color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                fontSize: 14.sp,
+                              ),
+                              prefixText: '@',
+                              prefixStyle: TextStyle(
+                                color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              suffixIcon: suffix != null
+                                  ? Padding(
+                                      padding: EdgeInsets.all(12.w),
+                                      child: suffix,
+                                    )
+                                  : null,
+                              filled: true,
+                              fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: borderColor ?? colorScheme.outline.withValues(alpha: 0.2),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: borderColor ?? colorScheme.primary,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (errorStr.isNotEmpty) ...[
+                            SizedBoxWidget(height: 6),
+                            Padding(
+                              padding: EdgeInsets.only(left: 4.w),
+                              child: CustomText(
+                                text: errorStr,
+                                fontSize: 12.sp,
+                                fontColor: isChecking
+                                    ? colorScheme.outline
+                                    : (isAvailable ? Colors.green : Colors.red),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
+                      );
+                    }),
+                  ],
                 ),
 
                 SizedBoxWidget(height: 15),
