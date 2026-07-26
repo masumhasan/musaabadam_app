@@ -35,76 +35,88 @@ class PaymentMethodsScreen extends GetView<PaymentMethodsController> {
           ),
         ],
       ),
-      body: Obx(() {
-        if (controller.isLoading.value && controller.methods.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      body: RefreshIndicator(
+        onRefresh: controller.loadMethods,
+        child: Obx(() {
+          if (controller.isLoading.value && controller.methods.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        if (controller.hasError.value) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.credit_card_off_rounded, size: 64.sp, color: colorScheme.outline),
-                SizedBoxWidget(height: 16.h),
-                CustomText(
-                  text: 'Failed to load payment methods',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  fontColor: colorScheme.onSurface,
-                ),
-                SizedBoxWidget(height: 12.h),
-                TextButton(
-                  onPressed: controller.loadMethods,
-                  child: const Text('Try Again'),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return Column(
-          children: [
-            Expanded(
-              child: controller.methods.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 40.w),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.payment_rounded, size: 64.sp, color: colorScheme.outline),
-                            SizedBoxWidget(height: 16.h),
-                            CustomText(
-                              text: 'No payment methods yet',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              fontColor: colorScheme.onSurface,
-                            ),
-                            SizedBoxWidget(height: 8.h),
-                            CustomText(
-                              text: 'Add a credit or debit card to use during live auctions and checkouts.',
-                              fontSize: 14,
-                              fontColor: colorScheme.onSurfaceVariant,
-                              textAlignment: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-                      itemCount: controller.methods.length,
-                      itemBuilder: (context, index) {
-                        final m = controller.methods[index];
-                        return _buildCardItem(context, m, colorScheme);
-                      },
+          if (controller.hasError.value) {
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Container(
+                height: 500.h,
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.credit_card_off_rounded, size: 64.sp, color: colorScheme.outline),
+                    SizedBoxWidget(height: 16.h),
+                    CustomText(
+                      text: 'Failed to load payment methods',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontColor: colorScheme.onSurface,
                     ),
-            ),
-            _buildBottomBar(colorScheme),
-          ],
-        );
-      }),
+                    SizedBoxWidget(height: 12.h),
+                    TextButton(
+                      onPressed: controller.loadMethods,
+                      child: const Text('Try Again'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: controller.methods.isEmpty
+                    ? SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Container(
+                          height: 500.h,
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.symmetric(horizontal: 40.w),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.payment_rounded, size: 64.sp, color: colorScheme.outline),
+                              SizedBoxWidget(height: 16.h),
+                              CustomText(
+                                text: 'No payment methods yet',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                fontColor: colorScheme.onSurface,
+                              ),
+                              SizedBoxWidget(height: 8.h),
+                              CustomText(
+                                text: 'Add a credit or debit card to use during live auctions and checkouts.',
+                                fontSize: 14,
+                                fontColor: colorScheme.onSurfaceVariant,
+                                textAlignment: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                        itemCount: controller.methods.length,
+                        itemBuilder: (context, index) {
+                          final m = controller.methods[index];
+                          return _buildCardItem(context, m, colorScheme);
+                        },
+                      ),
+              ),
+              _buildBottomBar(colorScheme),
+            ],
+          );
+        }),
+      ),
     );
   }
 

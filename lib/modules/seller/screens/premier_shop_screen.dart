@@ -53,9 +53,12 @@ class PremierShopScreen extends GetView<PremierShopController> {
           );
         }
 
-        return SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-          child: Column(
+        return RefreshIndicator(
+          onRefresh: controller.loadPremierShopData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // --- STATUS BANNER CARD ---
@@ -100,10 +103,11 @@ class PremierShopScreen extends GetView<PremierShopController> {
               SizedBoxWidget(height: 30.h),
             ],
           ),
-        );
-      }),
-    );
-  }
+        ),
+      );
+    }),
+  );
+}
 
   Widget _buildStatusBanner(BuildContext context, ColorScheme colorScheme) {
     final isPremier = controller.isPremierShop;

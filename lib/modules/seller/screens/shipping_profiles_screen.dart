@@ -30,33 +30,41 @@ class ShippingProfilesScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      body: RefreshIndicator(
+        onRefresh: controller.loadProfiles,
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        if (controller.profiles.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.local_shipping_outlined, size: 64.sp, color: colorScheme.onSurface.withValues(alpha: 0.5)),
-                SizedBoxWidget(height: 16.h),
-                CustomText(
-                  text: 'No Shipping Profiles Found',
-                  fontSize: 16,
-                  fontColor: colorScheme.onSurface.withValues(alpha: 0.5),
+          if (controller.profiles.isEmpty) {
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Container(
+                height: 500.h,
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.local_shipping_outlined, size: 64.sp, color: colorScheme.onSurface.withValues(alpha: 0.5)),
+                    SizedBoxWidget(height: 16.h),
+                    CustomText(
+                      text: 'No Shipping Profiles Found',
+                      fontSize: 16,
+                      fontColor: colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        }
+              ),
+            );
+          }
 
-        return ListView.separated(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-          itemCount: controller.profiles.length,
-          separatorBuilder: (_, __) => SizedBoxWidget(height: 15.h),
-          itemBuilder: (context, index) {
+          return ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+            itemCount: controller.profiles.length,
+            separatorBuilder: (_, __) => SizedBoxWidget(height: 15.h),
+            itemBuilder: (context, index) {
             final profile = controller.profiles[index];
             return Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -92,7 +100,7 @@ class ShippingProfilesScreen extends StatelessWidget {
             );
           },
         );
-      }),
+      })),
       bottomNavigationBar: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
         child: CustomButton(

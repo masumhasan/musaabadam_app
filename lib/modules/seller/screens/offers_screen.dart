@@ -28,40 +28,48 @@ class OffersScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      body: RefreshIndicator(
+        onRefresh: controller.loadOffers,
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        if (controller.offers.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.percent, size: 64.sp, color: colorScheme.outline),
-                SizedBoxWidget(height: 16.h),
-                CustomText(
-                  text: 'No active offers',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  fontColor: colorScheme.onSurface,
+          if (controller.offers.isEmpty) {
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Container(
+                height: 500.h,
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.percent, size: 64.sp, color: colorScheme.outline),
+                    SizedBoxWidget(height: 16.h),
+                    CustomText(
+                      text: 'No active offers',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      fontColor: colorScheme.onSurface,
+                    ),
+                    SizedBoxWidget(height: 6.h),
+                    CustomText(
+                      text: 'Incoming buyer offers will appear here.',
+                      fontSize: 14,
+                      fontColor: colorScheme.onSurfaceVariant,
+                    ),
+                  ],
                 ),
-                SizedBoxWidget(height: 6.h),
-                CustomText(
-                  text: 'Incoming buyer offers will appear here.',
-                  fontSize: 14,
-                  fontColor: colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          );
-        }
+              ),
+            );
+          }
 
-        return ListView.separated(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-          itemCount: controller.offers.length,
-          separatorBuilder: (_, __) => SizedBoxWidget(height: 12.h),
-          itemBuilder: (context, index) {
+          return ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+            itemCount: controller.offers.length,
+            separatorBuilder: (_, __) => SizedBoxWidget(height: 12.h),
+            itemBuilder: (context, index) {
             final offer = controller.offers[index];
             return Card(
               elevation: 0,
@@ -151,7 +159,7 @@ class OffersScreen extends StatelessWidget {
             );
           },
         );
-      }),
+      })),
     );
   }
 }

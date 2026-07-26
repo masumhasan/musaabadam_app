@@ -41,34 +41,43 @@ class CategoriesScreen extends GetView<CategoriesController> {
 
             // Category grid
             Expanded(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (controller.categories.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No categories yet.',
-                      style: TextStyle(color: theme.colorScheme.outline),
-                    ),
-                  );
-                }
-                return GridView.builder(
-                  itemCount: controller.categories.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisExtent: 120,
-                    mainAxisSpacing: 8,
-                  ),
-                  itemBuilder: (context, i) {
-                    final cat = controller.categories[i];
-                    return CategoryItem(
-                      image: cat.imageUrl ?? '',
-                      itemName: cat.name,
+              child: RefreshIndicator(
+                onRefresh: controller.loadCategories,
+                child: Obx(() {
+                  if (controller.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (controller.categories.isEmpty) {
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        height: 300.h,
+                        alignment: Alignment.center,
+                        child: Text(
+                          'No categories yet.',
+                          style: TextStyle(color: theme.colorScheme.outline),
+                        ),
+                      ),
                     );
-                  },
-                );
-              }),
+                  }
+                  return GridView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: controller.categories.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      mainAxisExtent: 120,
+                      mainAxisSpacing: 8,
+                    ),
+                    itemBuilder: (context, i) {
+                      final cat = controller.categories[i];
+                      return CategoryItem(
+                        image: cat.imageUrl ?? '',
+                        itemName: cat.name,
+                      );
+                    },
+                  );
+                }),
+              ),
             ),
           ],
         ),

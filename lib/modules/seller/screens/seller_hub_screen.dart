@@ -24,9 +24,12 @@ class SellerHubScreen extends StatelessWidget {
         title: CustomText(text: AppStrings.sellerHub, fontWeight: FontWeight.w700),
         centerTitle: true,
         ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
-        child: Column(
+      body: RefreshIndicator(
+        onRefresh: controller.loadUpcomingShowsCount,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children:[
             SizedBoxWidget(height: 20.h),
@@ -135,6 +138,7 @@ class SellerHubScreen extends StatelessWidget {
           ],
         ),
       ),
+     ),
     );
   }
 

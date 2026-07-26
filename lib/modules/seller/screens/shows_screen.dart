@@ -56,35 +56,45 @@ class ShowsScreen extends GetView<ShowsController> {
               ],
             ),
 
-            // Content
             Expanded(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final items = controller.currentList;
-                if (items.isEmpty) {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(Assets.images.appLogo.keyName, width: 180.w),
-                      SizedBoxWidget(height: 20),
-                      CustomText(
-                        text: AppStrings.nothingHere,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        fontColor: colorScheme.onSurface,
+              child: RefreshIndicator(
+                onRefresh: controller.loadShows,
+                child: Obx(() {
+                  if (controller.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final items = controller.currentList;
+                  if (items.isEmpty) {
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        height: 400.h,
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(Assets.images.appLogo.keyName, width: 180.w),
+                            SizedBoxWidget(height: 20),
+                            CustomText(
+                              text: AppStrings.nothingHere,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              fontColor: colorScheme.onSurface,
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
+                    );
+                  }
+                  return ListView.separated(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.only(top: 12.h, bottom: 80.h),
+                    itemCount: items.length,
+                    separatorBuilder: (_, index) => Divider(color: colorScheme.outline.withValues(alpha: 0.15), height: 1),
+                    itemBuilder: (context, index) => _ShowTile(show: items[index], colorScheme: colorScheme),
                   );
-                }
-                return ListView.separated(
-                  padding: EdgeInsets.only(top: 12.h, bottom: 80.h),
-                  itemCount: items.length,
-                  separatorBuilder: (_, index) => Divider(color: colorScheme.outline.withValues(alpha: 0.15), height: 1),
-                  itemBuilder: (context, index) => _ShowTile(show: items[index], colorScheme: colorScheme),
-                );
-              }),
+                }),
+              ),
             ),
           ],
         ),

@@ -81,28 +81,36 @@ class SellerInventoryScreen extends GetView<SellerInventoryController> {
             )),
             SizedBoxWidget(height: 10.h),
 
-            // List
             Expanded(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final items = controller.filteredProducts;
-                if (items.isEmpty) {
-                  return Center(
-                    child: CustomText(
-                      text: 'No ${controller.selectedTabIndex.value == 0 ? 'active' : controller.selectedTabIndex.value == 1 ? 'draft' : 'inactive'} products.',
-                      fontSize: 14,
-                      fontColor: colorScheme.outline,
-                    ),
+              child: RefreshIndicator(
+                onRefresh: controller.loadProducts,
+                child: Obx(() {
+                  if (controller.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final items = controller.filteredProducts;
+                  if (items.isEmpty) {
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        height: 350.h,
+                        alignment: Alignment.center,
+                        child: CustomText(
+                          text: 'No ${controller.selectedTabIndex.value == 0 ? 'active' : controller.selectedTabIndex.value == 1 ? 'draft' : 'inactive'} products.',
+                          fontSize: 14,
+                          fontColor: colorScheme.outline,
+                        ),
+                      ),
+                    );
+                  }
+                  return ListView.separated(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: items.length,
+                    separatorBuilder: (context, index) => Divider(color: colorScheme.outline.withValues(alpha: 0.15), height: 1),
+                    itemBuilder: (context, index) => _ProductTile(product: items[index]),
                   );
-                }
-                return ListView.separated(
-                  itemCount: items.length,
-                  separatorBuilder: (context, index) => Divider(color: colorScheme.outline.withValues(alpha: 0.15), height: 1),
-                  itemBuilder: (context, index) => _ProductTile(product: items[index]),
-                );
-              }),
+                }),
+              ),
             ),
           ],
         ),

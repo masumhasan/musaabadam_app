@@ -23,50 +23,59 @@ class AddressesScreen extends GetView<AddressesController> {
         ),
         title: CustomText(text: 'Addresses', fontWeight: FontWeight.w600, translate: false),
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      body: RefreshIndicator(
+        onRefresh: controller.retry,
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        if (controller.hasError.value) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline_rounded, size: 48, color: colorScheme.onSurface.withValues(alpha: 0.3)),
-                const SizedBox(height: 12),
-                CustomText(text: 'Failed to load addresses.', translate: false, fontColor: colorScheme.onSurface.withValues(alpha: 0.5)),
-                const SizedBox(height: 12),
-                TextButton(onPressed: controller.retry, child: const Text('Retry')),
-              ],
-            ),
+          if (controller.hasError.value) {
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Container(
+                height: 500.h,
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.error_outline_rounded, size: 48, color: colorScheme.onSurface.withValues(alpha: 0.3)),
+                    const SizedBox(height: 12),
+                    CustomText(text: 'Failed to load addresses.', translate: false, fontColor: colorScheme.onSurface.withValues(alpha: 0.5)),
+                    const SizedBox(height: 12),
+                    TextButton(onPressed: controller.retry, child: const Text('Retry')),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+            children: [
+              _AddressSection(
+                title: 'Shipping Addresses',
+                icon: Icons.local_shipping_outlined,
+                addresses: controller.shippingAddresses,
+                type: 'shipping',
+                controller: controller,
+                colorScheme: colorScheme,
+              ),
+              SizedBox(height: 24.h),
+              _AddressSection(
+                title: 'Pickup Addresses',
+                icon: Icons.storefront_outlined,
+                addresses: controller.pickupAddresses,
+                type: 'pickup',
+                controller: controller,
+                colorScheme: colorScheme,
+              ),
+              SizedBox(height: 32.h),
+            ],
           );
-        }
-
-        return ListView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-          children: [
-            _AddressSection(
-              title: 'Shipping Addresses',
-              icon: Icons.local_shipping_outlined,
-              addresses: controller.shippingAddresses,
-              type: 'shipping',
-              controller: controller,
-              colorScheme: colorScheme,
-            ),
-            SizedBox(height: 24.h),
-            _AddressSection(
-              title: 'Pickup Addresses',
-              icon: Icons.storefront_outlined,
-              addresses: controller.pickupAddresses,
-              type: 'pickup',
-              controller: controller,
-              colorScheme: colorScheme,
-            ),
-            SizedBox(height: 32.h),
-          ],
-        );
-      }),
+        }),
+      ),
     );
   }
 }
