@@ -600,7 +600,7 @@ class AppStrings {
   static const String wellLitSpace = 'Make sure you’re in a well-lit space.';
   static const String imReady = 'I’m Ready';
   static const String needsLabel = 'Needs Label';
-  static const String availableForPayout = '£0 available for payout';
+  static const String availableForPayout = 'Available for payout';
   static const String notEligible = 'Not eligible for early payout';
   static const String nothingHere = 'There’s nothing here at the moment!';
   static const String soldFor = 'Sold for: ';

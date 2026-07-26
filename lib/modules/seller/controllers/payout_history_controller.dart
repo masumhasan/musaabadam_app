@@ -44,7 +44,7 @@ class PayoutHistoryController extends GetxController {
     hasError.value = false;
 
     try {
-      final list = await ApiPaymentService.instance.listPayouts(page: _currentPage);
+      final list = await ApiPaymentService.instance.getWalletLedger(page: _currentPage, limit: 20);
       if (refresh) {
         payouts.assignAll(list);
       } else {

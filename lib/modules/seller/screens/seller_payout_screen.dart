@@ -63,6 +63,8 @@ class SellerPayoutScreen extends GetView<SellerPayoutController> {
                   Divider(color: colorScheme.outline.withValues(alpha: 0.3)),
                   _buildInfoRow(AppStrings.processing, value: '£${controller.pending.toStringAsFixed(2)}'),
                   Divider(color: colorScheme.outline.withValues(alpha: 0.3)),
+                  _buildInfoRow('Lifetime Tips', value: '£${(controller.wallet.value?.tipsAmount ?? 0.0).toStringAsFixed(2)}'),
+                  Divider(color: colorScheme.outline.withValues(alpha: 0.3)),
                   _buildInfoRow(AppStrings.notEligible, showDivider: false),
                 ],
               )),

@@ -10,21 +10,6 @@ import 'package:musaab_adam/modules/seller/controllers/payout_history_controller
 class PayoutHistoryScreen extends StatelessWidget {
   const PayoutHistoryScreen({super.key});
 
-  Color _getStatusColor(String status, ColorScheme cs) {
-    switch (status.toLowerCase()) {
-      case 'paid':
-        return Colors.green;
-      case 'processing':
-        return cs.primary;
-      case 'pending':
-        return Colors.amber;
-      case 'failed':
-        return cs.error;
-      default:
-        return cs.outline;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -44,7 +29,7 @@ class PayoutHistoryScreen extends StatelessWidget {
         forceMaterialTransparency: true,
         leading: BackButton(color: colorScheme.onSurface),
         title: CustomText(
-          text: 'Payouts History',
+          text: 'Transactions History',
           fontSize: 18.sp,
           fontWeight: FontWeight.w700,
           fontColor: colorScheme.onSurface,
@@ -119,14 +104,17 @@ class PayoutHistoryScreen extends StatelessWidget {
                 );
               }
 
-              final p = list[index];
-              final amount = (p['amount'] is num) ? (p['amount'] as num).toDouble() : 0.0;
-              final status = (p['status']?.toString() ?? 'pending').toLowerCase();
-              final provider = p['provider']?.toString() ?? '';
+              final entry = list[index];
+              final amount = (entry['amount'] as num?)?.toDouble() ?? 0.0;
+              final type = entry['type'] ?? 'transaction';
+              final status = entry['status'] ?? 'completed';
+              final isPositive = amount > 0;
+              final amountText = '${isPositive ? '+' : ''}£${amount.toStringAsFixed(2)}';
+              final displayType = type.toString().replaceAll('_', ' ').toUpperCase();
               
               DateTime? createdAt;
               try {
-                createdAt = DateTime.parse(p['createdAt'].toString());
+                createdAt = DateTime.parse(entry['createdAt'].toString());
               } catch (_) {}
               final dateStr = createdAt != null
                   ? DateFormat('yMMMd').add_jm().format(createdAt)
@@ -142,27 +130,28 @@ class PayoutHistoryScreen extends StatelessWidget {
                         children: [
                           Row(
                             children: [
+                              CustomText(
+                                text: displayType,
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.bold,
+                                fontColor: colorScheme.onSurface,
+                              ),
+                              SizedBoxWidget(width: 8.w),
                               Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                                 decoration: BoxDecoration(
-                                  color: _getStatusColor(status, colorScheme).withValues(alpha: 0.15),
+                                  color: (status == 'completed' || status == 'succeeded')
+                                      ? Colors.green.withValues(alpha: 0.15)
+                                      : Colors.orange.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(4.r),
                                 ),
                                 child: CustomText(
                                   text: status.toUpperCase(),
-                                  fontSize: 10.sp,
+                                  fontSize: 9.sp,
                                   fontWeight: FontWeight.bold,
-                                  fontColor: _getStatusColor(status, colorScheme),
+                                  fontColor: (status == 'completed' || status == 'succeeded') ? Colors.green : Colors.orange,
                                 ),
                               ),
-                              if (provider.isNotEmpty) ...[
-                                SizedBoxWidget(width: 8.w),
-                                CustomText(
-                                  text: provider.toUpperCase(),
-                                  fontSize: 10.sp,
-                                  fontColor: colorScheme.outline,
-                                ),
-                              ],
                             ],
                           ),
                           SizedBoxWidget(height: 6.h),
@@ -176,10 +165,10 @@ class PayoutHistoryScreen extends StatelessWidget {
                       ),
                     ),
                     CustomText(
-                      text: '£${amount.toStringAsFixed(2)}',
-                      fontSize: 16.sp,
+                      text: amountText,
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.w700,
-                      fontColor: colorScheme.onSurface,
+                      fontColor: isPositive ? Colors.green : colorScheme.onSurface,
                     ),
                   ],
                 ),

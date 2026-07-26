@@ -3,6 +3,8 @@ class WalletModel {
   final double pending;
   final double lifetimeEarned;
   final double lifetimePaidOut;
+  final double tipsAmount;
+  final int tipsCount;
   final String currency;
 
   const WalletModel({
@@ -10,6 +12,8 @@ class WalletModel {
     this.pending = 0,
     this.lifetimeEarned = 0,
     this.lifetimePaidOut = 0,
+    this.tipsAmount = 0,
+    this.tipsCount = 0,
     this.currency = 'gbp',
   });
 
@@ -18,6 +22,8 @@ class WalletModel {
         pending: _d(json['pending']),
         lifetimeEarned: _d(json['lifetimeEarned']),
         lifetimePaidOut: _d(json['lifetimePaidOut']),
+        tipsAmount: _d(json['tipsAmount']),
+        tipsCount: json['tipsCount'] as int? ?? 0,
         currency: json['currency']?.toString() ?? 'gbp',
       );
 

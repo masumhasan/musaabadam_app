@@ -99,13 +99,30 @@ class WalletScreen extends StatelessWidget {
                             children: [
                               CustomText(
                                 text: 'Pending Balance',
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontColor: Colors.white.withValues(alpha: 0.85),
                               ),
                               SizedBoxWidget(height: 2.h),
                               CustomText(
                                 text: '£${pending.toStringAsFixed(2)}',
-                                fontSize: 16,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                fontColor: Colors.white,
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CustomText(
+                                text: 'Lifetime Tips',
+                                fontSize: 11,
+                                fontColor: Colors.white.withValues(alpha: 0.85),
+                              ),
+                              SizedBoxWidget(height: 2.h),
+                              CustomText(
+                                text: '£${(_controller.wallet.value?.tipsAmount ?? 0.0).toStringAsFixed(2)}',
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 fontColor: Colors.white,
                               ),
@@ -116,13 +133,13 @@ class WalletScreen extends StatelessWidget {
                             children: [
                               CustomText(
                                 text: 'Lifetime Earned',
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontColor: Colors.white.withValues(alpha: 0.85),
                               ),
                               SizedBoxWidget(height: 2.h),
                               CustomText(
                                 text: '£${lifetimeEarned.toStringAsFixed(2)}',
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 fontColor: Colors.white,
                               ),
@@ -188,7 +205,6 @@ class WalletScreen extends StatelessWidget {
                       final entry = _controller.ledgerEntries[index];
                       final amount = (entry['amount'] as num?)?.toDouble() ?? 0.0;
                       final type = entry['type'] ?? 'transaction';
-                      final bucket = entry['bucket'] ?? 'available';
                       final status = entry['status'] ?? 'completed';
                       final createdAt = entry['createdAt']?.toString().split('T')[0] ?? '';
 
