@@ -66,17 +66,33 @@ class StartShowController extends GetxController {
       final joinResult = await StreamService.instance.joinStream(_streamId!);
 
       // 4. Initialize StreamVideo SDK
-      if (StreamVideo.isInitialized()) StreamVideo.reset();
-      StreamVideo(
-        joinResult.apiKey,
-        user: User.regular(
-          userId: user.id,
-          name: sellerName.value,
-          image: sellerAvatarUrl.value.isNotEmpty ? sellerAvatarUrl.value : null,
-        ),
-        userToken: joinResult.token,
-        failIfSingletonExists: false,
-      );
+      if (StreamVideo.isInitialized()) {
+        final currentStreamVideoUser = StreamVideo.instance.currentUser;
+        if (currentStreamVideoUser.id != user.id) {
+          await StreamVideo.reset();
+          StreamVideo(
+            joinResult.apiKey,
+            user: User.regular(
+              userId: user.id,
+              name: sellerName.value,
+              image: sellerAvatarUrl.value.isNotEmpty ? sellerAvatarUrl.value : null,
+            ),
+            userToken: joinResult.token,
+            failIfSingletonExists: false,
+          );
+        }
+      } else {
+        StreamVideo(
+          joinResult.apiKey,
+          user: User.regular(
+            userId: user.id,
+            name: sellerName.value,
+            image: sellerAvatarUrl.value.isNotEmpty ? sellerAvatarUrl.value : null,
+          ),
+          userToken: joinResult.token,
+          failIfSingletonExists: false,
+        );
+      }
 
       // 5. Create call reference
       _call = StreamVideo.instance.makeCall(
@@ -121,8 +137,8 @@ class StartShowController extends GetxController {
   }
 
   Future<void> endShow() async {
-    await _leaveAndCleanUp();
     Get.back();
+    _leaveAndCleanUp();
   }
 
   Future<void> _leaveAndCleanUp() async {
@@ -135,9 +151,6 @@ class StartShowController extends GetxController {
       } catch (_) {}
       _streamId = null;
     }
-    try {
-      if (StreamVideo.isInitialized()) StreamVideo.reset();
-    } catch (_) {}
   }
 
   void _handleError(String msg) {

@@ -47,18 +47,34 @@ class RehearsalController extends GetxController {
       // 3. Join as host → get token, callId, apiKey
       final joinResult = await StreamService.instance.joinStream(stream.id);
 
-      // 4. Initialize StreamVideo SDK (reset first if already initialized from a previous session)
-      if (StreamVideo.isInitialized()) StreamVideo.reset();
-      StreamVideo(
-        joinResult.apiKey,
-        user: User.regular(
-          userId: user.id,
-          name: sellerName.value,
-          image: sellerAvatarUrl.value.isNotEmpty ? sellerAvatarUrl.value : null,
-        ),
-        userToken: joinResult.token,
-        failIfSingletonExists: false,
-      );
+      // 4. Initialize StreamVideo SDK (reset first if already initialized from a previous session and user changed)
+      if (StreamVideo.isInitialized()) {
+        final currentStreamVideoUser = StreamVideo.instance.currentUser;
+        if (currentStreamVideoUser.id != user.id) {
+          await StreamVideo.reset();
+          StreamVideo(
+            joinResult.apiKey,
+            user: User.regular(
+              userId: user.id,
+              name: sellerName.value,
+              image: sellerAvatarUrl.value.isNotEmpty ? sellerAvatarUrl.value : null,
+            ),
+            userToken: joinResult.token,
+            failIfSingletonExists: false,
+          );
+        }
+      } else {
+        StreamVideo(
+          joinResult.apiKey,
+          user: User.regular(
+            userId: user.id,
+            name: sellerName.value,
+            image: sellerAvatarUrl.value.isNotEmpty ? sellerAvatarUrl.value : null,
+          ),
+          userToken: joinResult.token,
+          failIfSingletonExists: false,
+        );
+      }
 
       // 5. Create call reference — StreamCallContainer handles join() internally
       _call = StreamVideo.instance.makeCall(
@@ -90,8 +106,8 @@ class RehearsalController extends GetxController {
   }
 
   Future<void> endRehearsal() async {
-    await _leaveAndCleanUp();
     Get.back();
+    _leaveAndCleanUp();
   }
 
   Future<void> _leaveAndCleanUp() async {
@@ -104,9 +120,6 @@ class RehearsalController extends GetxController {
       } catch (_) {}
       _streamId = null;
     }
-    try {
-      if (StreamVideo.isInitialized()) StreamVideo.reset();
-    } catch (_) {}
   }
 
   void _handleError(String msg) {

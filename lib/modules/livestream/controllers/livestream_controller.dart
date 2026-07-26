@@ -162,7 +162,6 @@ class LivestreamController extends GetxController {
 
   void _leaveCall() {
     try { _sdkCall?.leave(); } catch (_) {}
-    try { if (StreamVideo.isInitialized()) StreamVideo.reset(); } catch (_) {}
   }
 
   /// Explicitly ends the stream (for host only). Ends on backend, leaves call, and pops.
@@ -208,17 +207,33 @@ class LivestreamController extends GetxController {
     final currentUser = Get.find<AuthController>().currentUser.value;
     if (currentUser == null) return;
 
-    if (StreamVideo.isInitialized()) StreamVideo.reset();
-    StreamVideo(
-      result.apiKey,
-      user: User.regular(
-        userId: currentUser.id,
-        name: currentUser.displayName ?? currentUser.username,
-        image: currentUser.avatarUrl,
-      ),
-      userToken: result.token,
-      failIfSingletonExists: false,
-    );
+    if (StreamVideo.isInitialized()) {
+      final currentStreamVideoUser = StreamVideo.instance.currentUser;
+      if (currentStreamVideoUser.id != currentUser.id) {
+        await StreamVideo.reset();
+        StreamVideo(
+          result.apiKey,
+          user: User.regular(
+            userId: currentUser.id,
+            name: currentUser.displayName ?? currentUser.username,
+            image: currentUser.avatarUrl,
+          ),
+          userToken: result.token,
+          failIfSingletonExists: false,
+        );
+      }
+    } else {
+      StreamVideo(
+        result.apiKey,
+        user: User.regular(
+          userId: currentUser.id,
+          name: currentUser.displayName ?? currentUser.username,
+          image: currentUser.avatarUrl,
+        ),
+        userToken: result.token,
+        failIfSingletonExists: false,
+      );
+    }
 
     _sdkCall = StreamVideo.instance.makeCall(
       callType: StreamCallType.fromString(result.callType),

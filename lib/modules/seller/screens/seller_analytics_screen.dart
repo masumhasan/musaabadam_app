@@ -58,6 +58,8 @@ class SellerAnalyticsScreen extends GetView<SellerAnalyticsController> {
         final activeProducts = overview['activeProducts'] as int? ?? 0;
         final totalStreams = streams['totalStreams'] as int? ?? 0;
         final peakViewers = streams['peakViewers'] as int? ?? 0;
+        final tipsAmount = (overview['tipsAmount'] as num?)?.toDouble() ?? 0.0;
+        final tipsCount = overview['tipsCount'] as int? ?? 0;
 
         return RefreshIndicator(
           onRefresh: controller.load,
@@ -138,15 +140,41 @@ class SellerAnalyticsScreen extends GetView<SellerAnalyticsController> {
                       Icons.trending_up_rounded,
                       Colors.blue,
                     ),
+                    _buildMetricCard(
+                      context,
+                      'Tips Earned',
+                      '\$${tipsAmount.toStringAsFixed(2)}',
+                      Icons.volunteer_activism_rounded,
+                      Colors.teal,
+                    ),
+                    _buildMetricCard(
+                      context,
+                      'Tips Count',
+                      '$tipsCount tips',
+                      Icons.payments_outlined,
+                      Colors.indigo,
+                    ),
                   ],
                 ),
                 SizedBox(height: 25.h),
 
-                // Revenue Trend Section
-                CustomText(
-                  text: 'Revenue Trend',
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
+                // Revenue & Tips Trend Section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CustomText(
+                      text: 'Revenue & Tips Trend',
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    Row(
+                      children: [
+                        _buildLegendItem('Orders', AppColors.orange),
+                        SizedBox(width: 12.w),
+                        _buildLegendItem('Tips', Colors.teal),
+                      ],
+                    ),
+                  ],
                 ),
                 SizedBox(height: 16.h),
 
@@ -257,13 +285,17 @@ class SellerAnalyticsScreen extends GetView<SellerAnalyticsController> {
       );
     }
 
-    // Prepare chart spots
-    final List<FlSpot> spots = [];
+    // Prepare chart spots for both series
+    final List<FlSpot> revenueSpots = [];
+    final List<FlSpot> tipsSpots = [];
     double maxVal = 0.0;
     for (int i = 0; i < trend.length; i++) {
-      final val = (trend[i]['revenue'] as num?)?.toDouble() ?? 0.0;
-      if (val > maxVal) maxVal = val;
-      spots.add(FlSpot(i.toDouble(), val));
+      final rev = (trend[i]['revenue'] as num?)?.toDouble() ?? 0.0;
+      final tips = (trend[i]['tipsAmount'] as num?)?.toDouble() ?? 0.0;
+      if (rev > maxVal) maxVal = rev;
+      if (tips > maxVal) maxVal = tips;
+      revenueSpots.add(FlSpot(i.toDouble(), rev));
+      tipsSpots.add(FlSpot(i.toDouble(), tips));
     }
 
     // Avoid chart zero scaling errors
@@ -334,7 +366,7 @@ class SellerAnalyticsScreen extends GetView<SellerAnalyticsController> {
           maxY: maxVal * 1.15,
           lineBarsData: [
             LineChartBarData(
-              spots: spots,
+              spots: revenueSpots,
               isCurved: true,
               color: AppColors.orange,
               barWidth: 3.w,
@@ -346,6 +378,25 @@ class SellerAnalyticsScreen extends GetView<SellerAnalyticsController> {
                   colors: [
                     AppColors.orange.withValues(alpha: 0.25),
                     AppColors.orange.withValues(alpha: 0.01),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+            LineChartBarData(
+              spots: tipsSpots,
+              isCurved: true,
+              color: Colors.teal,
+              barWidth: 3.w,
+              isStrokeCapRound: true,
+              dotData: const FlDotData(show: false),
+              belowBarData: BarAreaData(
+                show: true,
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.teal.withValues(alpha: 0.25),
+                    Colors.teal.withValues(alpha: 0.01),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -387,6 +438,8 @@ class SellerAnalyticsScreen extends GetView<SellerAnalyticsController> {
           final dateStr = item['_id'].toString();
           final rev = (item['revenue'] as num?)?.toDouble() ?? 0.0;
           final ord = item['orders'] as int? ?? 0;
+          final tipsAmt = (item['tipsAmount'] as num?)?.toDouble() ?? 0.0;
+          final tipsCnt = item['tipsCount'] as int? ?? 0;
 
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -407,19 +460,63 @@ class SellerAnalyticsScreen extends GetView<SellerAnalyticsController> {
                       fontSize: 12.sp,
                       fontColor: colorScheme.outline,
                     ),
+                    if (tipsCnt > 0) ...[
+                      SizedBox(height: 2.h),
+                      CustomText(
+                        text: '$tipsCnt tip${tipsCnt == 1 ? '' : 's'} received',
+                        fontSize: 12.sp,
+                        fontColor: Colors.teal,
+                      ),
+                    ],
                   ],
                 ),
-                CustomText(
-                  text: '\$${rev.toStringAsFixed(2)}',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16.sp,
-                  fontColor: AppColors.orange,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    CustomText(
+                      text: '\$${rev.toStringAsFixed(2)}',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16.sp,
+                      fontColor: AppColors.orange,
+                    ),
+                    if (tipsAmt > 0.0) ...[
+                      SizedBox(height: 2.h),
+                      CustomText(
+                        text: '+\$${tipsAmt.toStringAsFixed(2)} tips',
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                        fontColor: Colors.teal,
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
           );
         },
       ),
+    );
+  }
+
+  Widget _buildLegendItem(String label, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 8.w,
+          height: 8.h,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        SizedBox(width: 4.w),
+        CustomText(
+          text: label,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w600,
+          fontColor: Colors.grey[600],
+        ),
+      ],
     );
   }
 
