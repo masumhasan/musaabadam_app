@@ -37,13 +37,155 @@ class StartAuctionScreen extends GetView<StartAuctionController> {
             _PinnedProductCard(controller: controller, colorScheme: colorScheme),
             SizedBoxWidget(height: 24.h),
 
-            CustomText(text: 'Stream Title', fontWeight: FontWeight.w700),
-            SizedBoxWidget(height: 8.h),
+            // Stream Title input (CustomTextField handles its own label internally)
             CustomTextField(
               label: 'Stream Title',
               hintText: 'Name your auction stream',
               controller: controller.titleController,
             ),
+            SizedBoxWidget(height: 20.h),
+
+            // Stream Description input
+            CustomTextField(
+              label: 'Stream Description (Optional)',
+              hintText: 'Describe your stream to your viewers...',
+              controller: controller.descriptionController,
+              maxLines: 3,
+            ),
+            SizedBoxWidget(height: 20.h),
+
+            // Stream Cover Image Section
+            CustomText(
+              text: 'Stream Cover Image (Optional)',
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              fontColor: colorScheme.onSurface,
+            ),
+            SizedBoxWidget(height: 8.h),
+            Obx(() {
+              final thumbUrl = controller.thumbnailUrl.value;
+              final isUploading = controller.isLoading.value && thumbUrl.isEmpty;
+
+              return GestureDetector(
+                onTap: controller.isLoading.value ? null : controller.pickThumbnail,
+                child: Container(
+                  width: double.infinity,
+                  height: 160.h,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(14.r),
+                    border: Border.all(
+                      color: colorScheme.outline.withValues(alpha: 0.2),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14.r),
+                    child: thumbUrl.isNotEmpty
+                        ? Stack(
+                            children: [
+                              Image.network(
+                                thumbUrl,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: colorScheme.surfaceContainerHighest,
+                                  child: Icon(Icons.broken_image_outlined,
+                                      color: colorScheme.error, size: 40.sp),
+                                ),
+                              ),
+                              // Bottom edit bar
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                child: Container(
+                                  color: Colors.black.withValues(alpha: 0.5),
+                                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.edit, color: Colors.white, size: 16.sp),
+                                      SizedBoxWidget(width: 6.w),
+                                      CustomText(
+                                        text: 'Change Cover Photo',
+                                        fontColor: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // Clear button
+                              Positioned(
+                                top: 8.h,
+                                right: 8.w,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    controller.thumbnailUrl.value = '';
+                                  },
+                                  child: CircleAvatar(
+                                    radius: 14.r,
+                                    backgroundColor: Colors.black.withValues(alpha: 0.5),
+                                    child: Icon(Icons.close, color: Colors.white, size: 16.sp),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : isUploading
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 24.w,
+                                      height: 24.w,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: AppColors.orange,
+                                      ),
+                                    ),
+                                    SizedBoxWidget(height: 10.h),
+                                    CustomText(
+                                      text: 'Uploading thumbnail...',
+                                      fontSize: 12,
+                                      fontColor: colorScheme.outline,
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.add_photo_alternate_outlined,
+                                      color: AppColors.orange,
+                                      size: 32.sp,
+                                    ),
+                                    SizedBoxWidget(height: 8.h),
+                                    CustomText(
+                                      text: 'Upload Cover Photo',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                      fontColor: colorScheme.onSurface,
+                                    ),
+                                    SizedBoxWidget(height: 4.h),
+                                    CustomText(
+                                      text: 'Recommended: JPG or PNG format',
+                                      fontSize: 11,
+                                      fontColor: colorScheme.outline,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                  ),
+                ),
+              );
+            }),
             SizedBoxWidget(height: 32.h),
 
             // Info banner
@@ -73,7 +215,7 @@ class StartAuctionScreen extends GetView<StartAuctionController> {
             SizedBoxWidget(height: 32.h),
 
             Obx(() => CustomButton(
-              label: controller.isLoading.value ? 'Starting…' : 'Start Auction Now',
+              label: controller.isLoading.value && controller.thumbnailUrl.value.isNotEmpty ? 'Starting…' : 'Start Auction Now',
               buttonWidth: double.infinity,
               backgroundColor: AppColors.orange,
               textColor: Colors.white,
@@ -113,7 +255,7 @@ class _PinnedProductCard extends StatelessWidget {
                     width: 70.w,
                     height: 70.w,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _placeholder(colorScheme),
+                    errorBuilder: (context, error, stackTrace) => _placeholder(colorScheme),
                   )
                 : _placeholder(colorScheme),
           ),
