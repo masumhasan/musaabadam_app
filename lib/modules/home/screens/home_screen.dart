@@ -70,8 +70,6 @@ class HomeScreen extends GetView<MainNavController> {
                   ),
                 ),
                 _categoryItems(),
-                if (roleService.getUpdatedRole() == Role.buyer)
-                  _buildPromoCard(theme, homeCtrl),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 15.w),
                   child: CustomText(
@@ -82,6 +80,10 @@ class HomeScreen extends GetView<MainNavController> {
                 SizedBoxWidget(height: 8.h),
                 _feedChips(theme, homeCtrl),
                 SizedBoxWidget(height: 15.h),
+                if (roleService.getUpdatedRole() == Role.buyer && homeCtrl.liveStreams.isNotEmpty) ...[
+                  _buildPromoCard(theme, homeCtrl),
+                  SizedBoxWidget(height: 15.h),
+                ],
               ],
             ),
           ),
@@ -200,46 +202,78 @@ class HomeScreen extends GetView<MainNavController> {
     actions: actionButtons(context),
   );
 
-  Widget _buildPromoCard(ThemeData theme, HomeScreenController homeCtrl) => Container(
-    height: 180.h,
-    margin: EdgeInsets.all(16.w),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(24.r),
-      image: DecorationImage(
-        image: NetworkImage(Dummy.cover1),
-        fit: BoxFit.cover,
-      ),
-    ),
-    child: Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24.r),
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.surface.withValues(alpha: 0.6),
-            Colors.transparent,
-          ],
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CustomText(
-            text: 'Bidsrush Wonderland',
-            fontColor: Colors.white,
-            fontWeight: FontWeight.bold,
+  Widget _buildPromoCard(ThemeData theme, HomeScreenController homeCtrl) {
+    if (homeCtrl.liveStreams.isEmpty) return const SizedBox.shrink();
+    final firstStream = homeCtrl.liveStreams.first;
+    final bgImage = (firstStream.thumbnailUrl != null && firstStream.thumbnailUrl!.isNotEmpty)
+        ? NetworkImage(firstStream.thumbnailUrl!)
+        : const NetworkImage(Dummy.cover1);
+
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.livestreamScreen, arguments: firstStream.id),
+      child: Container(
+        height: 180.h,
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24.r),
+          image: DecorationImage(
+            image: bgImage,
+            fit: BoxFit.cover,
           ),
-          Row(
+        ),
+        child: Container(
+          padding: EdgeInsets.all(20.w),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24.r),
+            gradient: LinearGradient(
+              colors: [
+                theme.colorScheme.surface.withValues(alpha: 0.6),
+                Colors.transparent,
+              ],
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.live_tv, color: Colors.white),
-              CustomText(text: homeCtrl.liveShowCountText, fontColor: Colors.white),
+              CustomText(
+                text: firstStream.title,
+                fontColor: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 22.sp,
+                textAlignment: TextAlign.start,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              SizedBoxWidget(height: 4.h),
+              CustomText(
+                text: firstStream.description ?? '',
+                fontColor: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                textAlignment: TextAlign.start,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              SizedBoxWidget(height: 8.h),
+              Row(
+                children: [
+                  Icon(Icons.live_tv, color: Colors.white, size: 18.sp),
+                  SizedBoxWidget(width: 6.w),
+                  CustomText(
+                    text: 'Live Show',
+                    fontColor: Colors.white,
+                    fontSize: 14.sp,
+                    textAlignment: TextAlign.start,
+                  ),
+                ],
+              ),
             ],
           ),
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _categoryItems() {
     final homeCtrl = Get.find<HomeScreenController>();
@@ -300,6 +334,11 @@ class HomeScreen extends GetView<MainNavController> {
       );
     }
 
+    final displayStreams = streams.sublist(1);
+    if (displayStreams.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: 15.w),
       sliver: SliverGrid(
@@ -311,7 +350,7 @@ class HomeScreen extends GetView<MainNavController> {
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
-            final stream = streams[index];
+            final stream = displayStreams[index];
             return LivestreamGridItem(
               userName: stream.sellerName ?? '',
               userAvatarUrl: stream.sellerAvatarUrl ?? Dummy.user2,
@@ -323,7 +362,7 @@ class HomeScreen extends GetView<MainNavController> {
               category: stream.categoryId ?? '',
             );
           },
-          childCount: streams.length,
+          childCount: displayStreams.length,
         ),
       ),
     );

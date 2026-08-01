@@ -33,22 +33,22 @@ class StreamService {
   }) async {
     final response = await _dio.post(ApiConstants.streams, data: {
       'title': title,
-      'description': ?description,
-      'categoryId': ?categoryId,
-      'thumbnailUrl': ?thumbnailUrl,
-      'videoPreviewUrl': ?videoPreviewUrl,
+      if (description != null) 'description': description,
+      if (categoryId != null) 'categoryId': categoryId,
+      if (thumbnailUrl != null) 'thumbnailUrl': thumbnailUrl,
+      if (videoPreviewUrl != null) 'videoPreviewUrl': videoPreviewUrl,
       'primarySellingFormat': primarySellingFormat,
       'repeatOption': repeatOption,
-      'shippingSettings': ?shippingSettings,
+      if (shippingSettings != null) 'shippingSettings': shippingSettings,
       'freePickup': freePickup,
       'explicitContent': explicitContent,
       'mutedWords': mutedWords,
       'primaryLanguage': primaryLanguage,
       'moderatorIds': moderatorIds,
-      'tags': ?tags,
-      'scheduledAt': ?scheduledAt?.toUtc().toIso8601String(),
+      if (tags != null) 'tags': tags,
+      if (scheduledAt != null) 'scheduledAt': scheduledAt.toUtc().toIso8601String(),
       'chatEnabled': chatEnabled,
-      'visibility': ?visibility,
+      if (visibility != null) 'visibility': visibility,
       if (asDraft) 'status': 'draft',
     });
     return StreamModel.fromJson(response.data['data']['stream'] as Map<String, dynamic>);
@@ -79,10 +79,10 @@ class StreamService {
     final response = await _dio.post(ApiConstants.createAuctionStream, data: {
       'productId': productId,
       'title': title,
-      'description': ?description,
-      'categoryId': ?categoryId,
-      'thumbnailUrl': ?thumbnailUrl,
-      'tags': ?tags,
+      if (description != null) 'description': description,
+      if (categoryId != null) 'categoryId': categoryId,
+      if (thumbnailUrl != null) 'thumbnailUrl': thumbnailUrl,
+      if (tags != null) 'tags': tags,
       'chatEnabled': chatEnabled,
     });
     return JoinStreamResult.fromJson(response.data['data'] as Map<String, dynamic>);
@@ -162,7 +162,7 @@ class StreamService {
       'status': 'live',
       'page': page,
       'limit': 20,
-      'categoryId': ?categoryId,
+      if (categoryId != null) 'categoryId': categoryId,
     });
     final list = response.data['data']['streams'] as List;
     return list.map((e) => StreamModel.fromJson(e as Map<String, dynamic>)).toList();
@@ -212,8 +212,8 @@ class StreamService {
       'status': 'ended',
       'page': page,
       'limit': 20,
-      'categoryId': ?categoryId,
-      'sellerId': ?sellerId,
+      if (categoryId != null) 'categoryId': categoryId,
+      if (sellerId != null) 'sellerId': sellerId,
     });
     final list = response.data['data']['streams'] as List;
     return list.map((e) => StreamModel.fromJson(e as Map<String, dynamic>)).toList();
@@ -231,8 +231,8 @@ class StreamService {
     final response = await _dio.get(ApiConstants.replays, queryParameters: {
       'page': page,
       'limit': 20,
-      'categoryId': ?categoryId,
-      'sellerId': ?sellerId,
+      if (categoryId != null) 'categoryId': categoryId,
+      if (sellerId != null) 'sellerId': sellerId,
     });
     final list = response.data['data']['streams'] as List;
     return list.map((e) => StreamModel.fromJson(e as Map<String, dynamic>)).toList();

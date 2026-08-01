@@ -20,11 +20,11 @@ class ApiAuctionService {
   }) async {
     final response = await _dio.post(ApiConstants.startAuction, data: {
       'productId': productId,
-      'streamId': ?streamId,
-      'durationMs': ?durationMs,
-      'startingPrice': ?startingPrice,
-      'reservePrice': ?reservePrice,
-      'bidIncrement': ?bidIncrement,
+      if (streamId != null) 'streamId': streamId,
+      if (durationMs != null) 'durationMs': durationMs,
+      if (startingPrice != null) 'startingPrice': startingPrice,
+      if (reservePrice != null) 'reservePrice': reservePrice,
+      if (bidIncrement != null) 'bidIncrement': bidIncrement,
     });
     return Map<String, dynamic>.from(response.data['data']['auction'] as Map);
   }
@@ -61,9 +61,9 @@ class ApiAuctionService {
   }) async {
     final response = await _dio.post(ApiConstants.auctionBids(productId), data: {
       'amount': amount,
-      'streamId': ?streamId,
+      if (streamId != null) 'streamId': streamId,
       if (isAutoBid) 'isAutoBid': true,
-      'maxAmount': ?maxAmount,
+      if (maxAmount != null) 'maxAmount': maxAmount,
     });
     return Map<String, dynamic>.from(response.data['data']['bid'] as Map);
   }

@@ -17,9 +17,9 @@ class ApiOrderService {
   }) async {
     final response = await _dio.post(ApiConstants.orders, data: {
       'items': items,
-      'shippingAddressSnapshot': ?shippingAddressSnapshot,
-      'streamId': ?streamId,
-      'notes': ?notes,
+      if (shippingAddressSnapshot != null) 'shippingAddressSnapshot': shippingAddressSnapshot,
+      if (streamId != null) 'streamId': streamId,
+      if (notes != null) 'notes': notes,
     });
     return OrderModel.fromJson(response.data['data']['order'] as Map<String, dynamic>);
   }
@@ -28,7 +28,7 @@ class ApiOrderService {
     final response = await _dio.get(ApiConstants.myOrders, queryParameters: {
       'page': page,
       'limit': 20,
-      'status': ?status,
+      if (status != null) 'status': status,
     });
     final list = response.data['data']['orders'] as List;
     return list.map((e) => OrderModel.fromJson(e as Map<String, dynamic>)).toList();
@@ -38,7 +38,7 @@ class ApiOrderService {
     final response = await _dio.get(ApiConstants.sellerOrders, queryParameters: {
       'page': page,
       'limit': 20,
-      'status': ?status,
+      if (status != null) 'status': status,
     });
     final list = response.data['data']['orders'] as List;
     return list.map((e) => OrderModel.fromJson(e as Map<String, dynamic>)).toList();
@@ -52,15 +52,15 @@ class ApiOrderService {
   Future<OrderModel> updateStatus(String orderId, String status, {String? trackingNumber, String? trackingCarrier}) async {
     final response = await _dio.patch(ApiConstants.updateOrderStatus(orderId), data: {
       'status': status,
-      'trackingNumber': ?trackingNumber,
-      'trackingCarrier': ?trackingCarrier,
+      if (trackingNumber != null) 'trackingNumber': trackingNumber,
+      if (trackingCarrier != null) 'trackingCarrier': trackingCarrier,
     });
     return OrderModel.fromJson(response.data['data']['order'] as Map<String, dynamic>);
   }
 
   Future<OrderModel> cancelOrder(String orderId, {String? cancelReason}) async {
     final response = await _dio.post(ApiConstants.cancelOrder(orderId), data: {
-      'cancelReason': ?cancelReason,
+      if (cancelReason != null) 'cancelReason': cancelReason,
     });
     return OrderModel.fromJson(response.data['data']['order'] as Map<String, dynamic>);
   }

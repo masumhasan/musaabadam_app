@@ -21,8 +21,8 @@ class ApiAuthService {
     final response = await _dio.post(ApiConstants.register, data: {
       'email': email,
       'password': password,
-      'username': ?username,
-      'referralCode': ?referralCode,
+      if (username != null) 'username': username,
+      if (referralCode != null) 'referralCode': referralCode,
     });
     final data = response.data['data'] as Map<String, dynamic>;
     return (email: data['email'] as String, userId: data['userId'] as String);
@@ -100,11 +100,11 @@ class ApiAuthService {
     String? avatarUrl,
   }) async {
     final response = await _dio.put(ApiConstants.myProfile, data: {
-      'username': ?username,
-      'displayName': ?displayName,
-      'bio': ?bio,
-      'location': ?location,
-      'avatarUrl': ?avatarUrl,
+      if (username != null) 'username': username,
+      if (displayName != null) 'displayName': displayName,
+      if (bio != null) 'bio': bio,
+      if (location != null) 'location': location,
+      if (avatarUrl != null) 'avatarUrl': avatarUrl,
     });
     return UserModel.fromJson(response.data['data'] as Map<String, dynamic>);
   }

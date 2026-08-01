@@ -53,18 +53,18 @@ class ProductService {
       'condition': condition,
       'listingType': listingType,
       'quantity': quantity,
-      'price': ?price,
-      'startingPrice': ?startingPrice,
-      'reservePrice': ?reservePrice,
-      'auctionEndsAt': ?auctionEndsAt?.toIso8601String(),
+      if (price != null) 'price': price,
+      if (startingPrice != null) 'startingPrice': startingPrice,
+      if (reservePrice != null) 'reservePrice': reservePrice,
+      if (auctionEndsAt != null) 'auctionEndsAt': auctionEndsAt.toIso8601String(),
       'flashSale': flashSale,
       'acceptOffers': acceptOffers,
       'maxDiscount': maxDiscount,
       'reserveForLive': reserveForLive,
       'hazardousMaterials': hazardousMaterials,
       if (shippingProfileId != null) 'shippingProfileId': shippingProfileId,
-      'sku': ?sku,
-      'costPerItem': ?costPerItem,
+      if (sku != null) 'sku': sku,
+      if (costPerItem != null) 'costPerItem': costPerItem,
       'tags': tags,
       'images': images,
       'publishNow': publishNow,
@@ -128,7 +128,7 @@ class ProductService {
     final response = await _dio.get(ApiConstants.productInventory, queryParameters: {
       'page': page,
       'limit': limit,
-      'status': ?status,
+      if (status != null) 'status': status,
     });
     final data = response.data['data'] as Map<String, dynamic>;
     final list = data['products'] as List;
@@ -181,8 +181,8 @@ class ProductService {
   }) async {
     final response = await _dio.post(ApiConstants.flashSale(productId), data: {
       'flashSalePrice': flashSalePrice,
-      'durationMinutes': ?durationMinutes,
-      'stock': ?stock,
+      if (durationMinutes != null) 'durationMinutes': durationMinutes,
+      if (stock != null) 'stock': stock,
     });
     return ProductModel.fromJson(response.data['data']['product'] as Map<String, dynamic>);
   }

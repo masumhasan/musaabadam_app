@@ -33,15 +33,17 @@ class ApiShippingService {
   // ── Estimate ───────────────────────────────────────────────────────────────--
   Future<Map<String, dynamic>> estimate(String productId, {double? subtotal, bool? international}) async {
     final response = await _dio.get(ApiConstants.shippingEstimate(productId), queryParameters: {
-      'subtotal': ?subtotal,
-      'international': ?international,
+      if (subtotal != null) 'subtotal': subtotal,
+      if (international != null) 'international': international,
     });
     return Map<String, dynamic>.from(response.data['data'] as Map);
   }
 
   // ── Labels & tracking ────────────────────────────────────────────────────────
   Future<Map<String, dynamic>> generateLabel(String orderId, {String? carrier}) async {
-    final response = await _dio.post(ApiConstants.generateLabel(orderId), data: {'carrier': ?carrier});
+    final response = await _dio.post(ApiConstants.generateLabel(orderId), data: {
+      if (carrier != null) 'carrier': carrier,
+    });
     return Map<String, dynamic>.from(response.data['data'] as Map);
   }
 

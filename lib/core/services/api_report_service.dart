@@ -29,7 +29,7 @@ class ApiReportService {
       'targetType': targetType,
       'targetId': targetId,
       'reason': reason,
-      'details': ?details,
+      if (details != null) 'details': details,
     });
   }
 

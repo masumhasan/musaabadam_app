@@ -21,7 +21,7 @@ class ApiReviewService {
     await _dio.post(ApiConstants.reviews, data: {
       'orderId': orderId,
       'rating': rating,
-      'comment': ?comment,
+      if (comment != null) 'comment': comment,
     });
   }
 

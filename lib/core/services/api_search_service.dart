@@ -32,7 +32,7 @@ class ApiSearchService {
     final response = await _dio.get(ApiConstants.search, queryParameters: {
       'q': query,
       'type': type,
-      'filter': ?filter,
+      if (filter != null) 'filter': filter,
     });
     return SearchResults.fromJson(Map<String, dynamic>.from(response.data['data'] as Map));
   }

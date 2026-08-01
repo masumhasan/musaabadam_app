@@ -146,11 +146,18 @@ class SocketService {
   }
 
   void pinMessage({required String streamId, String? messageId}) {
-    _socket?.emit('pin-message', {'streamId': streamId, 'messageId': ?messageId});
+    _socket?.emit('pin-message', {
+      'streamId': streamId,
+      if (messageId != null) 'messageId': messageId,
+    });
   }
 
   void sendMessage({required String streamId, required String text, String? replyTo}) {
-    _socket?.emit('send-message', {'streamId': streamId, 'text': text, 'replyTo': ?replyTo});
+    _socket?.emit('send-message', {
+      'streamId': streamId,
+      'text': text,
+      if (replyTo != null) 'replyTo': replyTo,
+    });
   }
 
   void setSlowMode({required String streamId, required int seconds}) {
@@ -189,7 +196,7 @@ class SocketService {
       'productId': productId,
       'amount': amount,
       if (isAutoBid) 'isAutoBid': true,
-      'maxAmount': ?maxAmount,
+      if (maxAmount != null) 'maxAmount': maxAmount,
     });
   }
 

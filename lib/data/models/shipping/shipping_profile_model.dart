@@ -12,8 +12,8 @@ class ShippingRateTier {
       );
 
   Map<String, dynamic> toJson() => {
-        'label': ?label,
-        'maxWeightKg': ?maxWeightKg,
+        if (label != null) 'label': label,
+        if (maxWeightKg != null) 'maxWeightKg': maxWeightKg,
         'price': price,
       };
 

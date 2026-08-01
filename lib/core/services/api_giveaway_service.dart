@@ -16,8 +16,8 @@ class ApiGiveawayService {
   }) async {
     final response = await _dio.post(ApiConstants.giveaways, data: {
       'title': title,
-      'streamId': ?streamId,
-      'productId': ?productId,
+      if (streamId != null) 'streamId': streamId,
+      if (productId != null) 'productId': productId,
       'restriction': restriction,
     });
     return Map<String, dynamic>.from(response.data['data']['giveaway'] as Map);
