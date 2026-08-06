@@ -219,13 +219,37 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
             SizedBoxWidget(height: 20.h),
 
             // Quantity
-            CustomText(text: AppStrings.qualityAvailable, fontWeight: FontWeight.w700),
+            CustomText(text: AppStrings.quantityAvailable, fontWeight: FontWeight.w700),
             SizedBoxWidget(height: 10.h),
             Row(
               children: [
                 _buildQuantityBtn(Icons.remove, () => controller.quantity.value = (controller.quantity.value > 1) ? controller.quantity.value - 1 : 1),
                 SizedBox(width: 15.w),
-                Obx(() => CustomText(text: '${controller.quantity.value}', fontSize: 18, fontWeight: FontWeight.bold)),
+                SizedBox(
+                  width: 50.w,
+                  child: TextField(
+                    controller: controller.quantityTextController,
+                    focusNode: controller.quantityFocusNode,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                      border: InputBorder.none,
+                    ),
+                    onChanged: (val) {
+                      final parsed = int.tryParse(val);
+                      if (parsed != null && parsed > 0) {
+                        controller.quantity.value = parsed;
+                      }
+                    },
+                  ),
+                ),
                 SizedBox(width: 15.w),
                 _buildQuantityBtn(Icons.add, () => controller.quantity.value++),
               ],
@@ -260,15 +284,24 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
                       label: 'Starting Price',
                       controller: controller.startingPriceController,
                       keyboardType: TextInputType.number,
+                      prefix: Padding(
+                        padding: EdgeInsets.only(left: 12.w, right: 6.w),
+                        child: CustomText(
+                          text: '£',
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          fontColor: colorScheme.onSurface,
+                        ),
+                      ),
                     ),
                     SizedBoxWidget(height: 15.h),
                     GestureDetector(
-                      onTap: () => controller.pickAuctionEndDateTime(context),
+                      onTap: () => controller.pickAuctionStartDateTime(context),
                       child: AbsorbPointer(
                         child: CustomTextField(
-                          hintText: 'Pick auction end date & time',
-                          label: 'Auction Ends At',
-                          controller: controller.auctionEndDateController,
+                          hintText: 'Pick auction start date & time',
+                          label: 'Auction Starts At',
+                          controller: controller.auctionStartDateController,
                         ),
                       ),
                     ),
@@ -281,25 +314,49 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
                 label: AppStrings.price,
                 controller: controller.priceController,
                 keyboardType: TextInputType.number,
+                prefix: Padding(
+                  padding: EdgeInsets.only(left: 12.w, right: 6.w),
+                  child: CustomText(
+                    text: '£',
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    fontColor: colorScheme.onSurface,
+                  ),
+                ),
               );
             }),
             SizedBoxWidget(height: 20.h),
 
             // Switches
             _buildSwitchTile(AppStrings.flashSale, controller.isFlashSale, colorScheme),
-            _buildSwitchTile(AppStrings.acceptOffers, controller.acceptOffers, colorScheme),
+            Obx(() {
+              if (controller.selectedListingType.value == 0) {
+                return _buildSwitchTile(AppStrings.acceptOffers, controller.acceptOffers, colorScheme);
+              }
+              return const SizedBox.shrink();
+            }),
 
-            SizedBoxWidget(height: 10.h),
-            CustomButton(
-              label: AppStrings.selectMaxDiscount,
-              backgroundColor: colorScheme.primary,
-              icon: Icons.chevron_right,
-              prefixIcon: Icons.percent_outlined,
-              textColor: Colors.white,
-              buttonHeight: 50.h,
-              buttonRadius: 8.r,
-              onPressed: () {},
-            ),
+            Obx(() {
+              if (controller.selectedListingType.value == 0) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBoxWidget(height: 10.h),
+                    CustomButton(
+                      label: AppStrings.selectMaxDiscount,
+                      backgroundColor: colorScheme.primary,
+                      icon: Icons.chevron_right,
+                      prefixIcon: Icons.percent_outlined,
+                      textColor: Colors.white,
+                      buttonHeight: 50.h,
+                      buttonRadius: 8.r,
+                      onPressed: () {},
+                    ),
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
+            }),
 
             SizedBoxWidget(height: 15.h),
             _buildSwitchTile(AppStrings.reserveForLive, controller.reserveForLive, colorScheme),
@@ -320,13 +377,6 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
 
             SizedBoxWidget(height: 15.h),
             _buildSwitchTile(AppStrings.hazardousMaterials, controller.isHazardous, colorScheme),
-
-            SizedBoxWidget(height: 20.h),
-            CustomText(text: AppStrings.optionalFields, fontWeight: FontWeight.w700),
-            SizedBoxWidget(height: 10.h),
-            CustomTextField(hintText: AppStrings.costPerItem, label: AppStrings.costPerItem, controller: controller.costController),
-            SizedBoxWidget(height: 15.h),
-            CustomTextField(hintText: AppStrings.sku, label: AppStrings.sku, controller: controller.skuController),
 
             SizedBoxWidget(height: 30.h),
             

@@ -31,7 +31,6 @@ import 'package:musaab_adam/modules/seller/screens/create_shipping_profile_scree
 import 'package:musaab_adam/modules/seller/screens/fullfillment_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/invite_seller_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/offers_screen.dart';
-import 'package:musaab_adam/modules/seller/screens/permissions_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/promote_tools_screen.dart';
 import 'package:musaab_adam/modules/seller/screens/shipping_profiles_screen.dart';
 import 'package:musaab_adam/modules/seller/bindings/start_show_binding.dart';
@@ -274,7 +273,6 @@ class AppPages {
     GetPage(name: AppRoutes.promoteToolScreen, page: () => PromoteToolsScreen()),
     GetPage(name: AppRoutes.createShippingProfileScreen, page: () => CreateShippingProfileScreen()),
     GetPage(name: AppRoutes.shippingScreen, page: () => ShippingScreen()),
-    GetPage(name: AppRoutes.permissionsScreen, page: () => PermissionsScreen()),
     GetPage(name: AppRoutes.startShowScreen, page: () => const StartShowScreen(), binding: StartShowBinding()),
     GetPage(name: AppRoutes.rehearsalScreen, page: () => const RehearsalScreen(), binding: RehearsalBinding()),
     GetPage(name: AppRoutes.shippingProfilesScreen, page: () => ShippingProfilesScreen()),

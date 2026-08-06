@@ -127,6 +127,7 @@ class _ShopTabState extends State<ShopTab> {
   }
 
   Widget _buildContent(ColorScheme colorScheme, bool isOwner) {
+    final currentUser = Get.find<AuthController>().currentUser.value;
     if (_loading) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 40.h),
@@ -152,7 +153,7 @@ class _ShopTabState extends State<ShopTab> {
                 fontWeight: FontWeight.w600,
                 fontColor: colorScheme.onSurface,
               ),
-              if (isOwner) ...[
+              if (isOwner && (currentUser?.isSellerApproved ?? false)) ...[
                 SizedBox(height: 20.h),
                 SizedBox(
                   width: double.infinity,

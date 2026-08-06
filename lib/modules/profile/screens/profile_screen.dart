@@ -53,9 +53,27 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: Obx(() {
-        final isShopTab = mainTabCurrentIndex.value == 0;
         final currentUser = _authController.currentUser.value;
-        if (currentUser != null && isShopTab) {
+        if (currentUser == null) return const SizedBox.shrink();
+        final isApprovedSeller = currentUser.isSellerApproved;
+
+        final List<String> activeTabTitles = [];
+        if (isApprovedSeller) {
+          activeTabTitles.add(AppStrings.shop.tr);
+          activeTabTitles.add(AppStrings.shows.tr);
+          activeTabTitles.add(AppStrings.reviews.tr);
+        }
+        activeTabTitles.add(AppStrings.snaps.tr);
+        activeTabTitles.add('Saved Products');
+
+        final activeIndex = mainTabCurrentIndex.value;
+        final activeTitle = (activeIndex >= 0 && activeIndex < activeTabTitles.length)
+            ? activeTabTitles[activeIndex]
+            : '';
+
+        final isShopTab = activeTitle == AppStrings.shop.tr;
+
+        if (isApprovedSeller && isShopTab) {
           return FloatingActionButton(
             onPressed: () => Get.toNamed(AppRoutes.createQualityListingScreen),
             backgroundColor: colorScheme.primary,
@@ -155,49 +173,74 @@ class ProfileScreen extends StatelessWidget {
                 SizedBox(height: 20.h),
 
                 // Tabs Row
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    children: [
-                      _buildTab(AppStrings.shop.tr, 0, colorScheme),
-                      SizedBox(width: 20.w),
-                      _buildTab(AppStrings.shows.tr, 1, colorScheme),
-                      SizedBox(width: 20.w),
-                      _buildTab(AppStrings.reviews.tr, 2, colorScheme),
-                      SizedBox(width: 20.w),
-                      _buildTab(AppStrings.snaps.tr, 3, colorScheme),
-                      SizedBox(width: 20.w),
-                      _buildTab('Saved Products', 4, colorScheme),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 20.h),
+                Obx(() {
+                  final user = _authController.currentUser.value;
+                  final isApprovedSeller = user?.isSellerApproved ?? false;
 
+                  final List<_ProfileTabItem> tabs = [];
+                  if (isApprovedSeller) {
+                    tabs.add(_ProfileTabItem(
+                      title: AppStrings.shop.tr,
+                      content: ShopTab(
+                        key: ValueKey('shop_${refreshTrigger.value}'),
+                        sellerId: user?.id,
+                      ),
+                    ));
+                    tabs.add(_ProfileTabItem(
+                      title: AppStrings.shows.tr,
+                      content: ShowsTab(
+                        key: ValueKey('shows_${refreshTrigger.value}'),
+                      ),
+                    ));
+                    tabs.add(_ProfileTabItem(
+                      title: AppStrings.reviews.tr,
+                      content: ReviewTab(
+                        key: ValueKey('reviews_${refreshTrigger.value}'),
+                        sellerId: user?.id,
+                      ),
+                    ));
+                  }
 
-                // Tab Content
-                Obx(() => IndexedStack(
-                  index: mainTabCurrentIndex.value,
-                  children: [
-                    ShopTab(
-                      key: ValueKey('shop_${refreshTrigger.value}'),
-                      sellerId: _authController.currentUser.value?.id,
-                    ),
-                    ShowsTab(
-                      key: ValueKey('shows_${refreshTrigger.value}'),
-                    ),
-                    ReviewTab(
-                      key: ValueKey('reviews_${refreshTrigger.value}'),
-                      sellerId: _authController.currentUser.value?.id,
-                    ),
-                    SnapsTab(
+                  tabs.add(_ProfileTabItem(
+                    title: AppStrings.snaps.tr,
+                    content: SnapsTab(
                       key: ValueKey('snaps_${refreshTrigger.value}'),
                     ),
-                    SavedProductsTab(
+                  ));
+                  tabs.add(_ProfileTabItem(
+                    title: 'Saved Products',
+                    content: SavedProductsTab(
                       key: ValueKey('saved_${refreshTrigger.value}'),
                     ),
-                  ],
-                )),
+                  ));
+
+                  if (mainTabCurrentIndex.value >= tabs.length) {
+                    mainTabCurrentIndex.value = 0;
+                  }
+
+                  return Column(
+                    children: [
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          children: [
+                            for (int i = 0; i < tabs.length; i++) ...[
+                              _buildTab(tabs[i].title, i, colorScheme),
+                              if (i < tabs.length - 1) SizedBox(width: 20.w),
+                            ],
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+
+                      IndexedStack(
+                        index: mainTabCurrentIndex.value,
+                        children: tabs.map((t) => t.content).toList(),
+                      ),
+                    ],
+                  );
+                }),
               ],
             );
           }),
@@ -253,4 +296,10 @@ class ProfileScreen extends StatelessWidget {
       );
     });
   }
+}
+
+class _ProfileTabItem {
+  final String title;
+  final Widget content;
+  _ProfileTabItem({required this.title, required this.content});
 }

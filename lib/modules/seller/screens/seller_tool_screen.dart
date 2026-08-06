@@ -80,7 +80,6 @@ class SellerToolScreen extends StatelessWidget {
             CustomText(text: AppStrings.settings, fontSize: 18, fontWeight: FontWeight.w700),
             SizedBoxWidget(height: 10.h),
             _buildTile(AppStrings.shipping, Icons.local_shipping_outlined, () => Get.toNamed(AppRoutes.shippingScreen)),
-            _buildTile(AppStrings.sellerStatus, Icons.home_work_outlined, () => Get.toNamed(AppRoutes.permissionsScreen)),
             _buildTile(AppStrings.rehearsalMode, Icons.videocam_outlined, () => Get.toNamed(AppRoutes.startShowScreen, arguments: {'isRehearsal': true})),
 
           ],

@@ -32,6 +32,12 @@ class ShippingProfileModel {
   final bool domesticOnly;
   final double? internationalRate;
   final bool isDefault;
+  final double? weight;
+  final String? weightScale;
+  final double? length;
+  final double? width;
+  final double? height;
+  final String? dimensionScale;
 
   const ShippingProfileModel({
     required this.id,
@@ -44,6 +50,12 @@ class ShippingProfileModel {
     this.domesticOnly = true,
     this.internationalRate,
     this.isDefault = false,
+    this.weight,
+    this.weightScale,
+    this.length,
+    this.width,
+    this.height,
+    this.dimensionScale,
   });
 
   factory ShippingProfileModel.fromJson(Map<String, dynamic> json) => ShippingProfileModel(
@@ -61,5 +73,11 @@ class ShippingProfileModel {
         internationalRate:
             json['internationalRate'] == null ? null : ShippingRateTier._d(json['internationalRate']),
         isDefault: json['isDefault'] == true,
+        weight: json['weight'] == null ? null : ShippingRateTier._d(json['weight']),
+        weightScale: json['weightScale']?.toString(),
+        length: json['length'] == null ? null : ShippingRateTier._d(json['length']),
+        width: json['width'] == null ? null : ShippingRateTier._d(json['width']),
+        height: json['height'] == null ? null : ShippingRateTier._d(json['height']),
+        dimensionScale: json['dimensionScale']?.toString(),
       );
 }

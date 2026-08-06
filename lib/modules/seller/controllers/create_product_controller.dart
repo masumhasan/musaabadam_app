@@ -21,11 +21,13 @@ class CreateProductController extends GetxController {
 
   // ─── Form: Quantity ────────────────────────────────────────────────────────
   final RxInt quantity = 1.obs;
+  final TextEditingController quantityTextController = TextEditingController();
+  final FocusNode quantityFocusNode = FocusNode();
 
   // ─── Form: Pricing ────────────────────────────────────────────────────────
   final TextEditingController priceController = TextEditingController();
   final TextEditingController startingPriceController = TextEditingController();
-  final TextEditingController auctionEndDateController = TextEditingController();
+  final TextEditingController auctionStartDateController = TextEditingController();
 
   // ─── Form: Category & Condition ──────────────────────────────────────────
   final RxList<CategoryModel> categories = <CategoryModel>[].obs;
@@ -52,7 +54,7 @@ class CreateProductController extends GetxController {
   final Rx<String?> selectedShippingProfileId = Rx<String?>(null);
 
   // ─── Auction date ─────────────────────────────────────────────────────────
-  final Rx<DateTime?> auctionEndDateTime = Rx<DateTime?>(null);
+  final Rx<DateTime?> auctionStartDateTime = Rx<DateTime?>(null);
 
   // ─── Images ───────────────────────────────────────────────────────────────
   static const int maxImages = 8;
@@ -69,6 +71,28 @@ class CreateProductController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    quantityTextController.text = quantity.value.toString();
+    ever(quantity, (val) {
+      if (quantityTextController.text != val.toString()) {
+        quantityTextController.text = val.toString();
+      }
+    });
+    quantityFocusNode.addListener(() {
+      if (!quantityFocusNode.hasFocus) {
+        if (quantityTextController.text.isEmpty ||
+            int.tryParse(quantityTextController.text) == null ||
+            int.parse(quantityTextController.text) <= 0) {
+          quantityTextController.text = quantity.value.toString();
+        }
+      }
+    });
+
+    ever(selectedListingType, (val) {
+      if (val != 0) {
+        acceptOffers.value = false;
+      }
+    });
+
     if (Get.arguments != null && Get.arguments['product'] != null) {
       editProduct.value = Get.arguments['product'] as ProductModel;
       _initEditMode(editProduct.value!);
@@ -86,8 +110,8 @@ class CreateProductController extends GetxController {
       selectedListingType.value = 1;
       startingPriceController.text = product.startingPrice?.toString() ?? '';
       if (product.auctionEndsAt != null) {
-        auctionEndDateTime.value = product.auctionEndsAt;
-        auctionEndDateController.text = product.auctionEndsAt.toString();
+        auctionStartDateTime.value = product.auctionEndsAt;
+        auctionStartDateController.text = product.auctionEndsAt.toString();
       }
     } else if (product.listingType == 'giveaway') {
       selectedListingType.value = 2;
@@ -123,9 +147,11 @@ class CreateProductController extends GetxController {
     descController.dispose();
     priceController.dispose();
     startingPriceController.dispose();
-    auctionEndDateController.dispose();
+    auctionStartDateController.dispose();
     costController.dispose();
     skuController.dispose();
+    quantityTextController.dispose();
+    quantityFocusNode.dispose();
     super.onClose();
   }
 
@@ -209,8 +235,8 @@ class CreateProductController extends GetxController {
         Get.snackbar('Required', 'Please enter a valid starting price for auction.', snackPosition: SnackPosition.BOTTOM);
         return false;
       }
-      if (auctionEndDateTime.value == null || auctionEndDateTime.value!.isBefore(DateTime.now())) {
-        Get.snackbar('Required', 'Please pick an auction end date/time in the future.', snackPosition: SnackPosition.BOTTOM);
+      if (auctionStartDateTime.value == null || auctionStartDateTime.value!.isBefore(DateTime.now())) {
+        Get.snackbar('Required', 'Please pick an auction start date/time in the future.', snackPosition: SnackPosition.BOTTOM);
         return false;
       }
     }
@@ -253,7 +279,7 @@ class CreateProductController extends GetxController {
           startingPrice: listingTypeString == 'auction'
               ? double.tryParse(startingPriceController.text.trim())
               : null,
-          auctionEndsAt: auctionEndDateTime.value,
+          auctionEndsAt: auctionStartDateTime.value,
           flashSale: isFlashSale.value,
           acceptOffers: acceptOffers.value,
           reserveForLive: reserveForLive.value,
@@ -279,7 +305,7 @@ class CreateProductController extends GetxController {
           startingPrice: listingTypeString == 'auction'
               ? double.tryParse(startingPriceController.text.trim())
               : null,
-          auctionEndsAt: auctionEndDateTime.value,
+          auctionEndsAt: auctionStartDateTime.value,
           flashSale: isFlashSale.value,
           acceptOffers: acceptOffers.value,
           reserveForLive: reserveForLive.value,
@@ -309,7 +335,7 @@ class CreateProductController extends GetxController {
     }
   }
 
-  Future<void> pickAuctionEndDateTime(BuildContext context) async {
+  Future<void> pickAuctionStartDateTime(BuildContext context) async {
     final date = await showDatePicker(
       context: context,
       initialDate: DateTime.now().add(const Duration(days: 1)),
@@ -325,8 +351,8 @@ class CreateProductController extends GetxController {
     );
     if (time == null) return;
 
-    auctionEndDateTime.value = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    auctionEndDateController.text =
+    auctionStartDateTime.value = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    auctionStartDateController.text =
         '${date.day}/${date.month}/${date.year} ${time.format(context)}';
   }
 

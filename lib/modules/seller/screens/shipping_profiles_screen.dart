@@ -66,36 +66,43 @@ class ShippingProfilesScreen extends StatelessWidget {
             separatorBuilder: (_, __) => SizedBoxWidget(height: 15.h),
             itemBuilder: (context, index) {
             final profile = controller.profiles[index];
-            return Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.05),
-                border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CustomText(text: profile.name, fontWeight: FontWeight.w700, fontSize: 16),
-                        SizedBoxWidget(height: 4.h),
-                        CustomText(
-                          text: '${profile.carrier} - \$${profile.flatRate.toStringAsFixed(2)}',
-                          fontSize: 14,
-                          fontColor: colorScheme.onSurface.withValues(alpha: 0.7),
-                        ),
-                      ],
+            return InkWell(
+              borderRadius: BorderRadius.circular(12.r),
+              onTap: () async {
+                await Get.toNamed(AppRoutes.createShippingProfileScreen, arguments: profile);
+                controller.loadProfiles(); // Reload after coming back
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.05),
+                  border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CustomText(text: profile.name, fontWeight: FontWeight.w700, fontSize: 16),
+                          SizedBoxWidget(height: 4.h),
+                          CustomText(
+                            text: '${profile.carrier} - \$${profile.flatRate.toStringAsFixed(2)}',
+                            fontSize: 14,
+                            fontColor: colorScheme.onSurface.withValues(alpha: 0.7),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete_outline, color: Colors.red),
-                    onPressed: () {
-                      _showDeleteDialog(context, profile.id);
-                    },
-                  )
-                ],
+                    IconButton(
+                      icon: Icon(Icons.delete_outline, color: Colors.red),
+                      onPressed: () {
+                        _showDeleteDialog(context, profile.id);
+                      },
+                    )
+                  ],
+                ),
               ),
             );
           },

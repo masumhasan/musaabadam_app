@@ -100,7 +100,6 @@ class AppRoutes {
   static final createShippingProfileScreen = "/create-shipping-profile-screen";
   static final shippingScreen = "/shipping-screen";
   static final shippingProfilesScreen = "/shipping-profiles-screen";
-  static final permissionsScreen = "/permissions-screen";
   static final startShowScreen = "/start-show-screen";
   static final startAuctionScreen = "/start-auction-screen";
   static final endShowInsightsScreen = "/end-show-insights-screen";

@@ -63,10 +63,29 @@ class OtherUserProfileScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: Obx(() {
-        final isShopTab = _tabIndex.value == 0;
+        final profile = _controller.profile.value;
+        if (profile == null) return const SizedBox.shrink();
+        final isApprovedSeller = profile.isSellerApproved;
+
         final currentUser = Get.find<AuthController>().currentUser.value;
         final isOwner = currentUser != null && currentUser.id == userId;
-        if (isOwner && isShopTab) {
+
+        final List<String> activeTabTitles = [];
+        if (isApprovedSeller) {
+          activeTabTitles.add(AppStrings.shop.tr);
+          activeTabTitles.add(AppStrings.shows.tr);
+          activeTabTitles.add(AppStrings.reviews.tr);
+        }
+        activeTabTitles.add(AppStrings.snaps.tr);
+
+        final activeIndex = _tabIndex.value;
+        final activeTitle = (activeIndex >= 0 && activeIndex < activeTabTitles.length)
+            ? activeTabTitles[activeIndex]
+            : '';
+
+        final isShopTab = activeTitle == AppStrings.shop.tr;
+
+        if (isOwner && isApprovedSeller && isShopTab) {
           return FloatingActionButton(
             onPressed: () => Get.toNamed(AppRoutes.createQualityListingScreen),
             backgroundColor: colorScheme.primary,
@@ -187,34 +206,67 @@ class OtherUserProfileScreen extends StatelessWidget {
                 SizedBox(height: 20.h),
 
                 // Tabs
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildTab(AppStrings.shop.tr, 0, colorScheme),
-                    _buildTab(AppStrings.shows.tr, 1, colorScheme),
-                    _buildTab(AppStrings.reviews.tr, 2, colorScheme),
-                    _buildTab(AppStrings.snaps.tr, 3, colorScheme),
-                  ],
-                ),
-                SizedBox(height: 20.h),
+                Obx(() {
+                  final profile = _controller.profile.value;
+                  if (profile == null) return const SizedBox.shrink();
+                  final isApprovedSeller = profile.isSellerApproved;
 
-                Obx(() => IndexedStack(
-                  index: _tabIndex.value,
-                  children: [
-                    ShopTab(
-                      key: ValueKey('other_shop_${refreshTrigger.value}'),
-                      sellerId: userId,
-                    ),
-                    _buildShowsSection(colorScheme),
-                    ReviewTab(
-                      key: ValueKey('other_reviews_${refreshTrigger.value}'),
-                      sellerId: userId,
-                    ),
-                    SnapsTab(
+                  final List<_ProfileTabItem> tabs = [];
+                  if (isApprovedSeller) {
+                    tabs.add(_ProfileTabItem(
+                      title: AppStrings.shop.tr,
+                      content: ShopTab(
+                        key: ValueKey('other_shop_${refreshTrigger.value}'),
+                        sellerId: userId,
+                      ),
+                    ));
+                    tabs.add(_ProfileTabItem(
+                      title: AppStrings.shows.tr,
+                      content: _buildShowsSection(colorScheme),
+                    ));
+                    tabs.add(_ProfileTabItem(
+                      title: AppStrings.reviews.tr,
+                      content: ReviewTab(
+                        key: ValueKey('other_reviews_${refreshTrigger.value}'),
+                        sellerId: userId,
+                      ),
+                    ));
+                  }
+
+                  tabs.add(_ProfileTabItem(
+                    title: AppStrings.snaps.tr,
+                    content: SnapsTab(
                       key: ValueKey('other_snaps_${refreshTrigger.value}'),
                     ),
-                  ],
-                )),
+                  ));
+
+                  if (_tabIndex.value >= tabs.length) {
+                    _tabIndex.value = 0;
+                  }
+
+                  return Column(
+                    children: [
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          children: [
+                            for (int i = 0; i < tabs.length; i++) ...[
+                              _buildTab(tabs[i].title, i, colorScheme),
+                              if (i < tabs.length - 1) SizedBox(width: 20.w),
+                            ],
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+
+                      IndexedStack(
+                        index: _tabIndex.value,
+                        children: tabs.map((t) => t.content).toList(),
+                      ),
+                    ],
+                  );
+                }),
 
                 SizedBoxWidget(height: 20),
               ],
@@ -345,4 +397,10 @@ class OtherUserProfileScreen extends StatelessWidget {
       );
     });
   }
+}
+
+class _ProfileTabItem {
+  final String title;
+  final Widget content;
+  _ProfileTabItem({required this.title, required this.content});
 }

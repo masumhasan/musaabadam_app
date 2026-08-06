@@ -356,7 +356,7 @@ class AppStrings {
   static const String addPhotos = "Add Photos";
   static const String productDetails = "Product Details";
   static const String title = "Title";
-  static const String qualityAvailable = "Quality Available";
+  static const String quantityAvailable = "Quantity Available";
   static const String variants = "Variants";
   static const String pricing = "Pricing";
   static const String chooseCategory = "Choose Category";
