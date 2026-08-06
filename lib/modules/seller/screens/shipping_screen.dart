@@ -12,7 +12,6 @@ class ShippingScreen extends StatelessWidget {
   ShippingScreen({super.key});
 
   final RxBool isFreePickup = false.obs;
-  final RxBool isRoyalMail = false.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -40,15 +39,6 @@ class ShippingScreen extends StatelessWidget {
               title: AppStrings.freePickup,
               icon: Icons.inventory_2_outlined,
               state: isFreePickup,
-              colorScheme: colorScheme,
-            ),
-            SizedBoxWidget(height: 15.h),
-
-            // 2. Royal Mail Switch
-            _buildSwitchTile(
-              title: AppStrings.royalMail,
-              icon: Icons.description_outlined,
-              state: isRoyalMail,
               colorScheme: colorScheme,
             ),
             SizedBoxWidget(height: 15.h),
