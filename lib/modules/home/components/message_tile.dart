@@ -23,34 +23,43 @@ class MessageTile extends StatelessWidget {
       child: Row(
         mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.primaryColor.withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: CachedImageWidget(
-                      imageUrl: imageUrl,
-                    height: 30.h,
-                    width: 30.w,
-                    iconSize: 25,
-                  ),
+          Flexible(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.75,
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(30),
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  message,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppColors.white,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(50),
+                      child: CachedImageWidget(
+                        imageUrl: imageUrl,
+                        height: 30.h,
+                        width: 30.w,
+                        iconSize: 25,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Flexible(
+                      child: Text(
+                        message,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                 ),
-                const SizedBox(width: 8),
-              ],
+              ),
             ),
           ),
         ],

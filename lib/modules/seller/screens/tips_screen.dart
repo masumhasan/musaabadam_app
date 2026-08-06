@@ -6,6 +6,7 @@ import '../../../core/assets_gen/assets.gen.dart';
 import '../../../core/widgets/custom_text.dart';
 import '../../../core/widgets/sized_box_widget.dart';
 import '../../../core/widgets/cached_image_widget.dart';
+import '../../../core/services/api_dm_service.dart';
 import '../controllers/seller_tips_controller.dart';
 
 class TipsScreen extends StatelessWidget {
@@ -196,6 +197,7 @@ class TipsScreen extends StatelessWidget {
                       (context, index) {
                         final tip = tipsList[index];
                         final buyer = tip['buyerId'] as Map<String, dynamic>? ?? {};
+                        final buyerId = (buyer['_id'] ?? buyer['id'])?.toString() ?? '';
                         final buyerName = buyer['displayName']?.toString() ??
                             buyer['username']?.toString() ??
                             'Anonymous';
@@ -264,6 +266,15 @@ class TipsScreen extends StatelessWidget {
                                       fontWeight: FontWeight.w700,
                                       fontColor: colorScheme.primary,
                                     ),
+                                    if (buyerId.isNotEmpty) ...[
+                                      SizedBoxWidget(width: 8.w),
+                                      IconButton(
+                                        icon: Icon(Icons.reply, size: 20.sp, color: colorScheme.primary),
+                                        onPressed: () => _showReplyDialog(context, buyerName, buyerId, amount),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                      ),
+                                    ],
                                   ],
                                 ),
                                 if (message != null && message.trim().isNotEmpty) ...[
@@ -303,6 +314,84 @@ class TipsScreen extends StatelessWidget {
             ],
           );
         }),
+      ),
+    );
+  }
+
+  void _showReplyDialog(BuildContext context, String buyerName, String buyerId, double amount) {
+    final amtStr = amount == amount.toInt() ? amount.toInt().toString() : amount.toStringAsFixed(2);
+    final textController = TextEditingController(
+      text: 'Hi $buyerName Thanks for the $amtStr pound tip. We areally appriciate this',
+    );
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colorScheme.surface,
+        title: CustomText(
+          text: 'Reply to $buyerName',
+          fontWeight: FontWeight.w700,
+          fontSize: 16.sp,
+          fontColor: colorScheme.onSurface,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: textController,
+              maxLines: 3,
+              style: TextStyle(color: colorScheme.onSurface, fontSize: 14.sp),
+              decoration: InputDecoration(
+                hintText: 'Type your message here...',
+                hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                  borderSide: BorderSide(color: colorScheme.outline),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: CustomText(
+              text: 'Cancel',
+              fontColor: colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorScheme.primary,
+            ),
+            onPressed: () async {
+              final msg = textController.text.trim();
+              if (msg.isEmpty) {
+                Get.snackbar('Error', 'Message cannot be empty', snackPosition: SnackPosition.BOTTOM);
+                return;
+              }
+              Navigator.pop(ctx);
+              
+              // Show loading
+              Get.dialog(
+                const Center(child: CircularProgressIndicator()),
+                barrierDismissible: false,
+              );
+              
+              try {
+                await ApiDmService.instance.sendMessage(buyerId, msg);
+                Get.back(); // close loading
+                Get.snackbar('Success', 'Message sent successfully!', snackPosition: SnackPosition.BOTTOM);
+              } catch (e) {
+                Get.back(); // close loading
+                Get.snackbar('Error', 'Failed to send message: $e', snackPosition: SnackPosition.BOTTOM);
+              }
+            },
+            child: const Text('Send', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
