@@ -382,19 +382,23 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
 
             Obx(() {
               if (controller.selectedListingType.value == 0 && controller.acceptOffers.value) {
+                final discountVal = controller.maxDiscount.value;
+                final labelText = discountVal > 0
+                    ? '${AppStrings.selectMaxDiscount}: ${discountVal.toInt()}%'
+                    : AppStrings.selectMaxDiscount;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBoxWidget(height: 10.h),
                     CustomButton(
-                      label: AppStrings.selectMaxDiscount,
+                      label: labelText,
                       backgroundColor: colorScheme.primary,
                       icon: Icons.chevron_right,
                       prefixIcon: Icons.percent_outlined,
                       textColor: Colors.white,
                       buttonHeight: 50.h,
                       buttonRadius: 8.r,
-                      onPressed: () {},
+                      onPressed: () => _showMaxDiscountSheet(context, colorScheme),
                     ),
                   ],
                 );
@@ -563,6 +567,153 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
           fontWeight: FontWeight.w600,
         ),
       ),
+    );
+  }
+
+  void _showMaxDiscountSheet(BuildContext context, ColorScheme colorScheme) {
+    final priceVal = double.tryParse(controller.priceController.text.trim()) ?? 0.0;
+    final discountOptions = [5.0, 10.0, 15.0, 20.0, 30.0];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      backgroundColor: colorScheme.surface,
+      builder: (ctx) {
+        return Container(
+          padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 30.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+              ),
+              SizedBoxWidget(height: 16.h),
+              CustomText(
+                text: 'Select Maximum Discount',
+                fontWeight: FontWeight.w700,
+                fontSize: 18.sp,
+                fontColor: colorScheme.onSurface,
+              ),
+              SizedBoxWidget(height: 6.h),
+              CustomText(
+                text: 'Buyer offers within this discount range will be automatically accepted.',
+                fontSize: 13.sp,
+                fontColor: colorScheme.outline,
+              ),
+              SizedBoxWidget(height: 18.h),
+              ...discountOptions.map((pct) {
+                final minAcceptPrice = priceVal > 0 ? (priceVal * (1 - pct / 100)) : null;
+                return Obx(() {
+                  final isSelected = controller.maxDiscount.value == pct;
+                  return GestureDetector(
+                    onTap: () {
+                      controller.maxDiscount.value = pct;
+                      Navigator.pop(ctx);
+                    },
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 10.h),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? colorScheme.primaryContainer.withValues(alpha: 0.4)
+                            : colorScheme.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: isSelected ? colorScheme.primary : colorScheme.outlineVariant.withValues(alpha: 0.5),
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36.w,
+                            height: 36.h,
+                            decoration: BoxDecoration(
+                              color: isSelected ? colorScheme.primary : colorScheme.surfaceContainerHighest,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.percent,
+                              size: 18.sp,
+                              color: isSelected ? Colors.white : colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          SizedBox(width: 14.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                CustomText(
+                                  text: '${pct.toInt()}% Discount',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15.sp,
+                                  fontColor: colorScheme.onSurface,
+                                ),
+                                SizedBox(height: 2.h),
+                                CustomText(
+                                  text: minAcceptPrice != null
+                                      ? 'Auto-accept offers of £${minAcceptPrice.toStringAsFixed(2)} or more'
+                                      : 'Auto-accept offers up to ${pct.toInt()}% off',
+                                  fontSize: 12.sp,
+                                  fontColor: isSelected ? colorScheme.primary : colorScheme.outline,
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isSelected)
+                            Icon(Icons.check_circle, color: colorScheme.primary, size: 22.sp),
+                        ],
+                      ),
+                    ),
+                  );
+                });
+              }),
+              SizedBoxWidget(height: 6.h),
+              Obx(() {
+                final isNoneSelected = controller.maxDiscount.value == 0.0;
+                return GestureDetector(
+                  onTap: () {
+                    controller.maxDiscount.value = 0.0;
+                    Navigator.pop(ctx);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                    decoration: BoxDecoration(
+                      color: isNoneSelected ? colorScheme.errorContainer.withValues(alpha: 0.2) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: isNoneSelected ? colorScheme.error : colorScheme.outlineVariant.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomText(
+                          text: 'No Maximum Discount (Manual Accept Only)',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13.sp,
+                          fontColor: isNoneSelected ? colorScheme.error : colorScheme.outline,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 

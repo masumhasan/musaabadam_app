@@ -67,6 +67,7 @@ class CreateProductController extends GetxController {
   // ─── Form: Options ────────────────────────────────────────────────────────
   final RxBool isFlashSale = false.obs;
   final RxBool acceptOffers = false.obs;
+  final RxDouble maxDiscount = 0.0.obs;
   final RxBool reserveForLive = false.obs;
   final RxBool isHazardous = false.obs;
 
@@ -150,6 +151,7 @@ class CreateProductController extends GetxController {
     selectedCondition.value = product.condition;
     isFlashSale.value = product.isFlashSaleActive;
     acceptOffers.value = product.acceptOffers;
+    maxDiscount.value = product.maxDiscount;
     reserveForLive.value = product.reserveForLive;
     isHazardous.value = product.hazardousMaterials;
     skuController.text = product.sku ?? '';
@@ -381,6 +383,7 @@ class CreateProductController extends GetxController {
           auctionEndsAt: auctionStartDateTime.value,
           flashSale: isFlashSale.value,
           acceptOffers: acceptOffers.value,
+          maxDiscount: acceptOffers.value ? maxDiscount.value : 0.0,
           reserveForLive: reserveForLive.value,
           hazardousMaterials: isHazardous.value,
           sku: skuController.text.trim().isEmpty ? null : skuController.text.trim(),
@@ -408,6 +411,7 @@ class CreateProductController extends GetxController {
           auctionEndsAt: auctionStartDateTime.value,
           flashSale: isFlashSale.value,
           acceptOffers: acceptOffers.value,
+          maxDiscount: acceptOffers.value ? maxDiscount.value : 0.0,
           reserveForLive: reserveForLive.value,
           hazardousMaterials: isHazardous.value,
           sku: skuController.text.trim().isEmpty ? null : skuController.text.trim(),
