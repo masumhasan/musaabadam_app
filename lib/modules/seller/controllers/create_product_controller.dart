@@ -11,10 +11,36 @@ import 'package:musaab_adam/data/models/product/product_model.dart';
 import 'package:musaab_adam/data/models/shipping/shipping_profile_model.dart';
 import 'package:musaab_adam/core/services/api_shipping_service.dart';
 
+class VariantItemInput {
+  final TextEditingController nameController;
+  final RxInt quantity;
+  final RxString imageUrl;
+  final Rxn<File> pickedFile;
+  final String? id;
+
+  VariantItemInput({
+    required String name,
+    required int quantity,
+    String imageUrl = '',
+    File? pickedFile,
+    this.id,
+  })  : nameController = TextEditingController(text: name),
+        quantity = quantity.obs,
+        imageUrl = imageUrl.obs,
+        pickedFile = Rxn<File>(pickedFile);
+
+  void dispose() {
+    nameController.dispose();
+  }
+}
+
 class CreateProductController extends GetxController {
   // ─── Form: Core ───────────────────────────────────────────────────────────
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descController = TextEditingController();
+
+  // ─── Form: Variants ───────────────────────────────────────────────────────
+  final RxList<VariantItemInput> variantInputs = <VariantItemInput>[].obs;
 
   // ─── Form: Listing Type (0=Buy It Now, 1=Auction, 2=Giveaway) ────────────
   final RxInt selectedListingType = 0.obs;
@@ -130,6 +156,55 @@ class CreateProductController extends GetxController {
     costController.text = product.costPerItem?.toString() ?? '';
     selectedShippingProfileId.value = product.shippingProfileId;
     existingImages.assignAll(product.images);
+
+    if (product.variants.isNotEmpty) {
+      variantInputs.assignAll(
+        product.variants.map(
+          (v) => VariantItemInput(
+            name: v.name,
+            quantity: v.quantity,
+            imageUrl: v.image,
+            id: v.id,
+          ),
+        ),
+      );
+      recalculateTotalQuantityFromVariants();
+    }
+  }
+
+  // ─── Variants Logic ────────────────────────────────────────────────────────
+  void addVariant() {
+    variantInputs.add(
+      VariantItemInput(
+        name: 'Variant ${variantInputs.length + 1}',
+        quantity: 1,
+      ),
+    );
+    recalculateTotalQuantityFromVariants();
+  }
+
+  void removeVariant(int index) {
+    if (index >= 0 && index < variantInputs.length) {
+      final removed = variantInputs.removeAt(index);
+      removed.dispose();
+      recalculateTotalQuantityFromVariants();
+    }
+  }
+
+  Future<void> pickVariantImage(int index) async {
+    if (index < 0 || index >= variantInputs.length) return;
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      variantInputs[index].pickedFile.value = File(picked.path);
+    }
+  }
+
+  void recalculateTotalQuantityFromVariants() {
+    if (variantInputs.isNotEmpty) {
+      final total = variantInputs.fold<int>(0, (sum, item) => sum + item.quantity.value);
+      quantity.value = total > 0 ? total : 0;
+    }
   }
 
   // Called when categories are loaded to set the selected category if editing
@@ -143,6 +218,9 @@ class CreateProductController extends GetxController {
 
   @override
   void onClose() {
+    for (final v in variantInputs) {
+      v.dispose();
+    }
     titleController.dispose();
     descController.dispose();
     priceController.dispose();
@@ -249,7 +327,7 @@ class CreateProductController extends GetxController {
 
     isLoading.value = true;
     try {
-      // Upload images to S3 first
+      // Upload product images first
       final imageUrls = [...existingImages];
       if (pickedImages.isNotEmpty) {
         isUploading.value = true;
@@ -262,6 +340,27 @@ class CreateProductController extends GetxController {
           imageUrls.add(url);
         }
         isUploading.value = false;
+      }
+
+      // Upload variant images if any picked files exist
+      final List<Map<String, dynamic>> variantDataList = [];
+      for (final vInput in variantInputs) {
+        String finalVariantImage = vInput.imageUrl.value;
+        if (vInput.pickedFile.value != null) {
+          finalVariantImage = await ApiUploadService.instance.uploadFile(
+            file: vInput.pickedFile.value!,
+            folder: 'variants',
+            contentType: _mimeType(vInput.pickedFile.value!.path),
+          );
+        }
+        variantDataList.add({
+          if (vInput.id != null) '_id': vInput.id,
+          'name': vInput.nameController.text.trim().isNotEmpty
+              ? vInput.nameController.text.trim()
+              : 'Variant',
+          'quantity': vInput.quantity.value,
+          'image': finalVariantImage,
+        });
       }
 
       if (editProduct.value != null) {
@@ -290,6 +389,7 @@ class CreateProductController extends GetxController {
               : double.tryParse(costController.text.trim()),
           shippingProfileId: selectedShippingProfileId.value,
           images: imageUrls,
+          variants: variantDataList,
         );
       } else {
         await ProductService.instance.createProduct(

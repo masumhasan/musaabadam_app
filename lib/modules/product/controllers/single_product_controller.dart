@@ -12,6 +12,8 @@ import 'package:share_plus/share_plus.dart';
 
 class SingleProductController extends GetxController {
   final Rxn<ProductModel> product = Rxn<ProductModel>();
+  final Rxn<ProductVariant> selectedVariant = Rxn<ProductVariant>();
+  final Rxn<String> selectedImageUrl = Rxn<String>();
   final RxBool isLoading = true.obs;
   final RxInt selectedTab = 0.obs; // 0 = Details, 1 = Seller Info
   final RxBool isSaved = false.obs; // UI only save state
@@ -27,6 +29,13 @@ class SingleProductController extends GetxController {
   final RxInt followersCount = 0.obs;
   final RxInt itemsSold = 0.obs;
   final RxString avgShipTime = '2d'.obs;
+
+  void selectVariant(ProductVariant variant) {
+    selectedVariant.value = variant;
+    if (variant.image.isNotEmpty) {
+      selectedImageUrl.value = variant.image;
+    }
+  }
 
   @override
   void onInit() {
@@ -61,13 +70,18 @@ class SingleProductController extends GetxController {
       }
 
       final p = product.value;
-      if (p != null && p.sellerId.isNotEmpty) {
-        await Future.wait([
-          _loadSellerProfile(p.sellerId),
-          _loadSellerProducts(p.sellerId),
-          _loadSellerReviews(p.sellerId),
-          _checkIfFavorited(productId),
-        ]);
+      if (p != null) {
+        if (p.variants.isNotEmpty && selectedVariant.value == null) {
+          selectVariant(p.variants.first);
+        }
+        if (p.sellerId.isNotEmpty) {
+          await Future.wait([
+            _loadSellerProfile(p.sellerId),
+            _loadSellerProducts(p.sellerId),
+            _loadSellerReviews(p.sellerId),
+            _checkIfFavorited(productId),
+          ]);
+        }
       }
     } catch (e) {
       debugPrint('Error loading single product details: $e');

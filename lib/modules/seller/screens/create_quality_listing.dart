@@ -7,6 +7,7 @@ import 'package:musaab_adam/core/widgets/custom_text.dart';
 import 'package:musaab_adam/core/widgets/custom_text_field.dart';
 import 'package:musaab_adam/core/widgets/sized_box_widget.dart';
 import 'package:musaab_adam/modules/seller/controllers/create_product_controller.dart';
+import 'package:musaab_adam/modules/seller/screens/manage_variants_screen.dart';
 
 import '../../../core/utils/app_colors.dart';
 
@@ -219,53 +220,96 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
             SizedBoxWidget(height: 20.h),
 
             // Quantity
-            CustomText(text: AppStrings.quantityAvailable, fontWeight: FontWeight.w700),
-            SizedBoxWidget(height: 10.h),
-            Row(
-              children: [
-                _buildQuantityBtn(Icons.remove, () => controller.quantity.value = (controller.quantity.value > 1) ? controller.quantity.value - 1 : 1),
-                SizedBox(width: 15.w),
-                SizedBox(
-                  width: 50.w,
-                  child: TextField(
-                    controller: controller.quantityTextController,
-                    focusNode: controller.quantityFocusNode,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.zero,
-                      border: InputBorder.none,
-                    ),
-                    onChanged: (val) {
-                      final parsed = int.tryParse(val);
-                      if (parsed != null && parsed > 0) {
-                        controller.quantity.value = parsed;
-                      }
-                    },
+            Obx(() {
+              final hasVariants = controller.variantInputs.isNotEmpty;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CustomText(text: AppStrings.quantityAvailable, fontWeight: FontWeight.w700),
+                      if (hasVariants)
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12.r),
+                            border: Border.all(color: colorScheme.primary.withValues(alpha: 0.3)),
+                          ),
+                          child: CustomText(
+                            text: 'Auto-summed from variants',
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.w600,
+                            fontColor: colorScheme.primary,
+                          ),
+                        ),
+                    ],
                   ),
-                ),
-                SizedBox(width: 15.w),
-                _buildQuantityBtn(Icons.add, () => controller.quantity.value++),
-              ],
-            ),
+                  SizedBoxWidget(height: 10.h),
+                  Row(
+                    children: [
+                      _buildQuantityBtn(
+                        Icons.remove,
+                        hasVariants
+                            ? null
+                            : () => controller.quantity.value = (controller.quantity.value > 1) ? controller.quantity.value - 1 : 1,
+                      ),
+                      SizedBox(width: 15.w),
+                      SizedBox(
+                        width: 50.w,
+                        child: TextField(
+                          controller: controller.quantityTextController,
+                          focusNode: controller.quantityFocusNode,
+                          readOnly: hasVariants,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                          ),
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                            border: InputBorder.none,
+                          ),
+                          onChanged: (val) {
+                            if (!hasVariants) {
+                              final parsed = int.tryParse(val);
+                              if (parsed != null && parsed > 0) {
+                                controller.quantity.value = parsed;
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 15.w),
+                      _buildQuantityBtn(
+                        Icons.add,
+                        hasVariants ? null : () => controller.quantity.value++,
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            }),
             SizedBoxWidget(height: 20.h),
 
-            // Variants (placeholder — navigates to future variants screen)
-            CustomButton(
-              label: AppStrings.variants,
-              backgroundColor: colorScheme.primary,
-              icon: Icons.arrow_forward_ios,
-              textColor: Colors.white,
-              buttonHeight: 50.h,
-              buttonRadius: 8.r,
-              onPressed: () {},
-            ),
+            // Variants button
+            Obx(() {
+              final count = controller.variantInputs.length;
+              final labelText = count > 0 ? '${AppStrings.variants} ($count configured)' : AppStrings.variants;
+              return CustomButton(
+                label: labelText,
+                backgroundColor: colorScheme.primary,
+                icon: Icons.arrow_forward_ios,
+                textColor: Colors.white,
+                buttonHeight: 50.h,
+                buttonRadius: 8.r,
+                onPressed: () => Get.to(() => const ManageVariantsScreen()),
+              );
+            }),
             const SizedBox(height: 10),
 
             // Price field — label and behaviour adapts to listing type
@@ -337,7 +381,7 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
             }),
 
             Obx(() {
-              if (controller.selectedListingType.value == 0) {
+              if (controller.selectedListingType.value == 0 && controller.acceptOffers.value) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -596,13 +640,13 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
     );
   }
 
-  Widget _buildQuantityBtn(IconData icon, VoidCallback onTap) {
+  Widget _buildQuantityBtn(IconData icon, VoidCallback? onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.all(8.r),
         decoration: BoxDecoration(
-          color: Get.theme.colorScheme.primary,
+          color: onTap != null ? Get.theme.colorScheme.primary : Get.theme.colorScheme.outlineVariant,
           borderRadius: BorderRadius.circular(8.r),
         ),
         child: Icon(icon, color: Colors.white, size: 20.sp),

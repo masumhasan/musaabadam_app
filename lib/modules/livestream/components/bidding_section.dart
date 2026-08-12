@@ -69,6 +69,22 @@ class BiddingSection extends StatelessWidget {
                         product.condition,
                         style: const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
+                      if (product.variants.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            product.variants
+                                .map((v) => '${v.name}: ${v.availableQuantity}')
+                                .join(' · '),
+                            style: const TextStyle(
+                              color: Color(0xFF008EAC),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       Text(
                         "+shipping+taxes",
                         style: TextStyle(color: Colors.cyan.shade700, fontSize: 11),

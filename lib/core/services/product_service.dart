@@ -44,6 +44,7 @@ class ProductService {
     double? costPerItem,
     List<String> tags = const [],
     List<String> images = const [],
+    List<Map<String, dynamic>> variants = const [],
     bool publishNow = false,
   }) async {
     final response = await _dio.post(ApiConstants.products, data: {
@@ -67,6 +68,7 @@ class ProductService {
       if (costPerItem != null) 'costPerItem': costPerItem,
       'tags': tags,
       'images': images,
+      if (variants.isNotEmpty) 'variants': variants,
       'publishNow': publishNow,
     });
     return ProductModel.fromJson(response.data['data'] as Map<String, dynamic>);
@@ -94,6 +96,7 @@ class ProductService {
     double? costPerItem,
     List<String> tags = const [],
     List<String> images = const [],
+    List<Map<String, dynamic>> variants = const [],
   }) async {
     final response = await _dio.put(ApiConstants.product(productId), data: {
       'title': title,
@@ -116,6 +119,7 @@ class ProductService {
       if (costPerItem != null) 'costPerItem': costPerItem,
       'tags': tags,
       'images': images,
+      if (variants.isNotEmpty) 'variants': variants,
     });
     return ProductModel.fromJson(response.data['data'] as Map<String, dynamic>);
   }

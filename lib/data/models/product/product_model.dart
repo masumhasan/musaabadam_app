@@ -1,3 +1,54 @@
+class ProductVariant {
+  final String? id;
+  final String name;
+  final String image;
+  final int quantity;
+  final int quantitySold;
+  final String? size;
+  final String? color;
+  final String? sku;
+
+  const ProductVariant({
+    this.id,
+    required this.name,
+    this.image = '',
+    required this.quantity,
+    this.quantitySold = 0,
+    this.size,
+    this.color,
+    this.sku,
+  });
+
+  int get availableQuantity => (quantity - quantitySold) > 0 ? (quantity - quantitySold) : 0;
+  bool get isAvailable => availableQuantity > 0;
+
+  factory ProductVariant.fromJson(Map<String, dynamic> json) {
+    return ProductVariant(
+      id: json['_id'] as String? ?? json['id'] as String?,
+      name: json['name'] as String? ?? json['color'] as String? ?? json['size'] as String? ?? 'Variant',
+      image: json['image'] as String? ?? '',
+      quantity: json['quantity'] as int? ?? 1,
+      quantitySold: json['quantitySold'] as int? ?? 0,
+      size: json['size'] as String?,
+      color: json['color'] as String?,
+      sku: json['sku'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (id != null) '_id': id,
+      'name': name,
+      'image': image,
+      'quantity': quantity,
+      'quantitySold': quantitySold,
+      if (size != null) 'size': size,
+      if (color != null) 'color': color,
+      if (sku != null) 'sku': sku,
+    };
+  }
+}
+
 class ProductModel {
   final String id;
   final String sellerId;
@@ -15,6 +66,7 @@ class ProductModel {
   final int quantity;
   final int quantitySold;
   final List<String> images;
+  final List<ProductVariant> variants;
   final bool flashSale;
   final double? flashSalePrice;
   final DateTime? flashSaleEndsAt;
@@ -50,6 +102,7 @@ class ProductModel {
     required this.quantity,
     required this.quantitySold,
     required this.images,
+    this.variants = const [],
     required this.flashSale,
     this.flashSalePrice,
     this.flashSaleEndsAt,
@@ -114,6 +167,11 @@ class ProductModel {
       quantity: json['quantity'] as int? ?? 1,
       quantitySold: json['quantitySold'] as int? ?? 0,
       images: List<String>.from(json['images'] ?? []),
+      variants: json['variants'] != null
+          ? (json['variants'] as List)
+              .map((v) => ProductVariant.fromJson(v as Map<String, dynamic>))
+              .toList()
+          : [],
       flashSale: json['flashSale'] as bool? ?? false,
       flashSalePrice: json['flashSalePrice'] != null ? _toDouble(json['flashSalePrice']) : null,
       flashSaleEndsAt: json['flashSaleEndsAt'] != null ? DateTime.tryParse(json['flashSaleEndsAt'].toString()) : null,

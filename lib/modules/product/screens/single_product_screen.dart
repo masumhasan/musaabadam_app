@@ -99,15 +99,19 @@ class SingleProductScreen extends GetView<SingleProductController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Product Image Display
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16.r),
-                child: CachedImageWidget(
-                  imageUrl: p.images.isNotEmpty ? p.images.first : Dummy.product1,
-                  height: 280.h,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
+              Obx(() {
+                final displayImg = controller.selectedImageUrl.value ??
+                    (p.images.isNotEmpty ? p.images.first : Dummy.product1);
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(16.r),
+                  child: CachedImageWidget(
+                    imageUrl: displayImg,
+                    height: 280.h,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                );
+              }),
               SizedBox(height: 16.h),
 
               // Title & Condition / Size
@@ -138,6 +142,93 @@ class SingleProductScreen extends GetView<SingleProductController> {
                 textAlignment: TextAlign.start,
               ),
               SizedBox(height: 4.h),
+
+              // Variants Selector Section
+              if (p.variants.isNotEmpty) ...[
+                SizedBox(height: 14.h),
+                CustomText(
+                  text: 'Select Option',
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  fontColor: colorScheme.onSurface,
+                ),
+                SizedBox(height: 8.h),
+                Obx(() {
+                  final activeVar = controller.selectedVariant.value;
+                  return SizedBox(
+                    height: 64.h,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: p.variants.length,
+                      separatorBuilder: (context, index) => SizedBox(width: 10.w),
+                      itemBuilder: (context, idx) {
+                        final v = p.variants[idx];
+                        final isSelected = activeVar?.id == v.id || activeVar?.name == v.name;
+                        final isAvailable = v.availableQuantity > 0;
+
+                        return GestureDetector(
+                          onTap: () => controller.selectVariant(v),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? colorScheme.primaryContainer
+                                  : colorScheme.surfaceContainerHigh,
+                              borderRadius: BorderRadius.circular(10.r),
+                              border: Border.all(
+                                color: isSelected
+                                    ? colorScheme.primary
+                                    : colorScheme.outlineVariant,
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                if (v.image.isNotEmpty) ...[
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(6.r),
+                                    child: Image.network(
+                                      v.image,
+                                      width: 36.w,
+                                      height: 36.h,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (ctx, err, stack) => const Icon(Icons.image, size: 20),
+                                    ),
+                                  ),
+                                  SizedBox(width: 8.w),
+                                ],
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      v.name,
+                                      style: TextStyle(
+                                        fontSize: 13.sp,
+                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                        color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    Text(
+                                      isAvailable ? '${v.availableQuantity} available' : 'Sold Out',
+                                      style: TextStyle(
+                                        fontSize: 10.sp,
+                                        fontWeight: FontWeight.w500,
+                                        color: isAvailable ? Colors.green.shade700 : Colors.red.shade400,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                }),
+              ],
 
               // Views Count
               CustomText(
