@@ -424,7 +424,13 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
             )),
 
             SizedBoxWidget(height: 15.h),
-            _buildSwitchTile(AppStrings.hazardousMaterials, controller.isHazardous, colorScheme),
+            _buildSwitchTile(
+              AppStrings.hazardousMaterials,
+              controller.isHazardous,
+              colorScheme,
+              suffixIcon: Icons.warning_amber_rounded,
+              iconColor: Colors.amber.shade800,
+            ),
 
             SizedBoxWidget(height: 30.h),
             
@@ -773,13 +779,25 @@ class CreateQualityListingScreen extends GetView<CreateProductController> {
     );
   }
 
-  Widget _buildSwitchTile(String title, RxBool state, ColorScheme colorScheme) {
+  Widget _buildSwitchTile(String title, RxBool state, ColorScheme colorScheme, {IconData? prefixIcon, IconData? suffixIcon, Color? iconColor}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 10.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          CustomText(text: title, fontWeight: FontWeight.w600, fontSize: 16),
+          Row(
+            children: [
+              if (prefixIcon != null) ...[
+                Icon(prefixIcon, color: iconColor ?? colorScheme.primary, size: 20.sp),
+                SizedBox(width: 8.w),
+              ],
+              CustomText(text: title, fontWeight: FontWeight.w600, fontSize: 16),
+              if (suffixIcon != null) ...[
+                SizedBox(width: 8.w),
+                Icon(suffixIcon, color: iconColor ?? colorScheme.primary, size: 20.sp),
+              ],
+            ],
+          ),
           Obx(() => Switch(
                 value: state.value,
                 onChanged: (val) => state.value = val,

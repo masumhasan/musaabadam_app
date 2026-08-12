@@ -143,6 +143,48 @@ class SingleProductScreen extends GetView<SingleProductController> {
               ),
               SizedBox(height: 4.h),
 
+              // Hazardous Materials Caution Indicator
+              if (p.hazardousMaterials) ...[
+                SizedBox(height: 10.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(10.r),
+                    border: Border.all(color: Colors.amber.shade700, width: 1.2),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: Colors.amber.shade900, size: 22.sp),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Contains Hazardous Materials',
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber.shade900,
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              'This listing contains materials subject to special shipping & handling regulations.',
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                color: Colors.amber.shade900.withValues(alpha: 0.85),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
               // Variants Selector Section
               if (p.variants.isNotEmpty) ...[
                 SizedBox(height: 14.h),
