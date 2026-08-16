@@ -305,7 +305,7 @@ class LiveStreamScreen extends StatelessWidget {
             );
           }),
           SizedBox(
-            height: 260.h,
+            height: 195.h,
             child: Obx(() {
               final msgs = lsCtrl.messages;
               return SingleChildScrollView(
@@ -852,13 +852,20 @@ class LiveStreamScreen extends StatelessWidget {
               iconPath: Assets.icons.wallet,
               text: AppStrings.wallet,
               fontColor: Colors.white,
-              onClick: () {},
+              onClick: () {
+                Get.toNamed(AppRoutes.walletScreen);
+              },
             ),
             LabeledIconButton(
               iconPath: Assets.icons.shop,
               text: AppStrings.shop,
               fontColor: Colors.white,
-              onClick: () {},
+              onClick: () {
+                final sellerId = lsCtrl.joinResult.value?.stream.sellerId;
+                if (sellerId != null) {
+                  Get.toNamed(AppRoutes.otherUserProfileScreen, arguments: sellerId);
+                }
+              },
             ),
             const SizedBox(height: 8),
           ],
