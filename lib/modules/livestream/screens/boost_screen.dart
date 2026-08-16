@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:musaab_adam/core/utils/app_strings.dart';
+import 'package:musaab_adam/core/widgets/custom_button.dart';
+import 'package:musaab_adam/core/widgets/custom_text.dart';
+import 'package:musaab_adam/modules/livestream/controllers/tip_controller.dart';
 import 'package:musaab_adam/routes/app_pages.dart';
-
-import '../../../core/widgets/custom_button.dart';
+import 'package:musaab_adam/core/assets_gen/assets.gen.dart';
 
 class BoostScreen extends StatelessWidget {
   const BoostScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final controller = Get.put(TipController());
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -29,13 +37,11 @@ class BoostScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
-
             // Section: Community Boost
             sectionHeader(Icons.bolt_rounded, "Community Boost"),
             const SizedBox(height: 16),
@@ -71,36 +77,83 @@ class BoostScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            // Section: Send a Tip
+            // Section: Send a Tip (Directly integrated tip selection)
             sectionHeader(Icons.front_hand_outlined, "Send a Tip"),
             const SizedBox(height: 16),
+
+            CustomText(
+              text: AppStrings.chooseATipAmount,
+              fontColor: colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+            const SizedBox(height: 12),
+            _buildTipAmountGrid(controller, colorScheme),
+            const SizedBox(height: 24),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CustomText(
+                  text: AppStrings.addAThankYouNote,
+                  fontColor: colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+                Obx(() => Switch(
+                      value: controller.isNoteEnabled.value,
+                      onChanged: (v) => controller.isNoteEnabled.value = v,
+                      activeThumbColor: colorScheme.onPrimary,
+                      activeTrackColor: colorScheme.primary,
+                    )),
+              ],
+            ),
+            Obx(() {
+              if (!controller.isNoteEnabled.value) return const SizedBox.shrink();
+              return Padding(
+                padding: EdgeInsets.only(top: 8.h),
+                child: TextField(
+                  maxLines: 2,
+                  maxLength: 100,
+                  onChanged: (val) => controller.messageNote.value = val,
+                  decoration: InputDecoration(
+                    hintText: 'Enter thank you message...',
+                    hintStyle: TextStyle(fontSize: 13.sp, color: colorScheme.outline),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  ),
+                ),
+              );
+            }),
+            CustomText(
+              text: AppStrings.thisMessageInChat,
+              fontSize: 12.sp,
+              fontColor: colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 40),
+
             Row(
               children: [
                 Expanded(
                   child: CustomButton(
-                    label: "Learn More",
-                    buttonHeight: 45,
-                    backgroundColor: const Color(0xFFC4C4C4),
-                    textColor: Colors.black,
-                    onPressed: () {
-                      Get.toNamed(AppRoutes.tipInfoScreen);
-                    },
+                    label: AppStrings.cancel,
+                    backgroundColor: colorScheme.outline.withValues(alpha: 0.3),
+                    textColor: colorScheme.onSurface,
+                    buttonHeight: 40.h,
+                    onPressed: Get.back,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 15),
                 Expanded(
                   child: CustomButton(
-                    label: "Send Tip",
-                    buttonHeight: 45,
-                    backgroundColor: const Color(0xFFFFD5A1),
-                    textColor: const Color(0xFFE67E22),
-                    onPressed: () {
-                      Get.toNamed(AppRoutes.sendTipScreen, arguments: Get.arguments);
-                    },
+                    label: AppStrings.next,
+                    backgroundColor: colorScheme.primary,
+                    textColor: Colors.white,
+                    buttonHeight: 40.h,
+                    onPressed: () => Get.toNamed(AppRoutes.tipAmountScreen),
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -148,5 +201,53 @@ class BoostScreen extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget _buildTipAmountGrid(TipController controller, ColorScheme colorScheme) {
+    final tips = [
+      {"icon": Assets.icons.tip1, "value": 1.0, "text": "£1"},
+      {"icon": Assets.icons.tip5, "value": 5.0, "text": "£5"},
+      {"icon": Assets.icons.tip10, "value": 10.0, "text": "£10"},
+      {"icon": Assets.icons.tip20, "value": 20.0, "text": "£20"},
+      {"icon": Assets.icons.tip50, "value": 50.0, "text": "£50"},
+      {"icon": Assets.icons.tip100, "value": 100.0, "text": "£100"},
+    ];
+
+    return Obx(() {
+      final selected = controller.selectedAmount.value;
+      return Wrap(
+        spacing: 12.w,
+        runSpacing: 12.h,
+        children: tips.map((t) {
+          final val = t["value"] as double;
+          final isSelected = selected == val;
+          return GestureDetector(
+            onTap: () => controller.selectAmount(val),
+            child: Container(
+              width: 90.w,
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              decoration: BoxDecoration(
+                color: isSelected ? colorScheme.primary.withValues(alpha: 0.15) : colorScheme.surfaceContainer,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: isSelected ? colorScheme.primary : colorScheme.outlineVariant, width: isSelected ? 1.5 : 1),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(t["icon"] as String, width: 30.r, height: 30.r),
+                  const SizedBox(height: 6),
+                  CustomText(
+                    text: t["text"] as String,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    fontColor: isSelected ? colorScheme.primary : colorScheme.onSurface,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      );
+    });
   }
 }

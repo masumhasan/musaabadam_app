@@ -54,59 +54,48 @@ class SellerAddressScreen extends GetView<SellerVerificationController> {
             ),
             SizedBoxWidget(height: 20.h),
 
-            // Search Address Field
-            CustomTextField(
-              label: AppStrings.searchAddress,
-              hintText: AppStrings.searchAddress,
-              controller: TextEditingController(),
-            ),
-
-            SizedBoxWidget(height: 20.h),
-            Center(
-              child: CustomText(
-                text: AppStrings.orEnterManually,
-                fontSize: 14,
-                fontColor: colorScheme.outline,
-              ),
-            ),
-            SizedBoxWidget(height: 20.h),
-
             // Form Fields with Label and Hint
-            CustomTextField(label: AppStrings.fullName, hintText: AppStrings.fullName, controller: controller.nameController),
+            CustomTextField(
+              label: AppStrings.fullName,
+              hintText: AppStrings.fullName,
+              controller: controller.nameController,
+              isRequired: true,
+            ),
             SizedBoxWidget(height: 15.h),
-            CustomTextField(label: AppStrings.address, hintText: AppStrings.address, controller: controller.addressController),
+            CustomTextField(
+              label: AppStrings.address,
+              hintText: AppStrings.address,
+              controller: controller.addressController,
+              isRequired: true,
+            ),
             SizedBoxWidget(height: 15.h),
-            CustomTextField(label: AppStrings.address2, hintText: AppStrings.address2, controller: controller.address2Controller),
+            CustomTextField(
+              label: AppStrings.address2,
+              hintText: AppStrings.address2,
+              controller: controller.address2Controller,
+            ),
             SizedBoxWidget(height: 15.h),
-            CustomTextField(label: AppStrings.city, hintText: AppStrings.city, controller: controller.cityController),
+            CustomTextField(
+              label: AppStrings.city,
+              hintText: AppStrings.city,
+              controller: controller.cityController,
+              isRequired: true,
+            ),
             SizedBoxWidget(height: 15.h),
-            CustomTextField(label: AppStrings.stateProvince, hintText: AppStrings.stateProvince, controller: controller.stateController),
+            CustomTextField(
+              label: AppStrings.stateProvince,
+              hintText: AppStrings.stateProvince,
+              controller: controller.stateController,
+              isRequired: true,
+            ),
             SizedBoxWidget(height: 15.h),
-            CustomTextField(label: AppStrings.postalCode, hintText: AppStrings.postalCode, controller: controller.zipController),
+            CustomTextField(
+              label: AppStrings.postalCode,
+              hintText: AppStrings.postalCode,
+              controller: controller.zipController,
+              isRequired: true,
+            ),
             SizedBoxWidget(height: 15.h),
-
-            // Country Dropdown
-            Obx(() => DropdownButtonFormField<String>(
-              initialValue: controller.selectedCountry.value,
-              decoration: InputDecoration(
-                labelText: AppStrings.country,
-                labelStyle: TextStyle(color: colorScheme.onSurface),
-                filled: true,
-                fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.2)),
-                ),
-              ),
-              hint: CustomText(text: AppStrings.country, fontColor: colorScheme.outline),
-              items: ["USA", "UK", "Canada"].map((String value) {
-                return DropdownMenuItem<String>(value: value, child: Text(value));
-              }).toList(),
-              onChanged: (v) {
-                if (v != null) controller.selectedCountry.value = v;
-              },
-            )),
 
             SizedBoxWidget(height: 40.h),
 
@@ -117,6 +106,18 @@ class SellerAddressScreen extends GetView<SellerVerificationController> {
               textColor: Colors.white,
               backgroundColor: AppColors.orange,
               onPressed: () {
+                if (controller.nameController.text.trim().isEmpty ||
+                    controller.addressController.text.trim().isEmpty ||
+                    controller.cityController.text.trim().isEmpty ||
+                    controller.stateController.text.trim().isEmpty ||
+                    controller.zipController.text.trim().isEmpty) {
+                  Get.snackbar(
+                    'Required Fields',
+                    'Please fill in all required fields.',
+                    snackPosition: SnackPosition.BOTTOM,
+                  );
+                  return;
+                }
                 Get.toNamed(AppRoutes.sellerAverageEarningScreen);
               },
             ),
