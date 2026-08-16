@@ -351,7 +351,7 @@ class CreateProductController extends GetxController {
         if (vInput.pickedFile.value != null) {
           finalVariantImage = await ApiUploadService.instance.uploadFile(
             file: vInput.pickedFile.value!,
-            folder: 'variants',
+            folder: 'product',
             contentType: _mimeType(vInput.pickedFile.value!.path),
           );
         }
@@ -363,6 +363,16 @@ class CreateProductController extends GetxController {
           'quantity': vInput.quantity.value,
           'image': finalVariantImage,
         });
+      }
+
+      // If product images are empty, consider variant images as product images
+      if (imageUrls.isEmpty) {
+        for (final v in variantDataList) {
+          final img = v['image'] as String?;
+          if (img != null && img.isNotEmpty && !imageUrls.contains(img)) {
+            imageUrls.add(img);
+          }
+        }
       }
 
       if (editProduct.value != null) {
@@ -420,6 +430,7 @@ class CreateProductController extends GetxController {
               : double.tryParse(costController.text.trim()),
           shippingProfileId: selectedShippingProfileId.value,
           images: imageUrls,
+          variants: variantDataList,
           publishNow: publishNow,
         );
       }
