@@ -163,7 +163,8 @@ class AppStrings {
   static const String addPaymentMethod = "Add Payment Method";
   static const String creditDebitCard = "Credit/Debit Card";
   static const String stripe = "Stripe";
-  static const String thePageYouWereLookingFor = "The page you were looking for can’t be found.";
+  static const String thePageYouWereLookingFor =
+      "The page you were looking for can’t be found.";
   static const String addYourPayment = "Add your payment information";
   static const String goBack = "Go Back";
   static const String cardHolderName = "Card holder name";
@@ -527,46 +528,63 @@ class AppStrings {
   static const String keepMoreOfWhatYouEarn = 'Keep more of what you earn';
   static const String sellToBestBuyers = 'Sell to the best buyers';
   static const String faq = 'FAQ';
-  static const String howDoIUnlockMySellerAccess = 'How do I unlock my seller access?';
-  static const String howDoIUnlockMySellerAccessAnswer = 'To unlock seller access, complete your profile verification and submit the seller application for review.';
-  static const String canHaveSecondSellingAccount = 'Can I have a second selling account?';
-  static const String canHaveSecondSellingAccountAnswer = 'Currently, we only allow one seller account per person to ensure community safety.';
+  static const String howDoIUnlockMySellerAccess =
+      'How do I unlock my seller access?';
+  static const String howDoIUnlockMySellerAccessAnswer =
+      'To unlock seller access, complete your profile verification and submit the seller application for review.';
+  static const String canHaveSecondSellingAccount =
+      'Can I have a second selling account?';
+  static const String canHaveSecondSellingAccountAnswer =
+      'Currently, we only allow one seller account per person to ensure community safety.';
   static const String whenCanIScheduleAShow = 'When can I schedule a show?';
-  static const String whenCanIScheduleAShowAnswer = 'Once your application is approved, you can schedule your first live show immediately from the dashboard.';
+  static const String whenCanIScheduleAShowAnswer =
+      'Once your application is approved, you can schedule your first live show immediately from the dashboard.';
   static const String readyToEarn = 'Ready to start earning?';
   static const String payLowestFees = 'Pay the lowest fees';
   static const String buyersCoverShipping = 'Buyers cover shipping';
-  static const String honorPurchasesAndGiveaways = 'Honor all purchases and giveaways';
+  static const String honorPurchasesAndGiveaways =
+      'Honor all purchases and giveaways';
   static const String gotIt = 'Got it';
-  static const String oneStepCloserToSellingLive = 'You’re one step closer to selling live!';
+  static const String oneStepCloserToSellingLive =
+      'You’re one step closer to selling live!';
   static const String completeApplication = 'Complete Application';
   static const String whichCategory = 'Which category?';
-  static const String pickAFew = 'Pick a few';
-  static const String whichSubcategory = 'Which subcategory will you sell in most often?';
+  static const String pickAFew = 'Pick One Or More';
+  static const String whichSubcategory =
+      'Which subcategory will you sell in most often?';
   static const String canAddMoreLater = 'You can always add more later.';
-  static const String whichDescribesYou = 'Which of these better describes you?';
-  static const String tailorExperience = 'We’ll tailor your experience based on what you pick.';
+  static const String whichDescribesYou =
+      'Which of these better describes you?';
+  static const String tailorExperience =
+      'We’ll tailor your experience based on what you pick.';
   static const String startingOut = 'I’m just starting';
-  static const String activelySelling = 'I’m actively selling online or in person';
-  static const String whereShouldWeSend = 'Where should we send purchases and returns?';
-  static const String toPreventDelays = 'To prevent delays in receiving your payouts, you must provide your legal name as it appears on your ID.';
+  static const String activelySelling =
+      'I’m actively selling online or in person';
+  static const String whereShouldWeSend =
+      'Where should we send purchases and returns?';
+  static const String toPreventDelays =
+      'To prevent delays in receiving your payouts, you must provide your legal name as it appears on your ID.';
   static const String searchAddress = 'Search for your address';
   static const String orEnterManually = 'Or enter manually';
   static const String address2 = 'Address 2';
   static const String stateProvince = 'State/Province';
   static const String country = 'Country';
-  static const String averageMonthlyEarnings = 'On average, how much do you make per month from selling?';
-  static const String tailorTools = 'This info helps us tailor our seller tools for businesses big and small.';
+  static const String averageMonthlyEarnings =
+      'On average, how much do you make per month from selling?';
+  static const String tailorTools =
+      'This info helps us tailor our seller tools for businesses big and small.';
   static const String select = 'Select';
   static const String range1 = 'Less than £1,000';
   static const String range2 = '£1,000 - £5,000';
   static const String range3 = '£5,000 - £20,000';
   static const String range4 = '£20,000 - £50,000';
   static const String verifyAccount = 'Verify your account to get paid';
-  static const String verifyAccountDesc = 'Take 2 minutes to complete seller verification to avoid payment and shipping delays.';
+  static const String verifyAccountDesc =
+      'Take 2 minutes to complete seller verification to avoid payment and shipping delays.';
   static const String noUpcomingShows = 'No Upcoming Shows';
   static const String alwaysHaveAShow = 'Always have a show scheduled';
-  static const String alwaysHaveAShowDesc = 'Going live regularly builds your following, creates repeat buyers, and boosts sales.';
+  static const String alwaysHaveAShowDesc =
+      'Going live regularly builds your following, creates repeat buyers, and boosts sales.';
   static const String rehearsalMode = 'Rehearsal Mode';
   static const String optional = 'Optional';
   static const String photosLimit = 'Photos: 0/8';
@@ -596,7 +614,8 @@ class AppStrings {
   static const String public = 'Public';
   static const String private = 'Private';
   static const String getReadyToScan = 'Get ready to scan your photo ID';
-  static const String acceptedIdForms = 'Accepted forms of ID include Driver’s license, Government-issued photo ID, Passport.';
+  static const String acceptedIdForms =
+      'Accepted forms of ID include Driver’s license, Government-issued photo ID, Passport.';
   static const String wellLitSpace = 'Make sure you’re in a well-lit space.';
   static const String imReady = 'I’m Ready';
   static const String needsLabel = 'Needs Label';
@@ -642,7 +661,8 @@ class AppStrings {
 
   static const String eligibilityRequirements = "Eligibility Requirements";
   static const String salesAndActivityVolume = "Sales & Activity Volume";
-  static const String fulfillmentAndServiceExcellence = "Fulfillment & Service Excellence";
+  static const String fulfillmentAndServiceExcellence =
+      "Fulfillment & Service Excellence";
   static const String daysActive = "Days Active";
   static const String showsHosted = "Shows Hosted";
   static const String completedOrders = "Completed Orders";
@@ -650,6 +670,4 @@ class AppStrings {
   static const String timelyShipping = "Timely Shipping";
   static const String orderReliability = "Order Reliability";
   static const String policyAdherence = "Policy Adherence";
-
 }
-

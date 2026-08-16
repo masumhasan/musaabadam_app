@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:dio/dio.dart';
+import 'package:musaab_adam/core/services/api_order_service.dart';
 import 'package:musaab_adam/core/services/api_favorite_service.dart';
 import 'package:musaab_adam/core/services/api_offer_service.dart';
 import 'package:musaab_adam/core/services/api_review_service.dart';
@@ -280,12 +282,26 @@ class SingleProductController extends GetxController {
     );
   }
 
-  void buyNow() {
+  Future<void> buyNow() async {
     final p = product.value;
-    if (p == null) return;
-    Get.toNamed(AppRoutes.checkout, arguments: {
-      'product': p,
-      'price': p.effectivePrice,
-    });
+    if (p == null || actionLoading.value) return;
+    actionLoading.value = true;
+    try {
+      final activeVar = selectedVariant.value;
+      final order = await ApiOrderService.instance.createOrder(
+        items: [
+          {
+            'productId': p.id,
+            'quantity': 1,
+            if (activeVar != null) 'variantId': activeVar.id,
+          },
+        ],
+      );
+      Get.toNamed(AppRoutes.checkout, arguments: order.id);
+    } on DioException catch (e) {
+      Get.snackbar('Purchase Error', ApiOrderService.extractError(e), snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      actionLoading.value = false;
+    }
   }
 }
