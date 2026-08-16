@@ -12,6 +12,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final int? maxLines;
   final Widget? prefix;
+  final bool isRequired;
 
   const CustomTextField({
     super.key,
@@ -24,6 +25,7 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType,
     this.maxLines = 1,
     this.prefix,
+    this.isRequired = false,
   });
 
   @override
@@ -34,12 +36,26 @@ class CustomTextField extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children:[
-        CustomText(
-          text: label,
-          fontSize: 14.sp,
-          fontWeight: FontWeight.w600,
-          fontColor: colorScheme.onSurface,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CustomText(
+              text: label,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              fontColor: colorScheme.onSurface,
+            ),
+            if (isRequired) ...[
+              SizedBox(width: 4.w),
+              CustomText(
+                text: '*',
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                fontColor: Colors.red,
+              ),
+            ],
+          ],
         ),
         SizedBox(height: 8.h),
         TextFormField(
